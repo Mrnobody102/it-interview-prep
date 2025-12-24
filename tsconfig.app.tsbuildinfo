@@ -1,0 +1,1 @@
+{"root":["./src/app.tsx","./src/global.d.ts","./src/main.tsx","./src/components/contentarea.tsx","./src/components/header.tsx","./src/components/searchmodal.tsx","./src/components/sidebar.tsx","./src/components/figma/imagewithfallback.tsx","./src/data/categories.ts"],"version":"5.6.3"}
