@@ -1,45 +1,51 @@
-import { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { Header } from './components/Header';
-import { Sidebar } from './components/Sidebar';
-import { ContentArea } from './components/ContentArea';
-import { SearchModal } from './components/SearchModal';
-import { categories, type Category, type Topic } from './data/categories';
+import { useState, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { Header } from "./components/Header";
+import { Sidebar } from "./components/Sidebar";
+import { ContentArea } from "./components/ContentArea";
+import { SearchModal } from "./components/SearchModal";
+import { categories, type Category, type Topic } from "./data/categories";
 
 export default function App() {
   const navigate = useNavigate();
-  const { categoryId, topicId } = useParams<{ categoryId?: string; topicId?: string }>();
-  
-  const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
+  const { categoryId, topicId } = useParams<{
+    categoryId?: string;
+    topicId?: string;
+  }>();
+
+  const [selectedCategory, setSelectedCategory] = useState<Category | null>(
+    null
+  );
   const [selectedTopic, setSelectedTopic] = useState<Topic | null>(null);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
-  const [language, setLanguage] = useState<'vi' | 'en'>('vi');
+  const [language, setLanguage] = useState<"vi" | "en">("vi");
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   // Sync dark mode with localStorage and DOM
   useEffect(() => {
-    const savedDarkMode = localStorage.getItem('darkMode');
+    const savedDarkMode = localStorage.getItem("darkMode");
     if (savedDarkMode) {
-      setIsDarkMode(savedDarkMode === 'true');
+      setIsDarkMode(savedDarkMode === "true");
     }
   }, []);
 
   useEffect(() => {
-    localStorage.setItem('darkMode', String(isDarkMode));
+    localStorage.setItem("darkMode", String(isDarkMode));
     if (isDarkMode) {
-      document.documentElement.classList.add('dark');
+      document.documentElement.classList.add("dark");
     } else {
-      document.documentElement.classList.remove('dark');
+      document.documentElement.classList.remove("dark");
     }
   }, [isDarkMode]);
 
   // Sync URL params with state
   useEffect(() => {
     if (categoryId) {
-      const category = categories.find(c => c.id === categoryId);
+      const category = categories.find((c) => c.id === categoryId);
       if (category) {
         setSelectedCategory(category);
-        
+
         if (topicId) {
           const findTopic = (topics: Topic[]): Topic | null => {
             for (const topic of topics) {
@@ -65,11 +71,19 @@ export default function App() {
 
   const handleCategorySelect = (category: Category) => {
     navigate(`/${category.id}`);
+    setIsSidebarOpen(true);
   };
+
+  useEffect(() => {
+    if (selectedCategory) {
+      setIsSidebarOpen(true);
+    }
+  }, [selectedCategory]);
 
   const handleTopicSelect = (topic: Topic) => {
     if (selectedCategory) {
       navigate(`/${selectedCategory.id}/${topic.id}`);
+      setIsSidebarOpen(false);
     }
   };
 
@@ -84,15 +98,25 @@ export default function App() {
         onCategorySelect={handleCategorySelect}
         categories={categories}
         selectedCategoryId={selectedCategory?.id}
+        onOpenSidebar={() => setIsSidebarOpen(true)}
       />
 
-      <div className="flex">
+      <div className="flex relative">
+        {selectedCategory && isSidebarOpen && (
+          <div
+            className="fixed inset-0 bg-background/70 backdrop-blur-sm z-40 md:hidden"
+            onClick={() => setIsSidebarOpen(false)}
+          />
+        )}
+
         {selectedCategory && (
           <Sidebar
             category={selectedCategory}
             selectedTopic={selectedTopic}
             onTopicSelect={handleTopicSelect}
             language={language}
+            isOpen={isSidebarOpen}
+            onClose={() => setIsSidebarOpen(false)}
           />
         )}
 

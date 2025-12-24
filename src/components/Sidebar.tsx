@@ -1,15 +1,20 @@
-import { useState } from 'react';
-import { ChevronRight, ChevronDown } from 'lucide-react';
-import { type Category, type Topic } from '../data/categories';
+import { useState } from "react";
+import { ChevronRight, ChevronDown } from "lucide-react";
+import { type Category, type Topic } from "../data/categories";
 
 interface SidebarProps {
   category: Category;
   selectedTopic: Topic | null;
   onTopicSelect: (topic: Topic) => void;
-  language: 'vi' | 'en';
+  language: "vi" | "en";
 }
 
-export function Sidebar({ category, selectedTopic, onTopicSelect, language }: SidebarProps) {
+export function Sidebar({
+  category,
+  selectedTopic,
+  onTopicSelect,
+  language,
+}: SidebarProps) {
   const [expandedTopics, setExpandedTopics] = useState<Set<string>>(new Set());
 
   const toggleTopic = (topicId: string) => {
@@ -39,8 +44,8 @@ export function Sidebar({ category, selectedTopic, onTopicSelect, language }: Si
           }}
           className={`w-full flex items-center justify-between px-4 py-2.5 text-left transition-colors ${
             isSelected
-              ? 'bg-accent text-primary font-medium'
-              : 'text-foreground hover:bg-muted'
+              ? "bg-accent text-primary font-medium"
+              : "text-foreground hover:bg-muted"
           }`}
           style={{ paddingLeft: `${1 + level * 1}rem` }}
         >
@@ -58,7 +63,9 @@ export function Sidebar({ category, selectedTopic, onTopicSelect, language }: Si
 
         {hasSubtopics && isExpanded && (
           <div>
-            {topic.subtopics!.map((subtopic) => renderTopic(subtopic, level + 1))}
+            {topic.subtopics!.map((subtopic) =>
+              renderTopic(subtopic, level + 1)
+            )}
           </div>
         )}
       </div>
@@ -72,7 +79,9 @@ export function Sidebar({ category, selectedTopic, onTopicSelect, language }: Si
           <span className="text-2xl">{category.icon}</span>
           <div>
             <h2 className="text-foreground">{category.name[language]}</h2>
-            <p className="text-sm text-muted-foreground">{category.description[language]}</p>
+            <p className="text-sm text-muted-foreground">
+              {category.description[language]}
+            </p>
           </div>
         </div>
       </div>

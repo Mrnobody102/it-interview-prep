@@ -15,14 +15,17 @@ export interface Category {
 
 export const categories: Category[] = [
   {
-    id: 'fundamentals',
-    name: { vi: 'Fundamentals', en: 'Fundamentals' },
-    description: { vi: 'Nền tảng chung – ai cũng phải biết', en: 'Core foundations – everyone must know' },
-    icon: '🎯',
+    id: "fundamentals",
+    name: { vi: "Fundamentals", en: "Fundamentals" },
+    description: {
+      vi: "Nền tảng chung – ai cũng phải biết",
+      en: "Core foundations – everyone must know",
+    },
+    icon: "🎯",
     topics: [
       {
-        id: 'oop',
-        name: { vi: 'OOP', en: 'OOP' },
+        id: "oop",
+        name: { vi: "OOP", en: "OOP" },
         content: {
           vi: `# Lập trình Hướng đối tượng (OOP)
 
@@ -93,12 +96,12 @@ export const categories: Category[] = [
 **Q: Composition vs Inheritance?**
 - Composition: "has-a" relationship, more flexible
 - Inheritance: "is-a" relationship, tighter coupling
-- Prefer composition over inheritance (Design principle)`
-        }
+- Prefer composition over inheritance (Design principle)`,
+        },
       },
       {
-        id: 'solid',
-        name: { vi: 'SOLID', en: 'SOLID' },
+        id: "solid",
+        name: { vi: "SOLID", en: "SOLID" },
         content: {
           vi: `# Nguyên tắc SOLID
 
@@ -153,12 +156,12 @@ Clients shouldn't be forced to depend on interfaces they don't use. Split large 
 - High-level modules shouldn't depend on low-level modules. Both should depend on abstractions.
 - Abstractions shouldn't depend on details. Details should depend on abstractions.
 
-**Example:** Service should depend on Repository interface, not concrete MySQLRepository.`
-        }
+**Example:** Service should depend on Repository interface, not concrete MySQLRepository.`,
+        },
       },
       {
-        id: 'design-patterns',
-        name: { vi: 'Design Patterns', en: 'Design Patterns' },
+        id: "design-patterns",
+        name: { vi: "Design Patterns", en: "Design Patterns" },
         content: {
           vi: `# Design Patterns
 
@@ -237,12 +240,12 @@ When object changes state, all dependents are notified.
 Defines family of algorithms, encapsulates each one, makes them interchangeable.
 
 ### Template Method
-Defines skeleton of algorithm, subclasses override specific steps.`
-        }
+Defines skeleton of algorithm, subclasses override specific steps.`,
+        },
       },
       {
-        id: 'data-structures',
-        name: { vi: 'Data Structures', en: 'Data Structures' },
+        id: "data-structures",
+        name: { vi: "Data Structures", en: "Data Structures" },
         content: {
           vi: `# Cấu trúc dữ liệu
 
@@ -319,12 +322,12 @@ Defines skeleton of algorithm, subclasses override specific steps.`
 
 ## Graph
 - **Representation:** Adjacency matrix O(V²), Adjacency list O(V+E)
-- **Algorithms:** DFS, BFS, Dijkstra, Kruskal, Prim`
-        }
+- **Algorithms:** DFS, BFS, Dijkstra, Kruskal, Prim`,
+        },
       },
       {
-        id: 'algorithms',
-        name: { vi: 'Algorithms & Big-O', en: 'Algorithms & Big-O' },
+        id: "algorithms",
+        name: { vi: "Algorithms & Big-O", en: "Algorithms & Big-O" },
         content: {
           vi: `# Algorithms & Big-O Notation
 
@@ -415,12 +418,15 @@ Recursive fibonacci (naive)
 ## Dynamic Programming
 - Overlapping subproblems + Optimal substructure
 - Memoization (top-down) vs Tabulation (bottom-up)
-- Examples: Fibonacci, Knapsack, Longest Common Subsequence`
-        }
+- Examples: Fibonacci, Knapsack, Longest Common Subsequence`,
+        },
       },
       {
-        id: 'concurrency',
-        name: { vi: 'Concurrency / Multithreading', en: 'Concurrency / Multithreading' },
+        id: "concurrency",
+        name: {
+          vi: "Concurrency / Multithreading",
+          en: "Concurrency / Multithreading",
+        },
         content: {
           vi: `# Concurrency & Multithreading
 
@@ -501,12 +507,12 @@ High-level abstraction, automatically acquire/release lock.
 - Immutable objects
 - Thread-local storage
 - Atomic operations
-- Synchronized methods/blocks`
-        }
+- Synchronized methods/blocks`,
+        },
       },
       {
-        id: 'memory',
-        name: { vi: 'Memory Management', en: 'Memory Management' },
+        id: "memory",
+        name: { vi: "Memory Management", en: "Memory Management" },
         content: {
           vi: `# Quản lý bộ nhớ
 
@@ -587,24 +593,27 @@ High-level abstraction, automatically acquire/release lock.
 ### Detection
 - Profiler tools
 - Heap dump analysis
-- Monitor memory usage trends`
-        }
-      }
-    ]
+- Monitor memory usage trends`,
+        },
+      },
+    ],
   },
   {
-    id: 'backend',
-    name: { vi: 'Backend', en: 'Backend' },
-    description: { vi: 'Chia theo tech stack cụ thể', en: 'Divided by specific tech stack' },
-    icon: '⚙️',
+    id: "backend",
+    name: { vi: "Backend", en: "Backend" },
+    description: {
+      vi: "Chia theo tech stack cụ thể",
+      en: "Divided by specific tech stack",
+    },
+    icon: "⚙️",
     topics: [
       {
-        id: 'java-backend',
-        name: { vi: 'Java Backend', en: 'Java Backend' },
+        id: "java-backend",
+        name: { vi: "Java Backend", en: "Java Backend" },
         subtopics: [
           {
-            id: 'spring-boot',
-            name: { vi: 'Spring / Spring Boot', en: 'Spring / Spring Boot' },
+            id: "spring-boot",
+            name: { vi: "Spring / Spring Boot", en: "Spring / Spring Boot" },
             content: {
               vi: `# Spring / Spring Boot
 
@@ -675,12 +684,12 @@ spring-boot-starter-web, starter-data-jpa, starter-security...
 - **@Bean:** Declare bean method
 
 ## Application Properties
-application.properties / application.yml for configuration`
-            }
+application.properties / application.yml for configuration`,
+            },
           },
           {
-            id: 'rest-api',
-            name: { vi: 'REST API Design', en: 'REST API Design' },
+            id: "rest-api",
+            name: { vi: "REST API Design", en: "REST API Design" },
             content: {
               vi: `# REST API Design
 
@@ -775,12 +784,12 @@ URLs represent resources, not actions.
 
 - URL versioning: /api/v1/users
 - Header versioning: Accept: application/vnd.api.v1+json
-- Query parameter: /api/users?version=1`
-            }
+- Query parameter: /api/users?version=1`,
+            },
           },
           {
-            id: 'jpa-hibernate',
-            name: { vi: 'JPA / Hibernate', en: 'JPA / Hibernate' },
+            id: "jpa-hibernate",
+            name: { vi: "JPA / Hibernate", en: "JPA / Hibernate" },
             content: {
               vi: `# JPA / Hibernate
 
@@ -861,12 +870,12 @@ public class User {
 ### Solutions
 - **JOIN FETCH:** Eager load in one query
 - **@EntityGraph:** Specify fetch plan
-- **Batch fetching:** @BatchSize`
-            }
+- **Batch fetching:** @BatchSize`,
+            },
           },
           {
-            id: 'transaction',
-            name: { vi: 'Transaction & ACID', en: 'Transaction & ACID' },
+            id: "transaction",
+            name: { vi: "Transaction & ACID", en: "Transaction & ACID" },
             content: {
               vi: `# Transaction & ACID
 
@@ -959,12 +968,15 @@ public void transferMoney() { }
 ### Propagation
 - **REQUIRED:** Join existing or create new
 - **REQUIRES_NEW:** Always create new transaction
-- **NESTED:** Nested transaction`
-            }
+- **NESTED:** Nested transaction`,
+            },
           },
           {
-            id: 'security',
-            name: { vi: 'Security (Spring Security, JWT)', en: 'Security (Spring Security, JWT)' },
+            id: "security",
+            name: {
+              vi: "Security (Spring Security, JWT)",
+              en: "Security (Spring Security, JWT)",
+            },
             content: {
               vi: `# Spring Security & JWT
 
@@ -1065,12 +1077,12 @@ http
     .and()
     .sessionManagement()
     .sessionCreationPolicy(STATELESS)
-\`\`\``
-            }
+\`\`\``,
+            },
           },
           {
-            id: 'async',
-            name: { vi: 'Async / Scheduler', en: 'Async / Scheduler' },
+            id: "async",
+            name: { vi: "Async / Scheduler", en: "Async / Scheduler" },
             content: {
               vi: `# Async & Scheduler trong Spring
 
@@ -1171,12 +1183,12 @@ public void cleanupTask() { }
 - Report generation
 - Batch processing
 - Cache refresh
-- Cleanup tasks`
-            }
+- Cleanup tasks`,
+            },
           },
           {
-            id: 'testing',
-            name: { vi: 'Testing', en: 'Testing' },
+            id: "testing",
+            name: { vi: "Testing", en: "Testing" },
             content: {
               vi: `# Testing trong Java/Spring
 
@@ -1289,18 +1301,18 @@ class UserControllerTest {
 ### Test Slices
 - **@WebMvcTest:** Controller layer only
 - **@DataJpaTest:** JPA repositories
-- **@RestClientTest:** REST clients`
-            }
-          }
-        ]
+- **@RestClientTest:** REST clients`,
+            },
+          },
+        ],
       },
       {
-        id: 'python-backend',
-        name: { vi: 'Python Backend', en: 'Python Backend' },
+        id: "python-backend",
+        name: { vi: "Python Backend", en: "Python Backend" },
         subtopics: [
           {
-            id: 'django-fastapi',
-            name: { vi: 'Django / FastAPI', en: 'Django / FastAPI' },
+            id: "django-fastapi",
+            name: { vi: "Django / FastAPI", en: "Django / FastAPI" },
             content: {
               vi: `# Django / FastAPI
 
@@ -1393,18 +1405,18 @@ Similar to Spring, clean and testable
 
 ## Django vs FastAPI
 - **Django:** Full-featured, batteries included
-- **FastAPI:** Modern, async, API-focused`
-            }
-          }
-        ]
+- **FastAPI:** Modern, async, API-focused`,
+            },
+          },
+        ],
       },
       {
-        id: 'nodejs-backend',
-        name: { vi: 'Node.js Backend', en: 'Node.js Backend' },
+        id: "nodejs-backend",
+        name: { vi: "Node.js Backend", en: "Node.js Backend" },
         subtopics: [
           {
-            id: 'express-nestjs',
-            name: { vi: 'Express / NestJS', en: 'Express / NestJS' },
+            id: "express-nestjs",
+            name: { vi: "Express / NestJS", en: "Express / NestJS" },
             content: {
               vi: `# Express / NestJS
 
@@ -1499,12 +1511,12 @@ export class UsersController {
 Organize code into cohesive blocks
 
 ### Guards, Interceptors, Pipes
-Built-in request lifecycle hooks`
-            }
+Built-in request lifecycle hooks`,
+            },
           },
           {
-            id: 'event-loop',
-            name: { vi: 'Event Loop', en: 'Event Loop' },
+            id: "event-loop",
+            name: { vi: "Event Loop", en: "Event Loop" },
             content: {
               vi: `# Node.js Event Loop
 
@@ -1573,14 +1585,14 @@ Avoid CPU-intensive tasks on main thread
 → Use Worker Threads
 
 ### Memory Leaks
-Not cleaning up event listeners, timers`
-            }
-          }
-        ]
+Not cleaning up event listeners, timers`,
+            },
+          },
+        ],
       },
       {
-        id: 'dotnet-backend',
-        name: { vi: '.NET Backend', en: '.NET Backend' },
+        id: "dotnet-backend",
+        name: { vi: ".NET Backend", en: ".NET Backend" },
         content: {
           vi: `# .NET Backend
 
@@ -1663,12 +1675,12 @@ Define models in C#, generate database
 Track database schema changes
 
 ## Middleware Pipeline
-Configure request processing pipeline`
-        }
+Configure request processing pipeline`,
+        },
       },
       {
-        id: 'golang-backend',
-        name: { vi: 'Golang Backend', en: 'Golang Backend' },
+        id: "golang-backend",
+        name: { vi: "Golang Backend", en: "Golang Backend" },
         content: {
           vi: `# Golang Backend
 
@@ -1761,20 +1773,26 @@ Minimalist, high performance
 Express-like API
 
 ## Standard Library
-Rich standard library for web development`
-        }
-      }
-    ]
+Rich standard library for web development`,
+        },
+      },
+    ],
   },
   {
-    id: 'frontend',
-    name: { vi: 'Frontend', en: 'Frontend' },
-    description: { vi: 'Dành cho frontend dev & full-stack', en: 'For frontend dev & full-stack' },
-    icon: '🎨',
+    id: "frontend",
+    name: { vi: "Frontend", en: "Frontend" },
+    description: {
+      vi: "Dành cho frontend dev & full-stack",
+      en: "For frontend dev & full-stack",
+    },
+    icon: "🎨",
     topics: [
       {
-        id: 'html-css-js',
-        name: { vi: 'HTML / CSS / JavaScript core', en: 'HTML / CSS / JavaScript core' },
+        id: "html-css-js",
+        name: {
+          vi: "HTML / CSS / JavaScript core",
+          en: "HTML / CSS / JavaScript core",
+        },
         content: {
           vi: `# HTML / CSS / JavaScript Core
 
@@ -1879,12 +1897,15 @@ const message = \`Hello, \${name}!\`;
 \`\`\`javascript
 export const value = 42;
 import { value } from './module';
-\`\`\``
-        }
+\`\`\``,
+        },
       },
       {
-        id: 'async-js',
-        name: { vi: 'Async JS (Promise, async/await)', en: 'Async JS (Promise, async/await)' },
+        id: "async-js",
+        name: {
+          vi: "Async JS (Promise, async/await)",
+          en: "Async JS (Promise, async/await)",
+        },
         content: {
           vi: `# Async JavaScript
 
@@ -1989,12 +2010,12 @@ const winner = await Promise.race([promise1, promise2]);
 \`\`\`
 
 ## Error Handling
-Always use try/catch with async/await`
-        }
+Always use try/catch with async/await`,
+        },
       },
       {
-        id: 'react',
-        name: { vi: 'React', en: 'React' },
+        id: "react",
+        name: { vi: "React", en: "React" },
         content: {
           vi: `# React
 
@@ -2097,12 +2118,12 @@ JavaScript XML syntax
 ## Lifecycle (with hooks)
 - **Mount:** useEffect(() => {}, [])
 - **Update:** useEffect(() => {})
-- **Unmount:** useEffect cleanup`
-        }
+- **Unmount:** useEffect cleanup`,
+        },
       },
       {
-        id: 'angular',
-        name: { vi: 'Angular', en: 'Angular' },
+        id: "angular",
+        name: { vi: "Angular", en: "Angular" },
         content: {
           vi: `# Angular
 
@@ -2185,12 +2206,12 @@ Singleton classes for business logic, API calls
 Reactive programming with Observables
 
 ## Modules
-Organize code into NgModules`
-        }
+Organize code into NgModules`,
+        },
       },
       {
-        id: 'vue',
-        name: { vi: 'Vue', en: 'Vue' },
+        id: "vue",
+        name: { vi: "Vue", en: "Vue" },
         content: {
           vi: `# Vue.js
 
@@ -2295,12 +2316,12 @@ setup() {
   const doubled = computed(() => count.value * 2);
   return { count, doubled };
 }
-\`\`\``
-        }
+\`\`\``,
+        },
       },
       {
-        id: 'state-management',
-        name: { vi: 'State Management', en: 'State Management' },
+        id: "state-management",
+        name: { vi: "State Management", en: "State Management" },
         content: {
           vi: `# State Management
 
@@ -2371,20 +2392,23 @@ Simpler alternatives, less boilerplate
 ## When to use?
 - Large app with complex state
 - State shared across many components
-- Time-travel debugging needed`
-        }
-      }
-    ]
+- Time-travel debugging needed`,
+        },
+      },
+    ],
   },
   {
-    id: 'database',
-    name: { vi: 'Database', en: 'Database' },
-    description: { vi: 'Chủ đề "đào sâu" trong phỏng vấn', en: 'Deep dive topic in interviews' },
-    icon: '💾',
+    id: "database",
+    name: { vi: "Database", en: "Database" },
+    description: {
+      vi: 'Chủ đề "đào sâu" trong phỏng vấn',
+      en: "Deep dive topic in interviews",
+    },
+    icon: "💾",
     topics: [
       {
-        id: 'sql-nosql',
-        name: { vi: 'SQL vs NoSQL', en: 'SQL vs NoSQL' },
+        id: "sql-nosql",
+        name: { vi: "SQL vs NoSQL", en: "SQL vs NoSQL" },
         content: {
           vi: `# SQL vs NoSQL
 
@@ -2487,12 +2511,12 @@ MySQL, PostgreSQL, Oracle, SQL Server
 | Schema | Fixed | Flexible |
 | Scaling | Vertical | Horizontal |
 | Consistency | Strong | Eventual (usually) |
-| Query | SQL | Varies |`
-        }
+| Query | SQL | Varies |`,
+        },
       },
       {
-        id: 'indexing',
-        name: { vi: 'Indexing', en: 'Indexing' },
+        id: "indexing",
+        name: { vi: "Indexing", en: "Indexing" },
         content: {
           vi: `# Database Indexing
 
@@ -2585,12 +2609,12 @@ CREATE INDEX idx_name_age ON users(name, age);
 - Index foreign keys
 - Index columns used in WHERE, JOIN
 - Don't over-index
-- Monitor query performance`
-        }
+- Monitor query performance`,
+        },
       },
       {
-        id: 'normalization',
-        name: { vi: 'Normalization', en: 'Normalization' },
+        id: "normalization",
+        name: { vi: "Normalization", en: "Normalization" },
         content: {
           vi: `# Database Normalization
 
@@ -2669,12 +2693,12 @@ Sometimes intentionally denormalize for performance (read-heavy systems)`,
 **Products:** ProductID, Name
 
 ## Denormalization
-Sometimes intentionally denormalize for performance (read-heavy systems)`
-        }
+Sometimes intentionally denormalize for performance (read-heavy systems)`,
+        },
       },
       {
-        id: 'transaction-isolation',
-        name: { vi: 'Transaction Isolation', en: 'Transaction Isolation' },
+        id: "transaction-isolation",
+        name: { vi: "Transaction Isolation", en: "Transaction Isolation" },
         content: {
           vi: `# Transaction Isolation Levels
 
@@ -2753,20 +2777,23 @@ Same query returns different rows (due to INSERT/DELETE)
 - Slowest
 
 ## Trade-off
-Higher isolation = More consistency, Less concurrency`
-        }
-      }
-    ]
+Higher isolation = More consistency, Less concurrency`,
+        },
+      },
+    ],
   },
   {
-    id: 'system-design',
-    name: { vi: 'Thiết kế hệ thống', en: 'System Design' },
-    description: { vi: 'Chủ đề mid → senior → lead', en: 'Topic for mid → senior → lead' },
-    icon: '🏗️',
+    id: "system-design",
+    name: { vi: "Thiết kế hệ thống", en: "System Design" },
+    description: {
+      vi: "Chủ đề mid → senior → lead",
+      en: "Topic for mid → senior → lead",
+    },
+    icon: "🏗️",
     topics: [
       {
-        id: 'scalability',
-        name: { vi: 'Scalability', en: 'Scalability' },
+        id: "scalability",
+        name: { vi: "Scalability", en: "Scalability" },
         content: {
           vi: `# Scalability
 
@@ -2857,12 +2884,12 @@ Reduce database load
 Queue systems for heavy tasks
 
 ### CDN
-Static content delivery`
-        }
+Static content delivery`,
+        },
       },
       {
-        id: 'load-balancer',
-        name: { vi: 'Load Balancer', en: 'Load Balancer' },
+        id: "load-balancer",
+        name: { vi: "Load Balancer", en: "Load Balancer" },
         content: {
           vi: `# Load Balancer
 
@@ -2941,12 +2968,15 @@ Monitor server health, remove unhealthy servers
 - Nginx
 - HAProxy
 - AWS ELB/ALB
-- Cloud Load Balancers`
-        }
+- Cloud Load Balancers`,
+        },
       },
       {
-        id: 'microservices',
-        name: { vi: 'Monolith vs Microservices', en: 'Monolith vs Microservices' },
+        id: "microservices",
+        name: {
+          vi: "Monolith vs Microservices",
+          en: "Monolith vs Microservices",
+        },
         content: {
           vi: `# Monolith vs Microservices
 
@@ -3049,12 +3079,12 @@ Monitor server health, remove unhealthy servers
 ### Microservices
 - Large teams
 - Complex domain
-- Need independent scaling`
-        }
+- Need independent scaling`,
+        },
       },
       {
-        id: 'cap-theorem',
-        name: { vi: 'CAP Theorem', en: 'CAP Theorem' },
+        id: "cap-theorem",
+        name: { vi: "CAP Theorem", en: "CAP Theorem" },
         content: {
           vi: `# CAP Theorem
 
@@ -3125,12 +3155,12 @@ System operates despite network partitions
 - Single-server databases
 
 ## In Practice
-Most systems choose AP and implement eventual consistency`
-        }
+Most systems choose AP and implement eventual consistency`,
+        },
       },
       {
-        id: 'caching',
-        name: { vi: 'Caching Strategy', en: 'Caching Strategy' },
+        id: "caching",
+        name: { vi: "Caching Strategy", en: "Caching Strategy" },
         content: {
           vi: `# Caching Strategy
 
@@ -3215,20 +3245,23 @@ Proactively refresh cache before expiration
 ## Common Tools
 - Redis
 - Memcached
-- CDN (for static content)`
-        }
-      }
-    ]
+- CDN (for static content)`,
+        },
+      },
+    ],
   },
   {
-    id: 'devops',
-    name: { vi: 'DevOps & Cloud', en: 'DevOps & Cloud' },
-    description: { vi: 'Backend hiện đại gần như bắt buộc', en: 'Almost mandatory for modern backend' },
-    icon: '☁️',
+    id: "devops",
+    name: { vi: "DevOps & Cloud", en: "DevOps & Cloud" },
+    description: {
+      vi: "Backend hiện đại gần như bắt buộc",
+      en: "Almost mandatory for modern backend",
+    },
+    icon: "☁️",
     topics: [
       {
-        id: 'linux',
-        name: { vi: 'Linux', en: 'Linux' },
+        id: "linux",
+        name: { vi: "Linux", en: "Linux" },
         content: {
           vi: `# Linux Basics
 
@@ -3323,12 +3356,12 @@ chown user:group file
 curl URL
 wget URL
 netstat -tulpn
-\`\`\``
-        }
+\`\`\``,
+        },
       },
       {
-        id: 'docker',
-        name: { vi: 'Docker', en: 'Docker' },
+        id: "docker",
+        name: { vi: "Docker", en: "Docker" },
         content: {
           vi: `# Docker
 
@@ -3439,12 +3472,12 @@ RUN npm install
 COPY . .
 EXPOSE 3000
 CMD ["node", "server.js"]
-\`\`\``
-        }
+\`\`\``,
+        },
       },
       {
-        id: 'kubernetes',
-        name: { vi: 'Kubernetes', en: 'Kubernetes' },
+        id: "kubernetes",
+        name: { vi: "Kubernetes", en: "Kubernetes" },
         content: {
           vi: `# Kubernetes (K8s)
 
@@ -3539,12 +3572,12 @@ kubectl logs <pod-name>
 ## Popular Managed K8s
 - AWS EKS
 - Google GKE
-- Azure AKS`
-        }
+- Azure AKS`,
+        },
       },
       {
-        id: 'cicd',
-        name: { vi: 'CI/CD', en: 'CI/CD' },
+        id: "cicd",
+        name: { vi: "CI/CD", en: "CI/CD" },
         content: {
           vi: `# CI/CD
 
@@ -3633,12 +3666,15 @@ Automatically deploy to production after passing tests
 - Keep builds fast
 - Test early and often
 - Automate everything
-- Monitor deployments`
-        }
+- Monitor deployments`,
+        },
       },
       {
-        id: 'cloud',
-        name: { vi: 'Cloud (AWS / GCP / Azure)', en: 'Cloud (AWS / GCP / Azure)' },
+        id: "cloud",
+        name: {
+          vi: "Cloud (AWS / GCP / Azure)",
+          en: "Cloud (AWS / GCP / Azure)",
+        },
         content: {
           vi: `# Cloud Computing
 
@@ -3721,20 +3757,26 @@ Automatically deploy to production after passing tests
 - Scalability
 - Pay-as-you-go
 - Global reach
-- Managed services`
-        }
-      }
-    ]
+- Managed services`,
+        },
+      },
+    ],
   },
   {
-    id: 'other-skills',
-    name: { vi: 'Kĩ năng khác', en: 'Other Skills' },
-    description: { vi: 'Phân biệt dev "code được" và "làm được việc"', en: 'Differentiates "can code" vs "can work"' },
-    icon: '🛡️',
+    id: "other-skills",
+    name: { vi: "Kĩ năng khác", en: "Other Skills" },
+    description: {
+      vi: 'Phân biệt dev "code được" và "làm được việc"',
+      en: 'Differentiates "can code" vs "can work"',
+    },
+    icon: "🛡️",
     topics: [
       {
-        id: 'testing',
-        name: { vi: 'Unit / Integration / E2E Testing', en: 'Unit / Integration / E2E Testing' },
+        id: "testing",
+        name: {
+          vi: "Unit / Integration / E2E Testing",
+          en: "Unit / Integration / E2E Testing",
+        },
         content: {
           vi: `# Testing Levels
 
@@ -3847,12 +3889,12 @@ Selenium, Cypress, Playwright
 ↑  
 **Unit (Many)**
 
-More unit tests, fewer E2E tests`
-        }
+More unit tests, fewer E2E tests`,
+        },
       },
       {
-        id: 'tdd-bdd',
-        name: { vi: 'TDD / BDD', en: 'TDD / BDD' },
+        id: "tdd-bdd",
+        name: { vi: "TDD / BDD", en: "TDD / BDD" },
         content: {
           vi: `# TDD / BDD
 
@@ -3939,12 +3981,12 @@ Cucumber, SpecFlow, Behave
 
 ## TDD vs BDD
 - TDD: Technical, unit level
-- BDD: Business, feature level`
-        }
+- BDD: Business, feature level`,
+        },
       },
       {
-        id: 'code-review',
-        name: { vi: 'Code Review', en: 'Code Review' },
+        id: "code-review",
+        name: { vi: "Code Review", en: "Code Review" },
         content: {
           vi: `# Code Review
 
@@ -4047,12 +4089,12 @@ GitHub PR, GitLab MR, Bitbucket, Gerrit`,
 - Test quality
 
 ## Tools
-GitHub PR, GitLab MR, Bitbucket, Gerrit`
-        }
+GitHub PR, GitLab MR, Bitbucket, Gerrit`,
+        },
       },
       {
-        id: 'owasp',
-        name: { vi: 'OWASP Top 10', en: 'OWASP Top 10' },
+        id: "owasp",
+        name: { vi: "OWASP Top 10", en: "OWASP Top 10" },
         content: {
           vi: `# OWASP Top 10
 
@@ -4159,12 +4201,12 @@ Insufficient logging, monitoring
 ### 10. Server-Side Request Forgery (SSRF)
 Server fetches remote resource without validation
 
-**Prevention:** Validate URLs, whitelist, network segmentation`
-        }
+**Prevention:** Validate URLs, whitelist, network segmentation`,
+        },
       },
       {
-        id: 'agile',
-        name: { vi: 'Agile / Scrum', en: 'Agile / Scrum' },
+        id: "agile",
+        name: { vi: "Agile / Scrum", en: "Agile / Scrum" },
         content: {
           vi: `# Agile / Scrum
 
@@ -4253,9 +4295,9 @@ Server fetches remote resource without validation
 - Flexibility
 - Fast feedback
 - Continuous improvement
-- Higher quality`
-        }
-      }
-    ]
-  }
+- Higher quality`,
+        },
+      },
+    ],
+  },
 ];

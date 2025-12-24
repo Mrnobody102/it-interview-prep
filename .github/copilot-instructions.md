@@ -1,6 +1,7 @@
 ## Vite + React Project
 
 ### Thông Tin Dự Án
+
 - **Tên**: IT Interview Prep
 - **Framework**: Vite + React
 - **Ngôn Ngữ**: TypeScript
@@ -9,6 +10,7 @@
 - **UI Libraries**: Radix UI, Tailwind CSS
 
 ### Cấu Trúc Dự Án
+
 ```
 itinterviewprep/
 ├── .github/
@@ -30,6 +32,7 @@ itinterviewprep/
 ```
 
 ### Đã Hoàn Thành
+
 - [x] Cấu hình package.json với dependencies đầy đủ
 - [x] Cấu hình TypeScript (tsconfig.json, tsconfig.app.json, tsconfig.node.json)
 - [x] Cấu hình Vite với SWC và path alias (@)
@@ -41,27 +44,33 @@ itinterviewprep/
 ### Hướng Dẫn Sử Dụng
 
 #### Chạy Development Server
+
 ```bash
 npm run dev
 ```
+
 Hoặc sử dụng VS Code Task: `Terminal > Run Task > dev`
 
 #### Build cho Production
+
 ```bash
 npm run build
 ```
 
 #### Preview Production Build
+
 ```bash
 npm run preview
 ```
 
 #### Kiểm Tra Lỗi ESLint
+
 ```bash
 npm run lint
 ```
 
 ### Công Nghệ Sử Dụng
+
 - **React 18.3.1**: UI library
 - **Vite 6.3.5**: Build tool với HMR nhanh
 - **TypeScript 5.6**: Type safety
@@ -72,6 +81,7 @@ npm run lint
 - **Lucide React**: Icon library
 
 ### Cấu Hình Quan Trọng
+
 - **Port**: 3000 (tự động mở browser khi chạy dev)
 - **Path Alias**: `@` trỏ đến `./src`
 - **TypeScript**: Strict mode enabled
