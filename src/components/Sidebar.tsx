@@ -7,6 +7,8 @@ interface SidebarProps {
   selectedTopic: Topic | null;
   onTopicSelect: (topic: Topic) => void;
   language: "vi" | "en";
+  isOpen: boolean;
+  onClose: () => void;
 }
 
 export function Sidebar({
@@ -14,6 +16,8 @@ export function Sidebar({
   selectedTopic,
   onTopicSelect,
   language,
+  isOpen,
+  onClose,
 }: SidebarProps) {
   const [expandedTopics, setExpandedTopics] = useState<Set<string>>(new Set());
 
@@ -40,6 +44,7 @@ export function Sidebar({
               toggleTopic(topic.id);
             } else {
               onTopicSelect(topic);
+              onClose();
             }
           }}
           className={`w-full flex items-center justify-between px-4 py-2.5 text-left transition-colors ${
@@ -73,7 +78,11 @@ export function Sidebar({
   };
 
   return (
-    <aside className="w-64 bg-card border-r border-border h-[calc(100vh-4rem)] overflow-y-auto">
+    <aside
+      className={`fixed md:static top-16 left-0 z-50 w-64 bg-card border-r border-border h-[calc(100vh-4rem)] overflow-y-auto transition-transform duration-300 ease-in-out ${
+        isOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
+      }`}
+    >
       <div className="sticky top-0 bg-card border-b border-border px-4 py-3">
         <div className="flex items-center gap-2">
           <span className="text-2xl">{category.icon}</span>

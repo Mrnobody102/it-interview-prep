@@ -98,7 +98,8 @@ export default function App() {
         onCategorySelect={handleCategorySelect}
         categories={categories}
         selectedCategoryId={selectedCategory?.id}
-        onOpenSidebar={() => setIsSidebarOpen(true)}
+        isSidebarOpen={isSidebarOpen}
+        onToggleSidebar={() => setIsSidebarOpen((v) => !v)}
       />
 
       <div className="flex relative">

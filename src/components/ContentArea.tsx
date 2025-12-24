@@ -53,20 +53,20 @@ export function ContentArea({
 }: ContentAreaProps) {
   if (!selectedCategory) {
     return (
-      <main className="flex-1 flex items-center justify-center p-8">
-        <div className="text-center max-w-2xl">
-          <div className="text-6xl mb-4">🎯</div>
-          <h1 className="text-3xl text-foreground mb-4">
+      <main className="flex-1 flex items-center justify-center p-4 sm:p-6 lg:p-10">
+        <div className="text-center max-w-2xl space-y-4">
+          <div className="text-5xl sm:text-6xl mb-2">🎯</div>
+          <h1 className="text-2xl sm:text-3xl text-foreground">
             {language === "vi"
               ? "Chào mừng đến IT Interview Prep"
               : "Welcome to IT Interview Prep"}
           </h1>
-          <p className="text-muted-foreground mb-8">
+          <p className="text-muted-foreground">
             {language === "vi"
               ? "Chọn một chủ đề từ menu phía trên để bắt đầu học và ôn tập cho phỏng vấn IT"
               : "Select a topic from the menu above to start learning and preparing for IT interviews"}
           </p>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-left">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4 text-left">
             <div className="p-4 bg-accent rounded-lg">
               <div className="text-2xl mb-2">📚</div>
               <h3 className="text-foreground mb-1">
@@ -108,12 +108,14 @@ export function ContentArea({
 
   if (!selectedTopic) {
     return (
-      <main className="flex-1 p-8">
+      <main className="flex-1 p-4 sm:p-6 lg:p-10">
         <div className="max-w-4xl mx-auto">
           <div className="flex items-center gap-3 mb-6">
-            <span className="text-4xl">{selectedCategory.icon}</span>
+            <span className="text-3xl sm:text-4xl">
+              {selectedCategory.icon}
+            </span>
             <div>
-              <h1 className="text-3xl text-foreground">
+              <h1 className="text-2xl sm:text-3xl text-foreground">
                 {selectedCategory.name[language]}
               </h1>
               <p className="text-muted-foreground">
@@ -122,7 +124,7 @@ export function ContentArea({
             </div>
           </div>
 
-          <div className="bg-accent border border-border rounded-lg p-6 mb-8">
+          <div className="bg-accent border border-border rounded-lg p-4 sm:p-6 mb-6 sm:mb-8">
             <p className="text-foreground">
               {language === "vi"
                 ? "👈 Chọn một chủ đề từ sidebar bên trái để xem nội dung chi tiết"
@@ -130,7 +132,7 @@ export function ContentArea({
             </p>
           </div>
 
-          <div className="grid gap-4">
+          <div className="grid gap-3 sm:gap-4">
             {selectedCategory.topics.map((topic) => (
               <div
                 key={topic.id}
@@ -152,8 +154,8 @@ export function ContentArea({
   }
 
   return (
-    <main className="flex-1 p-8 overflow-y-auto">
-      <article className="max-w-4xl mx-auto prose prose-lg prose-headings:text-foreground prose-p:text-foreground prose-strong:text-foreground prose-code:text-primary prose-pre:bg-muted prose-a:text-primary prose-li:text-foreground">
+    <main className="flex-1 p-4 sm:p-6 lg:p-10 overflow-y-auto">
+      <article className="max-w-4xl mx-auto prose prose-sm sm:prose-base lg:prose-lg prose-headings:text-foreground prose-p:text-foreground prose-strong:text-foreground prose-code:text-primary prose-pre:bg-muted prose-a:text-primary prose-li:text-foreground">
         <div
           dangerouslySetInnerHTML={{
             __html: parseMarkdown(selectedTopic.content?.[language] || ""),
