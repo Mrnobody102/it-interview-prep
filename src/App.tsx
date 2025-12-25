@@ -4,7 +4,7 @@ import { Header } from "./components/Header";
 import { Sidebar } from "./components/Sidebar";
 import { ContentArea } from "./components/ContentArea";
 import { SearchModal } from "./components/SearchModal";
-import { categories, type Category, type Topic } from "./data/categories";
+import { categories, type Category, type Topic } from "./data/categories/index";
 
 export default function App() {
   const navigate = useNavigate();

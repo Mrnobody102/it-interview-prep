@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { ChevronRight, ChevronDown } from "lucide-react";
-import { type Category, type Topic } from "../data/categories";
+import { type Category, type Topic } from "../data/categories/types";
 
 interface SidebarProps {
   category: Category;
@@ -19,7 +19,15 @@ export function Sidebar({
   isOpen,
   onClose,
 }: SidebarProps) {
-  const [expandedTopics, setExpandedTopics] = useState<Set<string>>(new Set());
+  const [expandedTopics, setExpandedTopics] = useState<Set<string>>(() => {
+    const initialExpanded = new Set<string>();
+    category.topics.forEach((topic) => {
+      if (topic.expanded) {
+        initialExpanded.add(topic.id);
+      }
+    });
+    return initialExpanded;
+  });
 
   const toggleTopic = (topicId: string) => {
     const newExpanded = new Set(expandedTopics);

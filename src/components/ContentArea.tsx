@@ -26,9 +26,7 @@ function parseMarkdown(markdown: string) {
   // Inline code
   html = html.replace(/`([^`]+)`/g, "<code>$1</code>");
 
-  // Lists
-  html = html.replace(/^\- (.*$)/gim, "<li>$1</li>");
-  html = html.replace(/(<li>.*<\/li>)/s, "<ul>$1</ul>");
+  // Keep dashes as-is, don't convert to lists
 
   // Line breaks
   html = html.replace(/\n\n/g, "</p><p>");
@@ -155,7 +153,7 @@ export function ContentArea({
 
   return (
     <main className="flex-1 p-4 sm:p-6 lg:p-10 overflow-y-auto">
-      <article className="max-w-4xl mx-auto prose prose-sm sm:prose-base lg:prose-lg prose-headings:text-foreground prose-p:text-foreground prose-strong:text-foreground prose-code:text-primary prose-pre:bg-muted prose-a:text-primary prose-li:text-foreground">
+      <article className="prose prose-sm sm:prose-base lg:prose-lg prose-headings:text-foreground prose-p:text-foreground prose-strong:text-foreground prose-code:text-primary prose-pre:bg-muted prose-a:text-primary prose-li:text-foreground prose-ul:list-disc prose-ul:pl-6 prose-ul:space-y-2">
         <div
           dangerouslySetInnerHTML={{
             __html: parseMarkdown(selectedTopic.content?.[language] || ""),
