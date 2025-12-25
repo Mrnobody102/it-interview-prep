@@ -35,7 +35,6 @@ Polymophism: Hành động giống nhau nhưng cách thực hiện khác nhau (o
 Abstraction: Ẩn chi tiết cài đặt, chỉ cho biết interface/abstract method
 
 ## b. **Sự khác nhau Abstract Class và Interface?**
-
 • Abstract Class:
 
 Có thể có những method có thân hàm
@@ -59,7 +58,6 @@ AC sử dụng khi muốn chia sẻ logic code chung. Ví dụ Dog, Cat extend t
 Interface sử dụng khi cần định nghĩa một bản hợp đồng hành vi. Đó là khi ta muốn các class khác nhau nhưng vẫn phải có chung một hành vi, chức năng
 
 ## c. **Overloading và overiding**
-
 • Overloading:
 
 Xảy ra trong cùng class hoặc class con kế thừa
@@ -77,7 +75,6 @@ Signature giống y hệt class cha
 Đa hình runtime
 
 ## d. **Composition vs Inheritance – khi nào nên dùng**
-
 • Inheritance (IS-A): Cat extends Animal
 
 • Composition (HAS-A): Car has Engine
@@ -89,7 +86,6 @@ Linh hoạt hơn - có thể nhiều thành phần, giải quyết phần nào v
 Giảm coupling - không bị ràng buộc bởi mối quan hệ cha con
 
 ## e. **Multiple Inheritance qua Interface & Diamond Problem trong Java**
-
 Java không hỗ trợ multiple inheritance qua class
 
 Nhưng hỗ trợ qua interface
@@ -97,7 +93,6 @@ Nhưng hỗ trợ qua interface
 Nếu 2 interface có default method trùng nhau, class implements phải override để giải quyết xung đột. Ví dụ class implement 2 interface A, B cùng default defaultMethod() mà dùng của interface A thì A.super.defaultMethod()
 
 ## f. **Overiding và Hiding**
-
 Overriding là khi lớp con thay đổi hành vi của một phương thức instance đã có ở lớp cha, và quyết định phương thức nào được gọi dựa vào đối tượng thực tế tại thời điểm chạy (runtime).
 
 Hiding là khi lớp con che khuất một phương thức static hoặc biến đã có ở lớp cha, và quyết định phương thức hoặc biến nào được sử dụng dựa vào kiểu khai báo tại thời điểm biên dịch (compile time).
@@ -106,6 +101,12 @@ Hiding là khi lớp con che khuất một phương thức static hoặc biến 
 • Dynamic Dispatch: cơ chế giúp JVM chọn method gọi tại runtime dựa trên object thực tế.
 
 • VMT:  
+
+JVM lưu bảng ánh xạ method override
+
+Khi gọi obj.method(), JVM tra cứu vtable để xác định method đúng
+
+Đây là cách Java thực hiện runtime polymorphism  
 
 JVM lưu bảng ánh xạ method override
 
@@ -140,7 +141,6 @@ Khi gọi obj.method(), JVM tra cứu vtable để xác định method đúng
 <br>
 
 ## a. **Overview**
-
 • Collection Framework là tập hợp các class và interface hỗ trợ thao tác với tập dữ liệu ĐỘNG (List, Set, Map, Queue), nó khác với Arrays (có kích thước cố định) và cung cấp nhiều thuật toán như sort, search, shuffle
 
 • Collection là INTERFACE, Collections là CLASS tiện ích
@@ -162,7 +162,6 @@ Ví dụ ArrayList, HashMap
 Ví dụ ConcurrentHashMap, CopyOnWriteArrayList
 
 ## b. **Collection (lưu trữ theo phần tử rời rạc)**
-
 • List: có thứ tự, cho phép phần tử trùng lặp (cả kể null)
 
  - ArrayList: truy cập theo chỉ số, thêm và xóa cuối nhanh O(1), xóa index O(n), thích hợp cho đọc nhiều (truy cập theo chỉ số, O(1))
@@ -175,7 +174,7 @@ Ví dụ ConcurrentHashMap, CopyOnWriteArrayList
 
  - Vector/Stack: cũ, ít dùng; Vector thread-safe, Stack LIFO
 
-  • Set: không cho phép phần tử trùng lặp, thường không thứ tự (LinkHashSet, TreeSet có thể có thứ tự)
+• Set: không cho phép phần tử trùng lặp, thường không thứ tự (LinkHashSet, TreeSet có thể có thứ tự)
 
  - HashSet: không thứ tự, không trùng lặp, thao tác nhanh
 
@@ -187,7 +186,7 @@ Ví dụ ConcurrentHashMap, CopyOnWriteArrayList
 
  - TreeSet: sắp xếp tự nhiên hoặc theo Comparator/Comparable, thích hợp khi cần duyệt có thứ tự, không cho phép null (vì không so sánh được)
 
-  • Queue/Deque (Double end queue): Lưu trữ theo hàng đợi, FIFO hoặc LIFO, cho phép trùng lặp
+• Queue/Deque (Double end queue): Lưu trữ theo hàng đợi, FIFO hoặc LIFO, cho phép trùng lặp
 
  - PriorityQueue: hàng đợi ưu tiên theo Comparator/Comparable, không cho phép null, nếu 2 phần tử cùng độ ưu tiên thì không đảm bảo thứ tự ổn định
 
@@ -196,7 +195,6 @@ Ví dụ ConcurrentHashMap, CopyOnWriteArrayList
    Có thể dùng như queue FIFO hoặc stack LIFO
 
 ## c. **Map (nhóm ánh xạ key-value, không thuộc Collection Interface)**
-
 Key-value, key không trùng lặp (1 null duy nhất), value trùng được.
 
 • HashMap: lưu trữ key-value dựa trên mảng bucket, mỗi bucket chứa linked list hoặc red-black tree của các key-value
@@ -371,11 +369,17 @@ Cách phòng tránh:
 
 ## m. **Note and best practices**
 • Trong các dự án Web Application dùng Spring Boot, thường không cần quản lý đa luồng vì SB đã tự quản lý đa luồng ở tầng server, chỉ khi cần xử lý song song hoặc một số tác vụ bất đồng bộ đặt biệt như xử lý nền (gửi notification, email mà người dùng không cần đợi), gọi nhiều API cùng lúc, xử lý dữ liệu lớn theo batch, phân nhỏ ra nhiều luồng
+
 • Nên dùng Thread Pool thay vì tự tạo Thread: Thay vì tạo mới từng thread, mình dùng ExecutorService để quản lý và tái sử dụng thread
+
 • Để tránh race condition khi nhiều luồng cùng truy cập, thay đổi một dữ liệu, dùng synchronized hoặc các class thread-safe như ConcurrentHashMap
+
 • Nên thiết kế các object bất biến immutable khi có thể, như dùng final, trạng thái không thay đổi sau khi khởi tạo nên không lo lắng về đồng bộ trong đa luồng
+
 • Luôn bắt và xử lý exception trong từng luồng, hoặc dùng UncaughtExceptionHandler, đảm bảo lỗi không bị bỏ qua và dễ kiểm soát sự cố
+
 • Sau khi luồng sử dụng tài nguyên như file, kết nối, socket thì phải đóng tại, tốt nhất là dùng try-with-resources hoặc đóng trong khối finally
+
 • Nên đặt tên cho các thread (dùng AtomicInteger) và ghi log đầy đủ`,
                 en: `# <span style="color: #2563eb; font-weight: bold; font-size: 1.5em;">Java Core → Concurrency</span>
 
