@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Search, Sun, Moon, LogIn, Menu } from "lucide-react";
+import { Search, Sun, Moon, Menu } from "lucide-react";
 import { type Category } from "../data/categories";
 
 interface HeaderProps {
@@ -114,7 +114,7 @@ export function Header({
           {/* Compact dropdown nav for tablet (md to <lg) */}
           <div className="relative hidden md:flex lg:hidden" ref={compactRef}>
             <button
-              onClick={() => setIsCompactOpen((v) => !v)}
+              onClick={() => { setIsMobileSelectOpen(false); setIsCompactOpen((v) => !v); }}
               className="flex items-center justify-between gap-2 px-3 py-2 min-w-[220px] rounded-full border border-border bg-card/70 text-foreground hover:border-primary hover:text-primary transition-colors"
             >
               <span className="text-lg">{selectedCategory.icon}</span>
@@ -218,21 +218,10 @@ export function Header({
               </button>
             </div>
 
-            <button className="hidden sm:flex items-center justify-center gap-2 w-36 px-4 py-2 bg-primary hover:bg-secondary text-primary-foreground rounded-lg transition-colors text-sm whitespace-nowrap">
-              <LogIn className="w-4 h-4" />
-              <span>{language === "vi" ? "Đăng nhập" : "Login"}</span>
-            </button>
-
-            {/* Mobile login */}
-            <button className="sm:hidden flex items-center justify-center gap-2 px-3 py-2 bg-primary hover:bg-secondary text-primary-foreground rounded-lg transition-colors text-sm">
-              <LogIn className="w-4 h-4" />
-              <span>{language === "vi" ? "Đăng nhập" : "Login"}</span>
-            </button>
-
             {/* Mobile sidebar toggle */}
             <button
               onClick={onToggleSidebar}
-              className={`md:hidden p-2 rounded-lg transition-colors ${
+              className={`lg:hidden p-2 rounded-lg transition-colors ${
                 isSidebarOpen
                   ? "bg-accent text-primary"
                   : "text-foreground hover:bg-accent"
@@ -244,7 +233,7 @@ export function Header({
           </div>
         </div>
 
-        {/* Mobile Navigation - single dropdown select */}
+        {/* Mobile Navigation - single dropdown select (only on screens < md) */}
         <nav className="md:hidden -mx-4 px-4 pb-3" ref={mobileSelectRef}>
           <label className="block text-sm text-muted-foreground mb-2">
             {language === "vi" ? "Chọn mục" : "Select category"}
@@ -252,7 +241,7 @@ export function Header({
           <div className="relative">
             <button
               type="button"
-              onClick={() => setIsMobileSelectOpen((v) => !v)}
+              onClick={() => { setIsCompactOpen(false); setIsMobileSelectOpen((v) => !v); }}
               className="w-full h-11 px-3 pr-10 rounded-xl border border-border bg-card text-foreground text-base font-medium flex items-center justify-between shadow-sm focus:outline-none focus:ring-2 focus:ring-primary"
             >
               <span className="flex items-center gap-2 truncate">

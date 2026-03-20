@@ -54,5 +54,21 @@ export default {
       }
     }
   },
-  plugins: [require('tailwindcss-animate')],
+  plugins: [
+    require('tailwindcss-animate'),
+    require('@tailwindcss/typography')({
+      // Customize prose typography defaults
+      extend: {
+        colors: {
+          primary: {
+            DEFAULT: '#3b82f6',
+            foreground: '#ffffff',
+          },
+        },
+        fontFamily: {
+          mono: ['Fira Code', 'JetBrains Mono', 'Cascadia Code', 'Consolas', 'monospace'],
+        },
+      },
+    }),
+  ],
 }

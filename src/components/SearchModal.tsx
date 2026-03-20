@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Search, X } from 'lucide-react';
-import { categories, type Category, type Topic } from '../data/categories';
+import { categories, type Category, type Topic } from '../data/categories/index';
 
 interface SearchModalProps {
   isOpen: boolean;
@@ -39,9 +39,8 @@ export function SearchModal({ isOpen, onClose, language, onTopicSelect }: Search
 
     const searchTopic = (topic: Topic, category: Category, path: string[]) => {
       const topicName = topic.name[language].toLowerCase();
-      const topicContent = topic.content?.[language]?.toLowerCase() || '';
 
-      if (topicName.includes(lowerQuery) || topicContent.includes(lowerQuery)) {
+      if (topicName.includes(lowerQuery)) {
         searchResults.push({ topic, category, path: [...path, topic.name[language]] });
       }
 

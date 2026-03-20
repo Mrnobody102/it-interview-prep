@@ -20,7 +20,8 @@ export default function App() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [language, setLanguage] = useState<"vi" | "en">("vi");
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  // Mobile sidebar open state (desktop sidebar is always visible)
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
   // Sync dark mode with localStorage and DOM
   useEffect(() => {
@@ -71,19 +72,13 @@ export default function App() {
 
   const handleCategorySelect = (category: Category) => {
     navigate(`/${category.id}`);
-    setIsSidebarOpen(true);
+    setIsMobileSidebarOpen(true);
   };
-
-  useEffect(() => {
-    if (selectedCategory) {
-      setIsSidebarOpen(true);
-    }
-  }, [selectedCategory]);
 
   const handleTopicSelect = (topic: Topic) => {
     if (selectedCategory) {
       navigate(`/${selectedCategory.id}/${topic.id}`);
-      setIsSidebarOpen(false);
+      setIsMobileSidebarOpen(false);
     }
   };
 
@@ -98,33 +93,54 @@ export default function App() {
         onCategorySelect={handleCategorySelect}
         categories={categories}
         selectedCategoryId={selectedCategory?.id}
-        isSidebarOpen={isSidebarOpen}
-        onToggleSidebar={() => setIsSidebarOpen((v) => !v)}
+        isSidebarOpen={isMobileSidebarOpen}
+        onToggleSidebar={() => setIsMobileSidebarOpen((v) => !v)}
       />
 
-      <div className="flex relative">
-        {selectedCategory && isSidebarOpen && (
+      <div className="flex">
+        {/* Mobile overlay */}
+        {selectedCategory && isMobileSidebarOpen && (
           <div
-            className="fixed inset-0 bg-background/70 backdrop-blur-sm z-40 md:hidden"
-            onClick={() => setIsSidebarOpen(false)}
+            className="fixed inset-0 bg-black/30 backdrop-blur-sm z-40 lg:hidden"
+            onClick={() => setIsMobileSidebarOpen(false)}
           />
         )}
 
+        {/* Desktop sidebar: always visible when category selected */}
         {selectedCategory && (
-          <Sidebar
-            category={selectedCategory}
-            selectedTopic={selectedTopic}
-            onTopicSelect={handleTopicSelect}
-            language={language}
-            isOpen={isSidebarOpen}
-            onClose={() => setIsSidebarOpen(false)}
-          />
+          <div className="hidden lg:block shrink-0">
+            <Sidebar
+              category={selectedCategory}
+              selectedTopic={selectedTopic}
+              onTopicSelect={handleTopicSelect}
+              language={language}
+              selectedCategoryId={selectedCategory.id}
+            />
+          </div>
+        )}
+
+        {/* Mobile sidebar: overlay drawer */}
+        {selectedCategory && (
+          <div
+            className={`lg:hidden shrink-0 fixed left-0 top-16 bottom-0 z-50 transition-transform duration-300 ease-in-out ${
+              isMobileSidebarOpen ? "translate-x-0" : "-translate-x-full"
+            }`}
+          >
+            <Sidebar
+              category={selectedCategory}
+              selectedTopic={selectedTopic}
+              onTopicSelect={handleTopicSelect}
+              language={language}
+              selectedCategoryId={selectedCategory.id}
+            />
+          </div>
         )}
 
         <ContentArea
           selectedCategory={selectedCategory}
           selectedTopic={selectedTopic}
           language={language}
+          onTopicSelect={handleTopicSelect}
         />
       </div>
 

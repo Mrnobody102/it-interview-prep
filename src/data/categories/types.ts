@@ -2,7 +2,6 @@ export interface Topic {
   id: string;
   name: { vi: string; en: string };
   subtopics?: Topic[];
-  content?: { vi: string; en: string };
   expanded?: boolean;
 }
 

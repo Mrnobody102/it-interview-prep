@@ -1,54 +1,73 @@
+import { useState, useEffect, useRef } from "react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import rehypeRaw from "rehype-raw";
 import { type Category, type Topic } from "../data/categories";
+import { getContentForTopicAsync } from "../lib/content";
+import mermaid from "mermaid";
+
+// Initialize mermaid once
+mermaid.initialize({
+  startOnLoad: false,
+  theme: "default",
+  securityLevel: "loose",
+  fontFamily: "inherit",
+});
+
+// Mermaid diagram component
+function MermaidDiagram({ code, id }: { code: string; id: string }) {
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (ref.current) {
+      mermaid
+        .render(id, code)
+        .then(({ svg }) => {
+          if (ref.current) {
+            ref.current.innerHTML = svg;
+          }
+        })
+        .catch(() => {
+          if (ref.current) {
+            ref.current.innerHTML = `<pre>${code}</pre>`;
+          }
+        });
+    }
+  }, [code, id]);
+
+  return (
+    <div className="mermaid" ref={ref} />
+  );
+}
 
 interface ContentAreaProps {
   selectedCategory: Category | null;
   selectedTopic: Topic | null;
   language: "vi" | "en";
-}
-
-function parseMarkdown(markdown: string) {
-  let html = markdown;
-
-  // Headers
-  html = html.replace(/^### (.*$)/gim, "<h3>$1</h3>");
-  html = html.replace(/^## (.*$)/gim, "<h2>$1</h2>");
-  html = html.replace(/^# (.*$)/gim, "<h1>$1</h1>");
-
-  // Bold
-  html = html.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
-
-  // Code blocks
-  html = html.replace(
-    /```(\w+)?\n([\s\S]*?)```/g,
-    "<pre><code>$2</code></pre>"
-  );
-
-  // Inline code
-  html = html.replace(/`([^`]+)`/g, "<code>$1</code>");
-
-  // Keep dashes as-is, don't convert to lists
-
-  // Line breaks
-  html = html.replace(/\n\n/g, "</p><p>");
-  html = "<p>" + html + "</p>";
-
-  // Clean up
-  html = html.replace(/<p><h/g, "<h");
-  html = html.replace(/<\/h([1-6])><\/p>/g, "</h$1>");
-  html = html.replace(/<p><pre>/g, "<pre>");
-  html = html.replace(/<\/pre><\/p>/g, "</pre>");
-  html = html.replace(/<p><ul>/g, "<ul>");
-  html = html.replace(/<\/ul><\/p>/g, "</ul>");
-  html = html.replace(/<p><\/p>/g, "");
-
-  return html;
+  onTopicSelect?: (topic: Topic) => void;
 }
 
 export function ContentArea({
   selectedCategory,
   selectedTopic,
   language,
+  onTopicSelect,
 }: ContentAreaProps) {
+  const [content, setContent] = useState("");
+
+  useEffect(() => {
+    if (!selectedCategory || !selectedTopic) {
+      setContent("");
+      return;
+    }
+    getContentForTopicAsync(
+      language,
+      selectedCategory.id,
+      selectedTopic.id,
+      selectedCategory.topics
+    ).then(setContent);
+  }, [selectedCategory, selectedTopic, language]);
+
   if (!selectedCategory) {
     return (
       <main className="flex-1 flex items-center justify-center p-4 sm:p-6 lg:p-10">
@@ -72,8 +91,8 @@ export function ContentArea({
               </h3>
               <p className="text-sm text-muted-foreground">
                 {language === "vi"
-                  ? "Từ Fundamentals đến DevOps"
-                  : "From Fundamentals to DevOps"}
+                  ? "Từ Backend đến DevOps"
+                  : "From Backend to DevOps"}
               </p>
             </div>
             <div className="p-4 bg-accent rounded-lg">
@@ -131,20 +150,42 @@ export function ContentArea({
           </div>
 
           <div className="grid gap-3 sm:gap-4">
-            {selectedCategory.topics.map((topic) => (
-              <div
-                key={topic.id}
-                className="p-4 bg-card border border-border rounded-lg hover:border-primary transition-colors"
-              >
-                <h3 className="text-foreground mb-1">{topic.name[language]}</h3>
-                {topic.subtopics && (
-                  <p className="text-sm text-muted-foreground">
-                    {topic.subtopics.length}{" "}
-                    {language === "vi" ? "chủ đề con" : "subtopics"}
-                  </p>
-                )}
-              </div>
-            ))}
+            {selectedCategory.topics.map((topic) => {
+              const handleClick = () => {
+                if (onTopicSelect) {
+                  const target =
+                    topic.subtopics && topic.subtopics.length > 0
+                      ? topic.subtopics[0]
+                      : topic;
+                  onTopicSelect(target);
+                }
+              };
+
+              return (
+                <div
+                  key={topic.id}
+                  onClick={handleClick}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      handleClick();
+                    }
+                  }}
+                  role="button"
+                  tabIndex={0}
+                  className="p-4 bg-card border border-border rounded-lg hover:border-primary hover:shadow-sm transition-all cursor-pointer"
+                >
+                  <h3 className="text-foreground mb-1">
+                    {topic.name[language]}
+                  </h3>
+                  {topic.subtopics && (
+                    <p className="text-sm text-muted-foreground">
+                      {topic.subtopics.length}{" "}
+                      {language === "vi" ? "chủ đề con" : "subtopics"}
+                    </p>
+                  )}
+                </div>
+              );
+            })}
           </div>
         </div>
       </main>
@@ -153,13 +194,35 @@ export function ContentArea({
 
   return (
     <main className="flex-1 p-4 sm:p-6 lg:p-10 overflow-y-auto">
-      <article className="prose prose-sm sm:prose-base lg:prose-lg prose-headings:text-foreground prose-p:text-foreground prose-strong:text-foreground prose-code:text-primary prose-pre:bg-muted prose-a:text-primary prose-li:text-foreground prose-ul:list-disc prose-ul:pl-6 prose-ul:space-y-2">
-        <div
-          dangerouslySetInnerHTML={{
-            __html: parseMarkdown(selectedTopic.content?.[language] || ""),
-          }}
-        />
-      </article>
+      <div className="max-w-4xl mx-auto">
+        <article className="content-prose prose prose-sm max-w-none">
+          <ReactMarkdown
+            remarkPlugins={[remarkGfm]}
+            rehypePlugins={[rehypeRaw]}
+            components={{
+              code({ node, className, children, ...props }) {
+                const match = /language-(\w+)/.exec(className || "");
+                const codeStr = String(children).replace(/\n$/, "");
+
+                if (match && match[1] === "mermaid") {
+                  const id = `mermaid-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+                  return (
+                    <MermaidDiagram code={codeStr} id={id} />
+                  );
+                }
+
+                return (
+                  <code className={className} {...props}>
+                    {children}
+                  </code>
+                );
+              },
+            }}
+          >
+            {content}
+          </ReactMarkdown>
+        </article>
+      </div>
     </main>
   );
 }

@@ -3252,7 +3252,7 @@ Proactively refresh cache before expiration
   },
   {
     id: "devops",
-    name: { vi: "DevOps & Cloud", en: "DevOps & Cloud" },
+    name: { vi: "DevOps", en: "DevOps" },
     description: {
       vi: "Backend hiện đại gần như bắt buộc",
       en: "Almost mandatory for modern backend",
