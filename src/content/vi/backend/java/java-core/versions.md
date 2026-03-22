@@ -263,6 +263,89 @@ map.firstKey();   // "a"
 map.lastKey();   // "b"
 ```
 
+### 4.4. String Templates (Preview — Java 21)
+
+Thay thế concatenation bằng template literals với embedded expressions:
+
+```java
+String name = "Alice";
+int age = 30;
+
+// Dùng STR template processor
+String message = STR."Hello, \{name}! You are \{age} years old.";
+// "Hello, Alice! You are 30 years old."
+
+// Template với expression phức tạp
+int a = 10, b = 20;
+String calc = STR."\{a} + \{b} = \{a + b}";
+// "10 + 20 = 30"
+
+// RAW template — không escape
+String raw = RAW."First line\nSecond line";
+```
+
+### 4.5. Unnamed Patterns and Variables (Java 21)
+
+Dùng `_` cho biến không sử dụng, giúp code rõ ràng hơn và compiler không cảnh báo:
+
+```java
+// Unnamed pattern variable — không cần dùng giá trị
+switch (obj) {
+    case Point(int x, int _) -> System.out.println("X = " + x);
+    case Circle(double _, double _) -> System.out.println("Circle detected");
+}
+
+// Unnamed local variable
+for (int i = 0, _ = init(); i < 10; i++) { }
+
+// Trong lambda
+list.stream()
+    .map((_, index) -> "Item " + index)
+    .toList();
+```
+
+### 4.6. Foreign Function & Memory API (Java 21)
+
+Gọi native code và quản lý off-heap memory an toàn hơn JNI:
+
+```java
+// Java 21 — Foreign Function & Memory API
+MemorySegment segment = MemorySegment.ofArray(new byte[]{1, 2, 3});
+// Thay thế JNI phức tạp
+```
+
+### 4.7. Structured Concurrency (Java 21) — Preview
+
+Nhóm nhiều task chạy trong một thread logic, tự động hủy khi có lỗi:
+
+```java
+try (var scope = new StructuredTaskScope.ShutdownOnFailure()) {
+    Future<String> f1 = scope.fork(() -> fetchUser(id));
+    Future<String> f2 = scope.fork(() -> fetchPermissions(id));
+
+    scope.join();           // Chờ tất cả hoàn thành
+    scope.throwIfFailed();  // Ném exception nếu có task thất bại
+
+    String user = f1.resultNow();
+    String perms = f2.resultNow();
+    return new UserContext(user, perms);
+}
+```
+
+### 4.8. Scoped Values (Java 21) — Preview
+
+Chia sẻ dữ liệu immutable giữa các thread hiệu quả hơn `ThreadLocal`:
+
+```java
+// ScopedValue thay thế ThreadLocal cho immutable data
+ScopedValue<String> USER_ID = ScopedValue.newInstance();
+
+ScopedValue.where(USER_ID, "user-123").run(() -> {
+    // Có thể truy cập trong virtual thread con
+    String id = USER_ID.get();
+});
+```
+
 ## 5. So sánh các phiên bản
 
 | Tiêu chí | Java 8 | Java 11 | Java 17 | Java 21 |

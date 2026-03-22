@@ -394,9 +394,635 @@ Threads keep changing state but make no forward progress — often because they 
 
 > **Example:** Two people trying to pass each other in a hallway, each stepping aside the same way repeatedly.
 
+### 12.3. Livelock — Deep Dive
+
+Unlike deadlock (threads are blocked), in a livelock threads are **actively running** but accomplishing nothing.
+
+```java
+// Classic livelock: two threads keep retrying a failed operation
+public class LivelockExample {
+    private static final AtomicBoolean transferInProgress = new AtomicBoolean(false);
+
+    public static void transfer(Account from, Account to, double amount) {
+        while (true) {
+            if (transferInProgress.compareAndSet(false, true)) {
+                try {
+                    if (from.withdraw(amount)) {
+                        to.deposit(amount);
+                        System.out.println("Transfer successful");
+                        return;
+                    }
+                } finally {
+                    transferInProgress.set(false);
+                }
+            }
+            // YIELDING and retrying — this causes livelock if both threads
+            // always retry at the same moment
+            Thread.yield();
+        }
+    }
+}
+
+// Real-world livelock example: database transaction retry
+public class TransactionLivelock {
+    public void processWithRetry() {
+        int attempts = 0;
+        while (attempts < 100) {
+            try {
+                executeTransaction();
+                return;
+            } catch (DeadlockException e) {
+                attempts++;
+                // Problem: two transactions retry at the same time
+                // causing the same deadlock again and again
+                Thread.yield(); // This makes it worse — both yield simultaneously
+            }
+        }
+        throw new RuntimeException("Transaction failed after max retries");
+    }
+
+    // Fix: add random backoff
+    public void processWithBackoff() {
+        int attempts = 0;
+        while (attempts < 100) {
+            try {
+                executeTransaction();
+                return;
+            } catch (DeadlockException e) {
+                attempts++;
+                // Exponential backoff with jitter prevents synchronization
+                long delay = (1L << attempts) + ThreadLocalRandom.current().nextLong(100);
+                try {
+                    Thread.sleep(delay);
+                } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
+                    return;
+                }
+            }
+        }
+    }
+}
+```
+
+#### How to Avoid Livelock
+
+| Strategy | Description |
+|----------|-------------|
+| **Random backoff** | Add random delay between retries — prevents both threads retrying simultaneously |
+| **Retry limit** | Give up after N attempts and fail gracefully |
+| **Lock-free structures** | Use `ConcurrentHashMap.compute()` instead of manual locking |
+| **Structured approach** | Define consistent lock ordering across all code paths |
+| **Exponential backoff** | Increase delay with each retry (with jitter) |
+
 ---
 
-## 13. Best Practices
+## 14. CompletableFuture — Asynchronous Programming
+
+`CompletableFuture` extends `Future` with rich composition, transformation, and error handling capabilities for asynchronous programming.
+
+### 14.1. Comparison: Future vs CompletableFuture
+
+| Aspect | `Future<T>` | `CompletableFuture<T>` |
+|--------|------------|----------------------|
+| **Completion** | Only manual (`FutureTask`) | Multiple methods to complete |
+| **Chaining** | Not supported | Supported via `thenApply`, `thenCompose` |
+| **Exception handling** | Not supported | Via `exceptionally`, `handle` |
+| **Combining futures** | Not supported | `thenCombine`, `allOf`, `anyOf` |
+| **Multiple results** | Single result only | Stream of results possible |
+| **Callback style** | Blocking `get()` only | Non-blocking callbacks |
+
+### 14.2. Creating CompletableFutures
+
+```java
+// From a value
+CompletableFuture<String> cf1 = CompletableFuture.completedFuture("Hello");
+
+// From a supplier (async)
+CompletableFuture<String> cf2 = CompletableFuture.supplyAsync(() -> {
+    // Runs in ForkJoinPool.commonPool() by default
+    return fetchDataFromDB();
+});
+
+// With a specific executor
+ExecutorService executor = Executors.newFixedThreadPool(4);
+CompletableFuture<String> cf3 = CompletableFuture.supplyAsync(() -> {
+    return computeHeavy();
+}, executor);
+
+// Completed exceptionally
+CompletableFuture<String> cf4 = CompletableFuture.failedFuture(
+    new RuntimeException("Error!")
+);
+```
+
+### 14.3. Transformation Methods
+
+```java
+CompletableFuture<Integer> cf = CompletableFuture.supplyAsync(() -> "100");
+
+// thenApply — transform the result (synchronous transformation)
+CompletableFuture<Integer> parsed = cf.thenApply(Integer::parseInt);
+
+// thenApplyAsync — transform in a separate thread
+CompletableFuture<Integer> parsedAsync = cf.thenApplyAsync(Integer::parseInt);
+
+// thenAccept — consume the result (void)
+cf.thenAccept(result -> System.out.println("Result: " + result));
+
+// thenRun — run something after (doesn't receive the result)
+cf.thenRun(() -> System.out.println("Computation done"));
+```
+
+### 14.4. Chaining and Composition
+
+```java
+// thenCompose — for dependent async operations (flatMap for futures)
+// Use when the next step itself returns a CompletableFuture
+CompletableFuture<User> getUser(String id) { ... }
+CompletableFuture<Order> getOrder(String orderId) { ... }
+
+CompletableFuture<Order> cf = getUser(userId)
+    .thenCompose(user -> getOrder(user.getLastOrderId()));
+
+// thenCombine — for independent async operations
+CompletableFuture<String> name = CompletableFuture.supplyAsync(() -> getName());
+CompletableFuture<Integer> age = CompletableFuture.supplyAsync(() -> getAge());
+
+CompletableFuture<String> result = name.thenCombine(age, (n, a) -> n + " is " + a + " years old");
+```
+
+### 14.5. Error Handling
+
+```java
+CompletableFuture<String> cf = CompletableFuture
+    .supplyAsync(() -> fetchData())
+    .thenApply(data -> process(data))
+    .exceptionally(ex -> {
+        // Handle any exception from previous stages
+        System.err.println("Error: " + ex.getMessage());
+        return "DEFAULT_VALUE"; // Provide fallback
+    })
+    .handle((result, ex) -> {
+        // Handle both success and failure
+        if (ex != null) {
+            return "Error: " + ex.getMessage();
+        }
+        return result;
+    });
+
+// recover — specific recovery for known exception types
+cf.recover(ex -> {
+    if (ex instanceof TimeoutException) {
+        return "TIMEOUT";
+    }
+    throw new RuntimeException(ex);
+});
+```
+
+### 14.6. Combining Multiple Futures
+
+```java
+// allOf — wait for ALL futures to complete
+CompletableFuture<String> f1 = fetchUser();
+CompletableFuture<String> f2 = fetchProfile();
+CompletableFuture<String> f3 = fetchSettings();
+
+CompletableFuture<Void> allDone = CompletableFuture.allOf(f1, f2, f3);
+allDone.join(); // Block until all complete
+
+// Note: allOf doesn't return results — use:
+String u = f1.join();
+String p = f2.join();
+String s = f3.join();
+
+// anyOf — wait for the FIRST future to complete
+CompletableFuture<Object> first = CompletableFuture.anyOf(f1, f2, f3);
+Object winner = first.join(); // The first to complete
+
+// thenAcceptBoth — do something when both complete
+f1.thenAcceptBoth(f2, (r1, r2) -> {
+    System.out.println("Both done: " + r1 + ", " + r2);
+});
+
+// runAfterEither — run when either completes
+f1.runAfterEither(f2, () -> System.out.println("First one done!"));
+```
+
+### 14.7. Complete Example
+
+```java
+public CompletableFuture<UserProfile> getUserProfile(String userId) {
+    return CompletableFuture
+        .supplyAsync(() -> userService.findById(userId))      // Async: fetch user
+        .thenCompose(user -> {                                  // Async: dependent
+            CompletableFuture<List<Order>> orders =
+                CompletableFuture.supplyAsync(() -> orderService.findByUser(user.getId()));
+            CompletableFuture<List<Review>> reviews =
+                CompletableFuture.supplyAsync(() -> reviewService.findByUser(user.getId()));
+
+            return orders.thenCombine(reviews, (o, r) ->         // Combine results
+                new UserProfile(user, o, r));
+        })
+        .exceptionally(ex -> {
+            logger.error("Failed to load profile", ex);
+            return UserProfile.empty(userId);                    // Fallback
+        });
+}
+```
+
+---
+
+## 15. Semaphore — Resource Pooling
+
+`Semaphore` controls access to a shared resource using a counter. Threads must **acquire** a permit before accessing and **release** it after.
+
+### 15.1. Key Concepts
+
+| Method | Description |
+|--------|-------------|
+| `acquire()` | Acquire a permit (blocks if none available) |
+| `acquire(n)` | Acquire n permits |
+| `tryAcquire()` | Try to acquire without blocking (returns boolean) |
+| `tryAcquire(timeout)` | Try to acquire with timeout |
+| `release()` | Release a permit back |
+| `release(n)` | Release n permits |
+| `availablePermits()` | Get current permit count |
+
+### 15.2. Bounded Resource Pool
+
+```java
+import java.util.concurrent.Semaphore;
+
+public class ConnectionPool {
+    private final Connection[] connections;
+    private final Semaphore semaphore;
+    private final boolean[] used;
+
+    public ConnectionPool(int poolSize) {
+        this.connections = new Connection[poolSize];
+        this.semaphore = new Semaphore(poolSize, true); // fair=true
+        this.used = new boolean[poolSize];
+
+        for (int i = 0; i < poolSize; i++) {
+            connections[i] = new Connection("Connection-" + i);
+        }
+    }
+
+    public Connection acquire() throws InterruptedException {
+        semaphore.acquire(); // Blocks if no permits available
+        return getAvailableConnection();
+    }
+
+    public void release(Connection conn) {
+        returnConnection(conn);
+        semaphore.release();
+    }
+
+    private synchronized Connection getAvailableConnection() {
+        for (int i = 0; i < connections.length; i++) {
+            if (!used[i]) {
+                used[i] = true;
+                return connections[i];
+            }
+        }
+        throw new RuntimeException("No available connection");
+    }
+
+    private synchronized void returnConnection(Connection conn) {
+        for (int i = 0; i < connections.length; i++) {
+            if (connections[i] == conn) {
+                used[i] = false;
+                return;
+            }
+        }
+    }
+}
+
+// Usage
+ConnectionPool pool = new ConnectionPool(5);
+Connection conn = pool.acquire();
+try {
+    // Use the connection
+    conn.execute("SELECT * FROM users");
+} finally {
+    pool.release(conn);
+}
+```
+
+### 15.3. Fair vs Unfair Semaphore
+
+```java
+// Unfair (default) — better throughput, but may cause thread starvation
+Semaphore unfair = new Semaphore(3);
+
+// Fair — FIFO guarantee, no starvation
+// Threads are served in the order they requested
+Semaphore fair = new Semaphore(3, true);
+
+// tryAcquire example — non-blocking with fairness consideration
+Semaphore semaphore = new Semaphore(2, true);
+
+if (semaphore.tryAcquire(1, 5, TimeUnit.SECONDS)) {
+    try {
+        // Access resource
+    } finally {
+        semaphore.release();
+    }
+} else {
+    System.out.println("Could not acquire permit within timeout");
+}
+```
+
+### 15.4. Use Cases
+
+| Use Case | Example |
+|----------|---------|
+| **Rate limiting** | Limit API calls to N per second |
+| **Resource pooling** | Database connection pool, thread pool |
+| **Throttling** | Limit concurrent requests to a service |
+| **Coordination** | Traffic light pattern |
+
+```java
+// Rate limiter using Semaphore
+public class RateLimiter {
+    private final Semaphore permits;
+    private final int maxCalls;
+    private final long timeWindowMs;
+    private long windowStart;
+
+    public RateLimiter(int maxCalls, long timeWindowMs) {
+        this.maxCalls = maxCalls;
+        this.timeWindowMs = timeWindowMs;
+        this.permits = new Semaphore(maxCalls);
+        this.windowStart = System.currentTimeMillis();
+    }
+
+    public void acquire() throws InterruptedException {
+        refreshWindow();
+        permits.acquire();
+    }
+
+    private void refreshWindow() {
+        long now = System.currentTimeMillis();
+        if (now - windowStart >= timeWindowMs) {
+            permits.release(maxCalls - permits.availablePermits());
+            windowStart = now;
+        }
+    }
+}
+```
+
+---
+
+## 16. CountDownLatch vs CyclicBarrier vs Phaser
+
+These three synchronizers are often confused but serve different purposes.
+
+### 16.1. Comparison Table
+
+| Aspect | `CountDownLatch` | `CyclicBarrier` | `Phaser` |
+|--------|-----------------|----------------|---------|
+| **Reusability** | One-time use (cannot reset) | Reusable (auto-resets) | Reusable, dynamic parties |
+| **Blocking mechanism** | Threads wait until count reaches 0 | Threads wait for each other | Threads wait at phase changes |
+| **Who counts down?** | External threads only | Any party thread | Any party thread |
+| **Action on reset** | Creates new latch | All parties released together | All parties advance to next phase |
+| **Java version** | Java 5+ | Java 5+ | Java 7+ |
+
+### 16.2. CountDownLatch — One-Time Signal
+
+Use when one or more threads must **wait for a set of other threads** to complete.
+
+```java
+// Scenario: Main thread waits for all services to initialize
+class ServiceHealthCheck {
+    public static void main(String[] args) throws InterruptedException {
+        CountDownLatch latch = new CountDownLatch(3);
+
+        ExecutorService executor = Executors.newFixedThreadPool(3);
+        executor.submit(() -> { initializeDB(); latch.countDown(); });
+        executor.submit(() -> { initializeCache(); latch.countDown(); });
+        executor.submit(() -> { initializeQueue(); latch.countDown(); });
+
+        latch.await(); // Block until all 3 services are up
+        System.out.println("All services ready! Starting application...");
+
+        executor.shutdown();
+    }
+}
+
+// Cannot be reused — creates new latch for second use
+// CountDownLatch latch2 = new CountDownLatch(3); // New instance
+```
+
+### 16.3. CyclicBarrier — Threads Waiting for Each Other
+
+Use when a set of threads need to **synchronize at a common barrier point** before proceeding together.
+
+```java
+// Scenario: Parallel sorting — divide array, sort parts, then merge
+class ParallelMergeSort {
+    public void sort(int[] array, int numThreads) throws InterruptedException {
+        int chunkSize = array.length / numThreads;
+        CyclicBarrier barrier = new CyclicBarrier(numThreads, () -> {
+            System.out.println("All threads finished their chunk, starting merge...");
+        });
+
+        Thread[] threads = new Thread[numThreads];
+        for (int i = 0; i < numThreads; i++) {
+            final int start = i * chunkSize;
+            final int end = (i == numThreads - 1) ? array.length : start + chunkSize;
+            threads[i] = new Thread(() -> {
+                Arrays.sort(array, start, end);
+                try {
+                    barrier.await(); // Wait for all threads to finish sorting
+                } catch (BrokenBarrierException e) {
+                    Thread.currentThread().interrupt();
+                }
+            });
+            threads[i].start();
+        }
+
+        for (Thread t : threads) t.join();
+        // All chunks sorted — now merge
+        mergeSort(array, 0, array.length);
+    }
+}
+
+// CyclicBarrier IS reusable — same barrier can be reused
+// After all threads pass, the barrier automatically resets
+```
+
+### 16.4. Phaser — Flexible Phase Synchronization
+
+`Phaser` is the most flexible — supports dynamic number of parties and multiple phases. It combines concepts of `CountDownLatch` and `CyclicBarrier` with phase-based synchronization.
+
+```java
+import java.util.concurrent.Phaser;
+
+// Scenario: Multi-phase processing
+class PhaserExample {
+    public static void main(String[] args) throws InterruptedException {
+        Phaser phaser = new Phaser(3); // 3 parties (threads)
+
+        for (int i = 0; i < 3; i++) {
+            final int workerId = i;
+            new Thread(() -> {
+                // Phase 1: Load data
+                System.out.println("Worker " + workerId + " loading data...");
+                phaser.arriveAndAwaitAdvance(); // Wait for all workers
+
+                // Phase 2: Process data (all workers proceed together)
+                System.out.println("Worker " + workerId + " processing...");
+                phaser.arriveAndAwaitAdvance(); // Wait for all workers
+
+                // Phase 3: Write results
+                System.out.println("Worker " + workerId + " writing results...");
+                phaser.arriveAndAwaitAdvance();
+
+                System.out.println("Worker " + workerId + " done!");
+                phaser.arriveAndDeregister(); // Deregister from phaser
+            }).start();
+        }
+
+        phaser.awaitAdvance(0); // Wait for all phases to complete
+        System.out.println("All phases complete!");
+    }
+}
+
+// Dynamic parties: register/unregister during execution
+Phaser phaser = new Phaser();
+// Register
+phaser.register(); // Party count = 1
+phaser.bulkRegister(5); // Party count = 6
+
+// Deregister (when a task completes early)
+phaser.arriveAndDeregister();
+
+// Phases can be monitored
+int currentPhase = phaser.getPhase(); // 0, 1, 2, ...
+```
+
+### 16.5. When to Use Which
+
+| Scenario | Synchronizer |
+|----------|-------------|
+| **Wait for N tasks to complete, then proceed** | `CountDownLatch` |
+| **Wait for N threads to reach a barrier point, then all proceed together** | `CyclicBarrier` |
+| **Multiple phases, need dynamic party count, or some parties may drop out** | `Phaser` |
+
+---
+
+## 17. Fork/Join Framework — Deep Dive
+
+### 17.1. Work-Stealing Algorithm
+
+The Fork/Join framework uses **work-stealing** to balance load efficiently across threads:
+
+```mermaid
+flowchart TD
+    W1["Worker Thread 1\nTasks: [A, B, C]"]
+    W2["Worker Thread 2\nTasks: []"]
+    W3["Worker Thread 3\nTasks: [X]"]
+
+    W1 -->|"Completes A, B, C\nNo more work"| W1Steal["Steal from W3: X"]
+    W3 -->|"X stolen"| Done["Thread 3 idle"]
+```
+
+- Each worker thread has its own **deque** (double-ended queue)
+- When a worker finishes its tasks, it **steals** tasks from another worker
+- This keeps all threads busy with minimal contention
+
+### 17.2. Common Pool
+
+Java 8+ provides a **shared `ForkJoinPool`** accessible via `ForkJoinPool.commonPool()`:
+
+```java
+// Use common pool automatically with parallel streams
+ForkJoinPool common = ForkJoinPool.commonPool();
+System.out.println("Common pool parallelism: " + common.getParallelism());
+System.out.println("Common pool size: " + common.getPoolSize());
+
+// Submit tasks to common pool
+ForkJoinTask<Integer> task = ForkJoinPool.commonPool().submit(() -> 42);
+Integer result = task.join();
+
+// Parallel stream uses common pool
+List<String> results = list.parallelStream()
+    .map(String::toUpperCase)
+    .collect(Collectors.toList());
+```
+
+### 17.3. RecursiveAction vs RecursiveTask
+
+```java
+// RecursiveAction — no return value
+class ArrayPrintAction extends RecursiveAction {
+    private final String[] array;
+    private final int start, end;
+    private static final int THRESHOLD = 10;
+
+    ArrayPrintAction(String[] array, int start, int end) {
+        this.array = array;
+        this.start = start;
+        this.end = end;
+    }
+
+    @Override
+    protected void compute() {
+        if (end - start <= THRESHOLD) {
+            for (int i = start; i < end; i++) {
+                System.out.println(array[i]);
+            }
+        } else {
+            int mid = (start + end) / 2;
+            invokeAll(
+                new ArrayPrintAction(array, start, mid),
+                new ArrayPrintAction(array, mid, end)
+            );
+        }
+    }
+}
+
+// RecursiveTask — returns a value
+class MaxTask extends RecursiveTask<Integer> {
+    private final int[] array;
+    private final int start, end;
+    private static final int THRESHOLD = 1000;
+
+    MaxTask(int[] array, int start, int end) {
+        this.array = array;
+        this.start = start;
+        this.end = end;
+    }
+
+    @Override
+    protected Integer compute() {
+        if (end - start <= THRESHOLD) {
+            return Arrays.stream(array, start, end).max().orElse(Integer.MIN_VALUE);
+        }
+        int mid = (start + end) / 2;
+        MaxTask left = new MaxTask(array, start, mid);
+        MaxTask right = new MaxTask(array, mid, end);
+        left.fork();               // Submit left to pool (async)
+        int rightResult = right.compute(); // Compute right (potentially in current thread)
+        return Math.max(rightResult, left.join()); // Wait for left result
+    }
+}
+```
+
+### 17.4. ForkJoinPool Best Practices
+
+| Practice | Why |
+|----------|-----|
+| **Use `invokeAll(a, b)`** instead of `a.fork(); b.fork(); a.join(); b.join();` | `invokeAll` handles fork/compute/join efficiently |
+| **Submit big tasks first** | Larger tasks = less overhead = better work stealing |
+| **Don't use for I/O-bound tasks** | Designed for CPU-bound parallelism |
+| **Avoid blocking inside compute()** | Blocks the worker thread, defeating work stealing |
+| **Use `getParallelism()` to size pool** | Set pool size based on CPU cores and workload |
+
+---
+
+## 18. Best Practices
 
 - **Use Thread Pools** instead of creating threads manually (`ExecutorService`)
 - **Design immutable objects** when possible (`final` fields, no setters)

@@ -437,17 +437,604 @@ public void methodA() {
 }
 ```
 
-### 12.2. Livelock
+### 12.2. Livelock — Chi tiết
 
-Các thread vẫn chạy nhưng công việc **không tiến triển** (luôn nhường nhau).
+Khác với deadlock (threads bị blocked), trong livelock các threads **đang chạy tích cực** nhưng không hoàn thành gì cả.
 
-**Giải pháp:**
+```java
+// Ví dụ kinh điển: hai thread liên tục retry operation thất bại
+public class TransactionLivelock {
+    public void processWithRetry() {
+        int attempts = 0;
+        while (attempts < 100) {
+            try {
+                executeTransaction();
+                return;
+            } catch (DeadlockException e) {
+                attempts++;
+                // Vấn đề: hai transaction retry cùng lúc
+                // gây deadlock giống nhau lặp đi lặp lại
+                Thread.yield(); // Điều này làm tình hình tệ hơn
+            }
+        }
+        throw new RuntimeException("Transaction failed after max retries");
+    }
 
-- Quy định ai chạy trước.
-- Giới hạn số lần nhường (retry limit).
-- Thêm thời gian chờ ngẫu nhiên (random backoff).
+    // Fix: thêm random backoff
+    public void processWithBackoff() {
+        int attempts = 0;
+        while (attempts < 100) {
+            try {
+                executeTransaction();
+                return;
+            } catch (DeadlockException e) {
+                attempts++;
+                // Exponential backoff với jitter ngăn cản đồng bộ hóa
+                long delay = (1L << attempts) + ThreadLocalRandom.current().nextLong(100);
+                try {
+                    Thread.sleep(delay);
+                } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
+                    return;
+                }
+            }
+        }
+    }
+}
+```
 
-## 13. Best Practices
+#### Cách tránh Livelock
+
+| Chiến lược | Mô tả |
+|------------|-------|
+| **Random backoff** | Thêm random delay giữa các retry — ngăn cản cả hai threads retry cùng lúc |
+| **Retry limit** | Từ bỏ sau N lần và fail gracefully |
+| **Lock-free structures** | Dùng `ConcurrentHashMap.compute()` thay vì manual locking |
+| **Thứ tự lock nhất quán** | Define consistent lock ordering across all code paths |
+| **Exponential backoff** | Tăng delay với mỗi retry (với jitter) |
+
+---
+
+## 14. CompletableFuture — Lập trình Asynchronous
+
+`CompletableFuture` mở rộng `Future` với khả năng composition, transformation và error handling phong phú cho lập trình bất đồng bộ.
+
+### 14.1. So sánh: Future vs CompletableFuture
+
+| Tiêu chí | `Future<T>` | `CompletableFuture<T>` |
+|---------|------------|----------------------|
+| **Completion** | Chỉ manual (`FutureTask`) | Nhiều methods để complete |
+| **Chaining** | Không hỗ trợ | Hỗ trợ via `thenApply`, `thenCompose` |
+| **Exception handling** | Không hỗ trợ | Via `exceptionally`, `handle` |
+| **Combining futures** | Không hỗ trợ | `thenCombine`, `allOf`, `anyOf` |
+| **Multiple results** | Chỉ một kết quả | Stream of results possible |
+| **Callback style** | Blocking `get()` only | Non-blocking callbacks |
+
+### 14.2. Tạo CompletableFutures
+
+```java
+// Từ một giá trị
+CompletableFuture<String> cf1 = CompletableFuture.completedFuture("Hello");
+
+// Từ một supplier (async)
+CompletableFuture<String> cf2 = CompletableFuture.supplyAsync(() -> {
+    // Chạy trong ForkJoinPool.commonPool() theo mặc định
+    return fetchDataFromDB();
+});
+
+// Với executor cụ thể
+ExecutorService executor = Executors.newFixedThreadPool(4);
+CompletableFuture<String> cf3 = CompletableFuture.supplyAsync(() -> {
+    return computeHeavy();
+}, executor);
+
+// Failed CompletableFuture
+CompletableFuture<String> cf4 = CompletableFuture.failedFuture(
+    new RuntimeException("Error!")
+);
+```
+
+### 14.3. Các method Transformation
+
+```java
+CompletableFuture<Integer> cf = CompletableFuture.supplyAsync(() -> "100");
+
+// thenApply — transform kết quả (synchronous transformation)
+CompletableFuture<Integer> parsed = cf.thenApply(Integer::parseInt);
+
+// thenApplyAsync — transform trong thread riêng
+CompletableFuture<Integer> parsedAsync = cf.thenApplyAsync(Integer::parseInt);
+
+// thenAccept — consume kết quả (void)
+cf.thenAccept(result -> System.out.println("Result: " + result));
+
+// thenRun — chạy gì đó sau (không nhận kết quả)
+cf.thenRun(() -> System.out.println("Computation done"));
+```
+
+### 14.4. Chaining và Composition
+
+```java
+// thenCompose — cho async operations phụ thuộc nhau (flatMap cho futures)
+// Dùng khi bước tiếp theo trả về CompletableFuture
+CompletableFuture<User> getUser(String id) { ... }
+CompletableFuture<Order> getOrder(String orderId) { ... }
+
+CompletableFuture<Order> cf = getUser(userId)
+    .thenCompose(user -> getOrder(user.getLastOrderId()));
+
+// thenCombine — cho async operations độc lập
+CompletableFuture<String> name = CompletableFuture.supplyAsync(() -> getName());
+CompletableFuture<Integer> age = CompletableFuture.supplyAsync(() -> getAge());
+
+CompletableFuture<String> result = name.thenCombine(age, (n, a) -> n + " is " + a + " years old");
+```
+
+### 14.5. Error Handling
+
+```java
+CompletableFuture<String> cf = CompletableFuture
+    .supplyAsync(() -> fetchData())
+    .thenApply(data -> process(data))
+    .exceptionally(ex -> {
+        // Handle any exception từ các stages trước
+        System.err.println("Error: " + ex.getMessage());
+        return "DEFAULT_VALUE"; // Provide fallback
+    })
+    .handle((result, ex) -> {
+        // Handle cả success và failure
+        if (ex != null) {
+            return "Error: " + ex.getMessage();
+        }
+        return result;
+    });
+
+// recover — recovery cụ thể cho known exception types
+cf.recover(ex -> {
+    if (ex instanceof TimeoutException) {
+        return "TIMEOUT";
+    }
+    throw new RuntimeException(ex);
+});
+```
+
+### 14.6. Kết hợp nhiều Futures
+
+```java
+// allOf — chờ TẤT CẢ futures hoàn thành
+CompletableFuture<String> f1 = fetchUser();
+CompletableFuture<String> f2 = fetchProfile();
+CompletableFuture<String> f3 = fetchSettings();
+
+CompletableFuture<Void> allDone = CompletableFuture.allOf(f1, f2, f3);
+allDone.join(); // Block cho đến khi tất cả complete
+
+// Lưu ý: allOf không trả về results — phải get từng cái:
+String u = f1.join();
+String p = f2.join();
+String s = f3.join();
+
+// anyOf — chờ FUTURE đầu tiên hoàn thành
+CompletableFuture<Object> first = CompletableFuture.anyOf(f1, f2, f3);
+Object winner = first.join(); // Future đầu tiên hoàn thành
+
+// thenAcceptBoth — làm gì đó khi cả hai complete
+f1.thenAcceptBoth(f2, (r1, r2) -> {
+    System.out.println("Both done: " + r1 + ", " + r2);
+});
+
+// runAfterEither — chạy khi EITHER hoàn thành
+f1.runAfterEither(f2, () -> System.out.println("First one done!"));
+```
+
+### 14.7. Ví dụ hoàn chỉnh
+
+```java
+public CompletableFuture<UserProfile> getUserProfile(String userId) {
+    return CompletableFuture
+        .supplyAsync(() -> userService.findById(userId))      // Async: fetch user
+        .thenCompose(user -> {                                  // Async: dependent
+            CompletableFuture<List<Order>> orders =
+                CompletableFuture.supplyAsync(() -> orderService.findByUser(user.getId()));
+            CompletableFuture<List<Review>> reviews =
+                CompletableFuture.supplyAsync(() -> reviewService.findByUser(user.getId()));
+
+            return orders.thenCombine(reviews, (o, r) ->         // Combine results
+                new UserProfile(user, o, r));
+        })
+        .exceptionally(ex -> {
+            logger.error("Failed to load profile", ex);
+            return UserProfile.empty(userId);                    // Fallback
+        });
+}
+```
+
+---
+
+## 15. Semaphore — Resource Pooling
+
+`Semaphore` kiểm soát truy cập đến shared resource sử dụng một counter. Threads phải **acquire** permit trước khi truy cập và **release** sau khi xong.
+
+### 15.1. Các method chính
+
+| Method | Mô tả |
+|--------|-------|
+| `acquire()` | Acquire một permit (blocks nếu không có) |
+| `acquire(n)` | Acquire n permits |
+| `tryAcquire()` | Thử acquire không blocking (returns boolean) |
+| `tryAcquire(timeout)` | Thử acquire với timeout |
+| `release()` | Release một permit |
+| `release(n)` | Release n permits |
+| `availablePermits()` | Số permits hiện có |
+
+### 15.2. Bounded Resource Pool
+
+```java
+import java.util.concurrent.Semaphore;
+
+public class ConnectionPool {
+    private final Connection[] connections;
+    private final Semaphore semaphore;
+    private final boolean[] used;
+
+    public ConnectionPool(int poolSize) {
+        this.connections = new Connection[poolSize];
+        this.semaphore = new Semaphore(poolSize, true); // fair=true
+        this.used = new boolean[poolSize];
+
+        for (int i = 0; i < poolSize; i++) {
+            connections[i] = new Connection("Connection-" + i);
+        }
+    }
+
+    public Connection acquire() throws InterruptedException {
+        semaphore.acquire(); // Blocks nếu không có permits
+        return getAvailableConnection();
+    }
+
+    public void release(Connection conn) {
+        returnConnection(conn);
+        semaphore.release();
+    }
+
+    private synchronized Connection getAvailableConnection() {
+        for (int i = 0; i < connections.length; i++) {
+            if (!used[i]) {
+                used[i] = true;
+                return connections[i];
+            }
+        }
+        throw new RuntimeException("No available connection");
+    }
+
+    private synchronized void returnConnection(Connection conn) {
+        for (int i = 0; i < connections.length; i++) {
+            if (connections[i] == conn) {
+                used[i] = false;
+                return;
+            }
+        }
+    }
+}
+
+// Usage
+ConnectionPool pool = new ConnectionPool(5);
+Connection conn = pool.acquire();
+try {
+    conn.execute("SELECT * FROM users");
+} finally {
+    pool.release(conn);
+}
+```
+
+### 15.3. Fair vs Unfair Semaphore
+
+```java
+// Unfair (default) — throughput tốt hơn, nhưng có thể gây starvation
+Semaphore unfair = new Semaphore(3);
+
+// Fair — FIFO guarantee, không starvation
+// Threads được serve theo thứ tự họ request
+Semaphore fair = new Semaphore(3, true);
+
+// tryAcquire example — non-blocking với fairness
+Semaphore semaphore = new Semaphore(2, true);
+
+if (semaphore.tryAcquire(1, 5, TimeUnit.SECONDS)) {
+    try {
+        // Access resource
+    } finally {
+        semaphore.release();
+    }
+} else {
+    System.out.println("Could not acquire permit within timeout");
+}
+```
+
+### 15.4. Use Cases
+
+| Use Case | Ví dụ |
+|----------|-------|
+| **Rate limiting** | Giới hạn API calls đến N mỗi giây |
+| **Resource pooling** | Database connection pool, thread pool |
+| **Throttling** | Giới hạn concurrent requests đến một service |
+| **Coordination** | Traffic light pattern |
+
+```java
+// Rate limiter sử dụng Semaphore
+public class RateLimiter {
+    private final Semaphore permits;
+    private final int maxCalls;
+    private final long timeWindowMs;
+    private long windowStart;
+
+    public RateLimiter(int maxCalls, long timeWindowMs) {
+        this.maxCalls = maxCalls;
+        this.timeWindowMs = timeWindowMs;
+        this.permits = new Semaphore(maxCalls);
+        this.windowStart = System.currentTimeMillis();
+    }
+
+    public void acquire() throws InterruptedException {
+        refreshWindow();
+        permits.acquire();
+    }
+
+    private void refreshWindow() {
+        long now = System.currentTimeMillis();
+        if (now - windowStart >= timeWindowMs) {
+            permits.release(maxCalls - permits.availablePermits());
+            windowStart = now;
+        }
+    }
+}
+```
+
+---
+
+## 16. CountDownLatch vs CyclicBarrier vs Phaser
+
+Ba synchronizers này thường bị nhầm lẫn nhưng phục vụ các mục đích khác nhau.
+
+### 16.1. Bảng so sánh
+
+| Tiêu chí | `CountDownLatch` | `CyclicBarrier` | `Phaser` |
+|---------|-----------------|----------------|---------|
+| **Tính tái sử dụng** | Một lần (không reset được) | Tái sử dụng được (auto-resets) | Tái sử dụng, dynamic parties |
+| **Cơ chế blocking** | Threads chờ đến khi count = 0 | Threads chờ nhau tại barrier | Threads chờ ở phase changes |
+| **Ai countdown?** | Chỉ external threads | Bất kỳ party thread nào | Bất kỳ party thread nào |
+| **Action on reset** | Tạo latch mới | Tất cả parties được release cùng lúc | Tất cả parties advance sang phase tiếp |
+| **Java version** | Java 5+ | Java 5+ | Java 7+ |
+
+### 16.2. CountDownLatch — Tín hiệu một lần
+
+Dùng khi một hoặc nhiều threads phải **chờ một set threads khác** hoàn thành.
+
+```java
+// Scenario: Main thread chờ tất cả services initialize
+class ServiceHealthCheck {
+    public static void main(String[] args) throws InterruptedException {
+        CountDownLatch latch = new CountDownLatch(3);
+
+        ExecutorService executor = Executors.newFixedThreadPool(3);
+        executor.submit(() -> { initializeDB(); latch.countDown(); });
+        executor.submit(() -> { initializeCache(); latch.countDown(); });
+        executor.submit(() -> { initializeQueue(); latch.countDown(); });
+
+        latch.await(); // Block cho đến khi tất cả 3 services up
+        System.out.println("All services ready! Starting application...");
+
+        executor.shutdown();
+    }
+}
+```
+
+### 16.3. CyclicBarrier — Threads chờ nhau
+
+Dùng khi một set threads cần **đồng bộ tại một barrier point** trước khi tiếp tục cùng nhau.
+
+```java
+// Scenario: Parallel sorting — chia array, sort từng phần, sau đó merge
+class ParallelMergeSort {
+    public void sort(int[] array, int numThreads) throws InterruptedException {
+        int chunkSize = array.length / numThreads;
+        CyclicBarrier barrier = new CyclicBarrier(numThreads, () -> {
+            System.out.println("All threads finished, starting merge...");
+        });
+
+        Thread[] threads = new Thread[numThreads];
+        for (int i = 0; i < numThreads; i++) {
+            final int start = i * chunkSize;
+            final int end = (i == numThreads - 1) ? array.length : start + chunkSize;
+            threads[i] = new Thread(() -> {
+                Arrays.sort(array, start, end);
+                try {
+                    barrier.await(); // Chờ tất cả threads finish sorting
+                } catch (BrokenBarrierException e) {
+                    Thread.currentThread().interrupt();
+                }
+            });
+            threads[i].start();
+        }
+
+        for (Thread t : threads) t.join();
+        // Tất cả chunks sorted — giờ merge
+        mergeSort(array, 0, array.length);
+    }
+}
+
+// CyclicBarrier CÓ THỂ TÁI SỬ DỤNG
+// Sau khi tất cả threads pass, barrier tự động reset
+```
+
+### 16.4. Phaser — Đồng bộ hóa linh hoạt theo Phase
+
+`Phaser` là linh hoạt nhất — hỗ trợ số parties động và nhiều phases. Nó kết hợp concepts của `CountDownLatch` và `CyclicBarrier` với phase-based synchronization.
+
+```java
+import java.util.concurrent.Phaser;
+
+// Scenario: Multi-phase processing
+class PhaserExample {
+    public static void main(String[] args) throws InterruptedException {
+        Phaser phaser = new Phaser(3); // 3 parties (threads)
+
+        for (int i = 0; i < 3; i++) {
+            final int workerId = i;
+            new Thread(() -> {
+                // Phase 1: Load data
+                System.out.println("Worker " + workerId + " loading data...");
+                phaser.arriveAndAwaitAdvance(); // Chờ tất cả workers
+
+                // Phase 2: Process data
+                System.out.println("Worker " + workerId + " processing...");
+                phaser.arriveAndAwaitAdvance();
+
+                // Phase 3: Write results
+                System.out.println("Worker " + workerId + " writing results...");
+                phaser.arriveAndAwaitAdvance();
+
+                System.out.println("Worker " + workerId + " done!");
+                phaser.arriveAndDeregister();
+            }).start();
+        }
+
+        phaser.awaitAdvance(0);
+        System.out.println("All phases complete!");
+    }
+}
+
+// Dynamic parties
+Phaser phaser = new Phaser();
+phaser.register();                    // Party count = 1
+phaser.bulkRegister(5);               // Party count = 6
+phaser.arriveAndDeregister();          // Bỏ đăng ký
+
+// Monitor phases
+int currentPhase = phaser.getPhase();  // 0, 1, 2, ...
+```
+
+### 16.5. Khi nào dùng cái nào
+
+| Scenario | Synchronizer |
+|----------|-------------|
+| **Chờ N tasks hoàn thành, sau đó proceed** | `CountDownLatch` |
+| **Chờ N threads đến một barrier point, sau đó all proceed cùng nhau** | `CyclicBarrier` |
+| **Nhiều phases, cần dynamic party count, hoặc parties có thể drop out** | `Phaser` |
+
+---
+
+## 17. Fork/Join Framework — Chi tiết
+
+### 17.1. Work-Stealing Algorithm
+
+Fork/Join framework sử dụng **work-stealing** để cân bằng load hiệu quả giữa các threads:
+
+```mermaid
+flowchart TD
+    W1["Worker Thread 1\nTasks: [A, B, C]"]
+    W2["Worker Thread 2\nTasks: []"]
+    W3["Worker Thread 3\nTasks: [X]"]
+
+    W1 -->|"Completes A, B, C\nNo more work"| W1Steal["Steal from W3: X"]
+    W3 -->|"X stolen"| Done["Thread 3 idle"]
+```
+
+- Mỗi worker thread có **deque** (double-ended queue) riêng
+- Khi worker hoàn thành tasks, nó **steal** tasks từ worker khác
+- Điều này giữ tất cả threads busy với ít contention nhất
+
+### 17.2. Common Pool
+
+Java 8+ cung cấp một **shared `ForkJoinPool`** qua `ForkJoinPool.commonPool()`:
+
+```java
+// Common pool được dùng tự động với parallel streams
+ForkJoinPool common = ForkJoinPool.commonPool();
+System.out.println("Parallelism: " + common.getParallelism());
+System.out.println("Pool size: " + common.getPoolSize());
+
+// Submit tasks vào common pool
+ForkJoinTask<Integer> task = ForkJoinPool.commonPool().submit(() -> 42);
+Integer result = task.join();
+
+// Parallel stream sử dụng common pool
+List<String> results = list.parallelStream()
+    .map(String::toUpperCase)
+    .collect(Collectors.toList());
+```
+
+### 17.3. RecursiveAction vs RecursiveTask
+
+```java
+// RecursiveAction — không có giá trị trả về
+class ArrayPrintAction extends RecursiveAction {
+    private final String[] array;
+    private final int start, end;
+    private static final int THRESHOLD = 10;
+
+    ArrayPrintAction(String[] array, int start, int end) {
+        this.array = array;
+        this.start = start;
+        this.end = end;
+    }
+
+    @Override
+    protected void compute() {
+        if (end - start <= THRESHOLD) {
+            for (int i = start; i < end; i++) {
+                System.out.println(array[i]);
+            }
+        } else {
+            int mid = (start + end) / 2;
+            invokeAll(
+                new ArrayPrintAction(array, start, mid),
+                new ArrayPrintAction(array, mid, end)
+            );
+        }
+    }
+}
+
+// RecursiveTask — trả về giá trị
+class MaxTask extends RecursiveTask<Integer> {
+    private final int[] array;
+    private final int start, end;
+    private static final int THRESHOLD = 1000;
+
+    MaxTask(int[] array, int start, int end) {
+        this.array = array;
+        this.start = start;
+        this.end = end;
+    }
+
+    @Override
+    protected Integer compute() {
+        if (end - start <= THRESHOLD) {
+            return Arrays.stream(array, start, end).max().orElse(Integer.MIN_VALUE);
+        }
+        int mid = (start + end) / 2;
+        MaxTask left = new MaxTask(array, start, mid);
+        MaxTask right = new MaxTask(array, mid, end);
+        left.fork();
+        int rightResult = right.compute();
+        return Math.max(rightResult, left.join());
+    }
+}
+```
+
+### 17.4. Best Practices cho ForkJoinPool
+
+| Thực hành | Tại sao |
+|-----------|---------|
+| **Dùng `invokeAll(a, b)`** thay vì `a.fork(); b.fork(); a.join(); b.join();` | `invokeAll` xử lý fork/compute/join hiệu quả hơn |
+| **Submit big tasks trước** | Tasks lớn = overhead ít hơn = work stealing tốt hơn |
+| **Không dùng cho I/O-bound tasks** | Thiết kế cho CPU-bound parallelism |
+| **Tránh blocking bên trong compute()** | Blocks worker thread, defeat work stealing |
+| **Dùng `getParallelism()` để size pool** | Set pool size dựa trên CPU cores và workload |
+
+---
+
+## 18. Best Practices
 
 | Thực hành | Lý do |
 |---|---|

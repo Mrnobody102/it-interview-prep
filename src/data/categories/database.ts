@@ -66,6 +66,34 @@ export const database: Category = {
             en: "ORM, JPA, Spring Data JPA",
           },
         },
+        {
+          id: "mybatis",
+          name: {
+            vi: "MyBatis",
+            en: "MyBatis",
+          },
+        },
+        {
+          id: "database-migration",
+          name: {
+            vi: "Database Migration (Flyway & Liquibase)",
+            en: "Database Migration (Flyway & Liquibase)",
+          },
+        },
+        {
+          id: "sharding-partitioning",
+          name: {
+            vi: "Sharding & Partitioning",
+            en: "Sharding & Partitioning",
+          },
+        },
+        {
+          id: "replication-ha",
+          name: {
+            vi: "Replication & High Availability",
+            en: "Replication & High Availability",
+          },
+        },
       ],
     },
     // ===== SCENARIO =====

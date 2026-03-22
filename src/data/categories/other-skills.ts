@@ -32,5 +32,20 @@ export const otherSkills: Category = {
       id: "agile",
       name: { vi: "Agile / Scrum", en: "Agile / Scrum" },
     },
+    {
+      id: "performance-testing",
+      name: {
+        vi: "Performance & Load Testing",
+        en: "Performance & Load Testing",
+      },
+    },
+    {
+      id: "e2e-testing",
+      name: { vi: "Selenium & Cypress", en: "Selenium & Cypress" },
+    },
+    {
+      id: "sonarqube",
+      name: { vi: "SonarQube", en: "SonarQube" },
+    },
   ],
 };

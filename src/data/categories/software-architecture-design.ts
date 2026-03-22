@@ -108,5 +108,25 @@ export const softwareArchitectureDesign: Category = {
         },
       ],
     },
+    // ===== ADVANCED ARCHITECTURE =====
+    {
+      id: "advanced-architecture",
+      name: { vi: "Advanced Architecture", en: "Advanced Architecture" },
+      expanded: true,
+      subtopics: [
+        {
+          id: "ddd",
+          name: { vi: "Domain-Driven Design (DDD)", en: "Domain-Driven Design (DDD)" },
+        },
+        {
+          id: "cqrs-event-sourcing",
+          name: { vi: "CQRS & Event Sourcing", en: "CQRS & Event Sourcing" },
+        },
+        {
+          id: "clean-architecture",
+          name: { vi: "Clean & Hexagonal Architecture", en: "Clean & Hexagonal Architecture" },
+        },
+      ],
+    },
   ],
 };

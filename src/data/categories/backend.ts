@@ -43,6 +43,10 @@ export const backend: Category = {
               name: { vi: "JVM & GC", en: "JVM & GC" },
             },
             {
+              id: "java-core-memory-management",
+              name: { vi: "Memory Management", en: "Memory Management" },
+            },
+            {
               id: "java-core-versions",
               name: { vi: "Java Versions", en: "Java Versions" },
             },
@@ -90,6 +94,10 @@ export const backend: Category = {
             {
               id: "spring-cloud",
               name: { vi: "Spring Cloud", en: "Spring Cloud" },
+            },
+            {
+              id: "spring-batch",
+              name: { vi: "Spring Batch", en: "Spring Batch" },
             },
           ],
         },

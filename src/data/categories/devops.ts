@@ -32,5 +32,21 @@ export const devops: Category = {
         en: "Cloud (AWS / GCP / Azure)",
       },
     },
+    {
+      id: "deployment-strategies",
+      name: { vi: "Deployment Strategies", en: "Deployment Strategies" },
+    },
+    {
+      id: "monitoring-logging",
+      name: { vi: "Monitoring & Logging", en: "Monitoring & Logging" },
+    },
+    {
+      id: "jenkins",
+      name: { vi: "Jenkins", en: "Jenkins" },
+    },
+    {
+      id: "devops-security",
+      name: { vi: "DevOps Security", en: "DevOps Security" },
+    },
   ],
 };

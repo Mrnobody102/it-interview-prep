@@ -285,13 +285,356 @@ The **Just-In-Time (JIT) Compiler** compiles frequently-used bytecode into **nat
 
 ---
 
-## 9. Performance Tuning Checklist
+## 9. JVM Memory Structure — Heap and Non-Heap
 
-> **Tip:** Start with default settings (G1 GC). Tune only when you have actual performance data.
+### 9.1. Heap Memory Regions
 
-- Use `-Xms` and `-Xmx` to set equal values (avoid heap resizing)
-- Set `-XX:MaxGCPauseMillis` target for G1
-- Enable GC logs for analysis: `-Xlog:gc*:file=gc.log:time:filecount=5,filesize=10M`
-- Monitor with JFR (Java Flight Recorder)
-- Profile before tuning — use VisualVM, YourKit, or async-profiler
-- Consider ZGC for applications requiring consistent low latency
+The heap is divided into generations to optimize GC performance based on object lifespan patterns.
+
+```mermaid
+flowchart TD
+    subgraph HEAP["Heap Memory"]
+        subgraph YOUNG["Young Generation"]
+            E["Eden Space"]
+            S0["Survivor Space 0 (S0)"]
+            S1["Survivor Space 1 (S1)"]
+        end
+        OLD["Old Generation (Tenured)"]
+        HUM["Humongous Region (G1 only)"]
+    end
+
+    E -->|"Survives Minor GC"| S0
+    S0 <-->|"Aging between Survivor spaces"| S1
+    S1 -->|"After tenuring threshold"| OLD
+    E -->|"Object > 50% region size"| HUM
+```
+
+| Region | Purpose | Size Ratio (Default G1) |
+|--------|---------|----------------------|
+| **Eden** | New object allocation | ~80% of Young Gen |
+| **Survivor S0/S1** | Objects surviving Minor GC | ~10% each of Young Gen |
+| **Old Generation** | Long-lived objects | ~60% of total heap |
+| **Humongous** (G1 only) | Objects > 50% of region size | Special regions |
+
+### 9.2. Non-Heap Memory Regions
+
+Non-heap memory is managed outside the JVM heap in native memory.
+
+```mermaid
+flowchart TD
+    subgraph NONHEAP["Non-Heap Memory (Native)"]
+        META["Metaspace\nClass metadata, method info,\nstatic fields, annotations"]
+        CC["Code Cache\nJIT-compiled native code,\nbytecode stubs, profiling data"]
+        DB["Direct Buffers (NIO)\nOff-heap memory for\ndirect ByteBuffers"]
+    end
+```
+
+| Region | Purpose | Growth Behavior |
+|--------|---------|----------------|
+| **Metaspace** | Class metadata, runtime constants, method info, static fields | Grows dynamically by default (limited by native memory) |
+| **Code Cache** | JIT-compiled machine code, inline stubs | Fixed by default, can be tuned with `-XX:ReservedCodeCacheSize` |
+| **Direct Buffers** | NIO `ByteBuffer.allocateDirect()` memory | Not part of Java heap, counts toward direct memory limit |
+
+### 9.3. Stack Memory (Per Thread)
+
+Each thread has its own private stack:
+
+```java
+// Each thread gets its own stack
+public class StackDemo {
+    public static void main(String[] args) {
+        // 3 threads = 3 stacks
+        for (int i = 0; i < 3; i++) {
+            final int id = i;
+            new Thread(() -> {
+                recursiveMethod(0); // Each thread has separate stack
+            }, "Thread-" + id).start();
+        }
+    }
+
+    public static void recursiveMethod(int depth) {
+        // Each recursion adds a stack frame
+        // Stack grows until StackOverflowError or base case
+        byte[] data = new byte[1024]; // Part of this thread's stack
+        recursiveMethod(depth + 1);
+    }
+}
+```
+
+### 9.4. JVM Flags for Memory Regions
+
+```bash
+# Heap Size
+java -Xms2g -Xmx2g                    # Initial and max heap (equal prevents resizing)
+
+# Stack Size per Thread
+java -Xss1m                           # 1MB stack per thread (default ~1MB)
+
+# Metaspace
+java -XX:MetaspaceSize=256m           # Initial metaspace size
+java -XX:MaxMetaspaceSize=512m        # Max metaspace (prevents native OOM)
+
+# Young/Old Generation Ratio
+java -XX:NewRatio=2                   # Old Gen = 2x Young Gen (i.e., Old = 2/3 heap)
+java -XX:NewRatio=1                   # Equal Young and Old (for short-lived apps)
+
+# Survivor Spaces
+java -XX:SurvivorRatio=8              # Eden : Survivor = 8 : 1 : 1 (default)
+java -XX:SurvivorRatio=4              # Eden : Survivor = 4 : 1 : 1 (faster aging)
+```
+
+---
+
+## 10. GC Algorithms Deep Dive
+
+### 10.1. Algorithm Overview
+
+```mermaid
+flowchart TD
+    subgraph GCS["Garbage Collection Algorithms"]
+        SM["Mark-Sweep\nMark live, sweep dead, no compaction"]
+        SC["Mark-Sweep-Compact\n+ Move objects to eliminate fragmentation"]
+        COP["Copying\nCopy live objects to new space"]
+        REF["Reference Counting\n+ Destroy when count=0\n(used by some languages, NOT by JVM)"]
+    end
+
+    SM -->|"Add compaction"| SC
+    SM -->|"Use half of space"| COP
+```
+
+### 10.2. Serial GC (`-XX:+UseSerialGC`)
+
+- **Single-threaded** — both minor and full GC run on one thread
+- Uses **Mark-Sweep-Compact** algorithm
+- **Stop-the-world** pauses for all GC types
+- **Use case:** Single-CPU machines, small heaps (< 100MB), containerized environments with CPU limits
+
+```bash
+java -XX:+UseSerialGC -Xms256m -Xmx256m -jar app.jar
+```
+
+### 10.3. Parallel GC (`-XX:+UseParallelGC`) — Default Java 8
+
+- **Multi-threaded** — uses all available CPU cores
+- **Throughput-focused** — maximizes throughput (operations per second)
+- **Stop-the-world** pauses but shorter than Serial due to parallelism
+- **Use case:** Batch processing, ETL jobs, CPU-bound batch analytics
+
+```bash
+java -XX:+UseParallelGC \
+     -XX:MaxGCPauseMillis=500 \      # Target pause time (soft goal)
+     -XX:GCTimeRatio=19 \            # 1/(1+19) = 5% time in GC = 95% throughput
+     -Xms4g -Xmx4g -jar batch-app.jar
+```
+
+### 10.4. CMS GC (`-XX:+UseConcMarkSweepGC`) — Deprecated Java 9, Removed Java 14
+
+- **Concurrent Mark Sweep** — most phases run concurrently with the application
+- Aims for **low latency** with short pause times
+- Does **not** compact — can lead to fragmentation
+- **Use case:** Legacy applications. **Deprecated** — use G1GC instead.
+
+```bash
+# Deprecated — only for legacy Java 8 systems
+java -XX:+UseConcMarkSweepGC -Xms2g -Xmx2g -jar legacy-app.jar
+```
+
+### 10.5. G1GC (`-XX:+UseG1GC`) — Default Since Java 9
+
+**Garbage-First** collector divides the heap into equal-sized **regions** (~1MB each by default). It prioritizes regions with the most garbage (garbage-first).
+
+```mermaid
+flowchart TD
+    subgraph G1_HEAP["G1 Heap (Divided into ~2048 Regions)"]
+        R1["Region 1\nYoung: Eden"]
+        R2["Region 2\nYoung: Eden"]
+        R3["Region 3\nYoung: S"]
+        R4["Region 4\nOld"]
+        R5["Region 5\nHumongous"]
+        R6["Region 6\nYoung: Eden"]
+        RN["..."]
+    end
+
+    R1 -.->|"Mixed GC"| R4
+    R2 -.->|"Mixed GC"| R4
+```
+
+#### Collection Types
+
+| Type | Trigger | What Happens | Pause Type |
+|------|---------|-------------|------------|
+| **Young Collection** | Eden full | Copy live objects from Eden to Survivor regions | Short STW |
+| **Mixed Collection** | Old Gen occupancy exceeds threshold | Collects Young + selected Old regions with most garbage | Short STW |
+| **Humongous Allocation** | Object > 50% of region size | Dedicated humongous regions | — |
+
+#### Tuning G1GC
+
+```bash
+java -XX:+UseG1GC \
+     -XX:MaxGCPauseMillis=200 \      # Target max pause time (soft goal, default 200ms)
+     -XX:G1HeapRegionSize=4m \        # Region size: 1, 2, 4, 8, 16, 32 MB (auto-calculated)
+     -XX:InitiatingHeapOccupancyPercent=45 \ # Start concurrent cycle when heap is 45% full
+     -XX:G1ReservePercent=10 \        # Reserve 10% for promotion
+     -XX:ConcGCThreads=4 \           # Threads for concurrent phases
+     -Xms4g -Xmx4g -jar web-app.jar
+```
+
+#### G1GC Tuning Guidelines
+
+| Symptom | Tuning Adjustment |
+|---------|-----------------|
+| **Long pause times** | Decrease `-XX:MaxGCPauseMillis` |
+| **Too many mixed collections** | Increase `-XX:InitiatingHeapOccupancyPercent` |
+| **Humongous allocation issues** | Increase `-XX:G1HeapRegionSize` |
+| **Fragmentation** | Increase heap size or adjust survivor ratio |
+| **Young Gen too large/small** | Adjust `-XX:NewRatio` or `-XX:SurvivorRatio` |
+
+### 10.6. ZGC (`-XX:+UseZGC`) — Java 11+, Scalable Low-Latency
+
+ZGC is designed for **ultra-low latency** applications with very large heaps (up to multi-terabytes). It achieves pause times under **1 millisecond** regardless of heap size.
+
+#### How ZGC Works: Colored Pointers
+
+ZGC uses **colored pointers** — extra bits in object references that encode GC state:
+
+```
+64-bit reference on ZGC:
+┌─────────┬──────────────────────────┬──────────┐
+│ Reserved│        Object Address    │  Mark    │
+│  (bits) │      (42 bits usable)    │  (bits)  │
+└─────────┴──────────────────────────┴──────────┘
+                Normal pointer          Colored bits
+
+Mark bits: Finalizable, Remapped, Marked0, Marked1
+```
+
+The colored pointers allow ZGC to track object states **without stopping the application** — threads can access objects during GC operations.
+
+```bash
+# Enable ZGC
+java -XX:+UseZGC \
+     -XX:MaxGCPauseMillis=1 \        # Target < 1ms pause
+     -Xmx16g -Xms16g \
+     -jar low-latency-app.jar
+
+# For very large heaps
+java -XX:+UseZGC -Xmx512g -jar tb-scale-app.jar
+```
+
+| ZGC Phase | Description | Pauses? |
+|-----------|-------------|---------|
+| **Pause Mark Start** | Root marking | **Yes** (sub-ms) |
+| **Concurrent Mark** | Trace object graph | No |
+| **Pause Mark End** | Mark completion | **Yes** (sub-ms) |
+| **Concurrent Relocate** | Move objects, update references | No |
+| **Pause Relocate Start** | Root relocate | **Yes** (sub-ms) |
+
+#### ZGC Key Properties
+
+- **No compaction pauses** — objects are moved concurrently
+- **Scalable** — pause times stay low regardless of heap size
+- **Throughput** — slightly lower than G1 (more CPU spent on GC)
+- **Works with compressed class pointers** (Java 15+)
+- **NUMA-aware** — optimized for NUMA systems
+
+### 10.7. Shenandoah (`-XX:+UseShenandoahGC`) — Java 12+
+
+Similar to ZGC in goals (low-latency) but uses a **different algorithm**:
+
+- Uses a **brooks pointer** (extra word per object) instead of colored pointers
+- Performs **concurrent compaction** — moves objects while the application runs
+- Not as scalable as ZGC for multi-TB heaps
+- Good choice for **medium-to-large heaps** where G1 is too slow but ZGC is unavailable
+
+```bash
+java -XX:+UseShenandoahGC \
+     -XX:MaxGCPauseMillis=10 \
+     -Xmx8g -Xms8g \
+     -jar app.jar
+```
+
+---
+
+## 11. Choosing the Right Garbage Collector
+
+### 11.1. Decision Matrix
+
+| Application Type | GC Recommendation | Reasoning |
+|-----------------|-------------------|-----------|
+| **Batch / ETL / Background Jobs** | Parallel GC | Maximize throughput, pause time acceptable |
+| **Web Application / API Server** | G1GC (default) | Balanced throughput and latency |
+| **Low-latency Trading / Gaming** | ZGC | Sub-millisecond pauses required |
+| **Medium-scale, latency-sensitive** | Shenandoah | Good ZGC alternative if ZGC unavailable |
+| **Embedded / Small memory** | Serial GC | Single-threaded, minimal overhead |
+| **Short-lived CLI tools** | Epsilon GC | No GC overhead, no memory reclaim |
+
+### 11.2. Throughput vs Latency Tradeoff
+
+```mermaid
+flowchart LR
+    TH["Throughput Priority\n(Parallel GC)"] -->|"High throughput\nLonger pauses OK"| TH2["Batch Processing\nData pipelines\nHPC jobs"]
+    LAT["Latency Priority\n(ZGC / Shenandoah)"] -->|"Sub-ms pauses\nModerate throughput"| LAT2["Web APIs\nTrading systems\nReal-time apps"]
+    BAL["Balanced\n(G1GC)"] -->|"Reasonable both"| BAL2["General-purpose\nMicroservices\nContainers"]
+```
+
+### 11.3. Heap Size Guidelines
+
+| Heap Size | GC Choice | Notes |
+|-----------|-----------|-------|
+| < 256MB | Serial | Minimal overhead |
+| 256MB - 4GB | G1GC | Default for most applications |
+| 4GB - 64GB | G1GC or ZGC | G1 if latency target is ~200ms; ZGC if <10ms |
+| 64GB - TB | ZGC | G1 pauses become unacceptable at this scale |
+| TB+ | ZGC | Only ZGC maintains low latency at this scale |
+
+> **Warning:** Never use `-XX:+UseSerialGC` in production unless you have a specific reason. Parallel GC or G1GC will always outperform it on multi-core systems.
+
+---
+
+## 12. Advanced JVM Tuning
+
+### 12.1. Production-Ready JVM Flags
+
+```bash
+# Memory settings
+java -Xms4g -Xmx4g \                  # Equal min/max heap
+   -Xss1m \                           # Stack size per thread
+   -XX:MetaspaceSize=256m \
+   -XX:MaxMetaspaceSize=512m \
+
+# GC selection and tuning
+   -XX:+UseG1GC \
+   -XX:MaxGCPauseMillis=200 \
+   -XX:+PrintGCDetails \
+   -XX:+PrintGCDateStamps \
+
+# Logging (Java 9+ unified logging)
+   -Xlog:gc*:file=gc.log:time:filecount=5,filesize=10M,level=tags \
+
+# OOM handling
+   -XX:+HeapDumpOnOutOfMemoryError \
+   -XX:HeapDumpPath=/var/log/ \
+
+# Disable explicit GC (useful for testing)
+   -XX:+DisableExplicitGC \
+
+# Java 17+ security and performance
+   -XX:+AlwaysPreTouch \               # Pre-touch memory pages (reduces first-run latency)
+   -XX:+UseStringDeduplication \      # Deduplicate equal strings (requires G1)
+   -jar application.jar
+```
+
+### 12.2. Monitoring Tools
+
+| Tool | Command | Purpose |
+|------|---------|---------|
+| **jstat** | `jstat -gcutil <pid> 1000` | Real-time GC statistics every 1s |
+| **jinfo** | `jinfo -flags <pid>` | View current JVM flags |
+| **jmap** | `jmap -heap <pid>` | Heap summary |
+| **jcmd** | `jcmd <pid> VM.flags` | All JVM flags |
+| **VisualVM** | GUI tool | Profiling, heap dumps, thread analysis |
+| **Java Flight Recorder** | `-XX:StartFlightRecording` | Continuous profiling |
+
+---
+
+## 13. Performance Tuning Checklist
