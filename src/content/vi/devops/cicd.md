@@ -85,7 +85,32 @@ flowchart LR
 | **Smoke/E2E Test** | Test critical paths trên staging environment | Cypress, Playwright, Selenium |
 | **Deploy Production** | Deploy lên production | Rolling/Blue-Green/Canary |
 
-### 4.3. Multi-Environment Promotion
+### 4.3. Complete CI/CD Pipeline Diagram
+
+Sơ đồ Mermaid chi tiết từ commit đến production:
+
+```mermaid
+flowchart TD
+    COMMIT["Code Commit<br/>Push to Git"] --> LINT["Lint &<br/>Code Quality"]
+    LINT --> BUILD["Build<br/>Compile & Bundle"]
+    BUILD --> UNIT["Unit Tests"]
+    UNIT --> INT["Integration Tests"]
+    INT --> SONAR["Security Scan<br/>SonarQube"]
+    SONAR --> DOCKERBUILD["Build Docker<br/>Image"]
+    DOCKERBUILD --> PUSH["Push to<br/>Container Registry"]
+    PUSH --> K8S["Deploy to K8s<br/>Rolling Update"]
+    K8S --> SMOKE["Smoke Tests"]
+    SMOKE --> MONITOR["Monitor &<br/>Alert"]
+    SONAR -.->|"Fail on Critical Issues"| FAIL["Pipeline Fails"]
+    K8S -.->|"Rollback on Failure"| MONITOR
+    SMOKE -.->|"Test Failure"| FAIL
+
+    style COMMIT fill:#4CAF50,color:#fff
+    style MONITOR fill:#2196F3,color:#fff
+    style FAIL fill:#f44336,color:#fff
+```
+
+### 4.4. Multi-Environment Promotion
 
 ```
 Feature Branch → PR → CI (build + test)
@@ -267,6 +292,287 @@ jobs:
       ~/.gradle/caches
     key: ${{ runner.os }}-${{ hashFiles('**/requirements.txt') }}
 ```
+
+### 5.5. Advanced GitHub Actions Workflow (Matrix, Cache, Docker, Helm/K8s)
+
+Workflow hoàn chỉnh với matrix strategy, caching, Docker build-push, và Kubernetes deployment qua Helm:
+
+```yaml
+# .github/workflows/ci-cd.yml
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+  HELM_VERSION: 3.14.0
+
+jobs:
+  # ── Stage 1: Build & Test with Matrix Strategy ──────────────────────
+  build-and-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        node-version: [18.x, 20.x, 22.x]
+      fail-fast: false
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      # Cache node_modules for faster builds
+      - name: Cache node_modules
+        uses: actions/cache@v4
+        id: cache-npm
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-node-${{ matrix.node-version }}-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-${{ matrix.node-version }}-
+
+      - name: Install dependencies
+        if: steps.cache-npm.outputs.cache-hit != 'true'
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+        continue-on-error: false
+
+      - name: Type check
+        run: npm run type-check
+
+      - name: Run unit tests
+        run: npm test -- --coverage --ci
+        env:
+          CI: true
+
+      - name: Run integration tests
+        run: npm run test:integration
+        env:
+          CI: true
+
+      - name: Build
+        run: npm run build
+        env:
+          NODE_ENV: production
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist-${{ matrix.node-version }}
+          path: dist/
+          retention-days: 7
+
+      - name: Upload coverage
+        if: always()
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./coverage/lcov.info
+          fail_ci_if_error: false
+
+  # ── Stage 2: Security Scan ───────────────────────────────────────────
+  security-scan:
+    runs-on: ubuntu-latest
+    needs: build-and-test
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+
+      - name: Upload Trivy results to GitHub Security
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+  # ── Stage 3: Build & Push Docker Image ──────────────────────────────
+  docker:
+    runs-on: ubuntu-latest
+    needs: [build-and-test, security-scan]
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: dist/
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=sha,prefix=,suffix=,format=short
+            type=ref,event=branch
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # ── Stage 4: Deploy to Kubernetes with Helm ──────────────────────────
+  deploy-staging:
+    runs-on: ubuntu-latest
+    needs: docker
+    environment: staging
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: ${{ env.HELM_VERSION }}
+
+      - name: Configure kubectl
+        uses: azure/k8s-set-context@v3
+        with:
+          kubeconfig: ${{ secrets.KUBE_CONFIG_STAGING }}
+
+      - name: Deploy to Staging via Helm
+        run: |
+          helm upgrade --install myapp ./charts/myapp \
+            --namespace staging \
+            --create-namespace \
+            --wait \
+            --timeout 5m \
+            --atomic \
+            --set image.repository=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }} \
+            --set image.tag=${{ github.sha }} \
+            --set replicaCount=2 \
+            --set strategy.type=RollingUpdate \
+            --set strategy.rollingUpdate.maxUnavailable=0 \
+            --set strategy.rollingUpdate.maxSurge=1
+
+      - name: Run smoke tests against staging
+        run: |
+          sleep 10
+          curl -sf https://staging.myapp.com/health || exit 1
+
+  deploy-production:
+    runs-on: ubuntu-latest
+    needs: deploy-staging
+    environment: production
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: ${{ env.HELM_VERSION }}
+
+      - name: Configure kubectl
+        uses: azure/k8s-set-context@v3
+        with:
+          kubeconfig: ${{ secrets.KUBE_CONFIG_PRODUCTION }}
+
+      - name: Deploy to Production (Canary strategy)
+        run: |
+          # Phase 1: Deploy canary (1 replica = 10% traffic if prod has 10 replicas)
+          helm upgrade --install myapp ./charts/myapp \
+            --namespace production \
+            --create-namespace \
+            --wait \
+            --timeout 10m \
+            --atomic \
+            --set image.repository=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }} \
+            --set image.tag=${{ github.sha }} \
+            --set replicaCount=1 \
+            --set canary.enabled=true \
+            --set canary.weight=10
+
+      - name: Wait and monitor canary metrics
+        run: |
+          echo "Waiting 60s for canary to stabilize..."
+          sleep 60
+
+      - name: Full production rollout (Rolling)
+        run: |
+          helm upgrade --install myapp ./charts/myapp \
+            --namespace production \
+            --wait \
+            --timeout 15m \
+            --atomic \
+            --set image.repository=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }} \
+            --set image.tag=${{ github.sha }} \
+            --set replicaCount=10 \
+            --set canary.enabled=false \
+            --set strategy.type=RollingUpdate \
+            --set strategy.rollingUpdate.maxUnavailable=1 \
+            --set strategy.rollingUpdate.maxSurge=2
+
+      - name: Notify on Slack
+        if: always()
+        uses: slackapi/slack-github-action@v1.26.0
+        with:
+          payload: |
+            {
+              "text": "*Deployment ${{ job.status }}*\nApp: ${{ github.event.repository.name }}\nCommit: `${{ github.sha }}`\nAuthor: ${{ github.actor }}"
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
+```
+
+Features chính:
+- **Matrix strategy** — test song song trên nhiều Node.js versions
+- **Cache node_modules** — giảm thời gian install
+- **Docker Buildx** với GitHub Actions cache — layer caching hiệu quả
+- **Helm** quản lý K8s deployment với RollingUpdate và canary
+- **Atomic** helm upgrades — auto-rollback khi fail
+- **Environment protection** — yêu cầu approve thủ công cho production
 
 ---
 
@@ -533,6 +839,38 @@ spec:
       containers:
         - name: myapp
           image: myapp:v2
+```
+
+---
+
+### 8.4. Deployment Strategies trong Pipeline Context
+
+Trong CI/CD pipeline, deployment strategy xác định cách phiên bản mới được đưa lên production:
+
+- **Rolling** — Pipeline thay thế pod từng bước. Phù hợp với Kubernetes `RollingUpdate`. Mỗi bước chờ pod mới ready trước khi terminate pod cũ. Pipeline có thể tự detect failure qua `kubectl rollout status`.
+
+- **Blue-Green** — Pipeline deploy môi trường "green" song song, sau đó flip load balancer. Chuyển traffic tức thì cho phép rollback tức thì bằng cách revert load balancer. Pipeline chờ smoke tests trên green trước khi cắt over.
+
+- **Canary** — Pipeline route một phần nhỏ traffic (vd 5-10%) sang phiên bản mới. Metrics tự động (error rate, latency) được monitor. Pipeline tự promote hoặc rollback dựa trên thresholds.
+
+```yaml
+# Pipeline pseudo-code cho deployment strategy selection
+deploy:
+  stage: deploy
+  script:
+    - |
+      if [ "$DEPLOY_STRATEGY" == "canary" ]; then
+        kubectl apply -f k8s/canary-deployment.yaml
+        ./scripts/wait-for-metrics.sh --threshold-error-rate=1%
+        kubectl patch hpa myapp -p '{"spec":{"replicas":10}}'
+      elif [ "$DEPLOY_STRATEGY" == "blue-green" ]; then
+        kubectl apply -f k8s/green-deployment.yaml
+        ./scripts/smoke-tests.sh https://green.myapp.com
+        kubectl patch service myapp -p '{"spec":{"selector":{"version":"green"}}}'
+      else
+        kubectl apply -f k8s/deployment.yaml
+        kubectl rollout status deployment/myapp
+      fi
 ```
 
 ---

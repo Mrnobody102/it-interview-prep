@@ -10,7 +10,7 @@
 | **NAT (Network Address Translation)** | Chuyển đổi địa chỉ IP private sang public (và ngược lại) |
 | **CORS (Cross-Origin Resource Sharing)** | Cơ chế bảo mật browser; backend phải cho phép rõ ràng cross-origin requests |
 | **DNS (Domain Name System)** | Dịch domain names (google.com) sang IP addresses |
-| **CDN (Content Delivery Network)** | Mạng lưới server phân bố để phân phối static content |
+| **CDN (Content Delivery Network)** | Mạng lưới server phân bố để phân phối nội dung tĩnh (static content) |
 
 ---
 
@@ -52,7 +52,7 @@ HTTP Methods:
 
 - **Full-duplex:** Giao tiếp hai chiều realtime qua một TCP connection duy nhất
 - **Persistent:** Connection giữ open cho đến khi client hoặc server đóng
-- **Use cases:** Chat apps, live dashboards, gaming, collaborative tools
+- **Use cases:** Ứng dụng chat, dashboard realtime, gaming, công cụ cộng tác
 
 ```javascript
 const ws = new WebSocket('wss://api.example.com/live');
@@ -76,13 +76,13 @@ ws.onclose = () => {
 
 - **Mục đích:** Giao tiếp service-to-service với latency thấp
 - **Khái niệm:** Gọi một function trên remote server như thể nó là local
-- **Formats:** gRPC (binary, dùng Protocol Buffers), Thrift
+- **Formats:** gRPC (binary, dùng Protocol Buffers), Thrift, JSON-RPC
 
 ---
 
 ### 9.4. Transport Layer Protocols
 
-| Protocol | Đặc điểm | Use Cases |
+| Protocol | Đặc điểm | Trường hợp sử dụng |
 |---|---|---|
 | **TCP** | Connection-oriented, đáng tin cậy, ordered delivery, flow control | Web, APIs, email, file transfer, databases |
 | **UDP** | Connectionless, nhanh, không đảm bảo delivery, không ordering | Streaming, gaming, VoIP, DNS queries, video calls |
@@ -91,10 +91,10 @@ ws.onclose = () => {
 
 | Khía cạnh | TCP | UDP |
 |---|---|---|
-| **Connection** | Connection-oriented (3-way handshake) | Connectionless |
-| **Reliability** | Guaranteed delivery | Best-effort, no guarantee |
-| **Ordering** | Packets arrive in order | Không đảm bảo ordering |
-| **Speed** | Chậm hơn (overhead) | Nhanh hơn (minimal overhead) |
+| **Kết nối** | Hướng kết nối (3-way handshake) | Không kết nối |
+| **Độ tin cậy** | Đảm bảo delivery | Best-effort, không đảm bảo |
+| **Thứ tự** | Gói tin đến đúng thứ tự | Không đảm bảo thứ tự |
+| **Tốc độ** | Chậm hơn (overhead) | Nhanh hơn (minimal overhead) |
 | **Flow Control** | Có | Không |
 | **Congestion Control** | Có | Không |
 | **Header Size** | 20+ bytes | 8 bytes |
@@ -142,25 +142,25 @@ Client → Resolver (ISP/8.8.8.8)
 
 ### 9.7. HTTP/1.1 vs. HTTP/2 vs. HTTP/3
 
-| Feature | HTTP/1.1 | HTTP/2 | HTTP/3 |
+| Tính năng | HTTP/1.1 | HTTP/2 | HTTP/3 |
 |---|---|---|---|
 | **Transport** | TCP | TCP | UDP (QUIC) |
 | **Multiplexing** | Không (head-of-line blocking) | Có | Có |
-| **Header Compression** | Không | HPACK | QPACK |
+| **Nén Header** | Không | HPACK | QPACK |
 | **Server Push** | Không | Có | Có |
-| **Encryption** | Tùy chọn | TLS bắt buộc | TLS bắt buộc |
-| **Connection Reuse** | Single request per connection | Multiplexed streams | Stream-based |
+| **Mã hóa** | Tùy chọn | TLS bắt buộc | TLS bắt buộc |
+| **Tái sử dụng kết nối** | Một request mỗi kết nối | Multiplexed streams | Stream-based |
 
 ---
 
 ### 9.8. CIDR (Classless Inter-Domain Routing)
 
-| Notation | Address Range | Number of IPs |
+| Ký hiệu | Dải địa chỉ | Số lượng IP |
 |---|---|---|
-| `/32` | Single IP | 1 |
-| `/24` | Small network | 256 |
-| `/16` | Medium network | 65,536 |
-| `/8` | Large network | 16,777,216 |
+| `/32` | Một IP duy nhất | 1 |
+| `/24` | Mạng nhỏ | 256 |
+| `/16` | Mạng trung bình | 65,536 |
+| `/8` | Mạng lớn | 16,777,216 |
 | `10.0.0.0/8` | Private (RFC 1918) | 16,777,216 |
 | `172.16.0.0/12` | Private (RFC 1918) | 1,048,576 |
 | `192.168.0.0/16` | Private (RFC 1918) | 65,536 |

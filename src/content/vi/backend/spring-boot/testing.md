@@ -297,3 +297,401 @@ assertThatThrownBy(() -> service.delete(999L))
 .assertThat(result, hasSize(3));
 .assertThat(user.getName(), equalTo("Huy"));
 ```
+
+## 8. Spring Batch Testing
+
+Spring Batch cung cấp `@SpringBatchTest` và `JobLauncherTestUtils` để test batch job toàn diện.
+
+### 8.1. Dependencies
+
+```xml
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-batch</artifactId>
+</dependency>
+<dependency>
+    <groupId>org.springframework.batch</groupId>
+    <artifactId>spring-batch-test</artifactId>
+    <scope>test</scope>
+</dependency>
+<!-- H2 cho test database -->
+<dependency>
+    <groupId>com.h2database</groupId>
+    <artifactId>h2</artifactId>
+    <scope>test</scope>
+</dependency>
+```
+
+### 8.2. @SpringBatchTest va JobLauncherTestUtils
+
+```java
+@SpringBatchTest
+@SpringBootTest
+class BatchJobIntegrationTest {
+
+    @Autowired
+    private JobLauncherTestUtils jobLauncherTestUtils;
+
+    @Autowired
+    private JobRepository jobRepository;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
+
+    @BeforeEach
+    void setUp() {
+        userRepository.deleteAll();
+        jdbcTemplate.execute("DELETE FROM BATCH_STEP_EXECUTION");
+        jdbcTemplate.execute("DELETE FROM BATCH_JOB_EXECUTION");
+    }
+
+    @Test
+    void shouldRunImportUsersJob() throws Exception {
+        // Arrange: seed input data
+        userRepository.save(new User(null, "alice", "alice@example.com"));
+        userRepository.save(new User(null, "bob", "bob@example.com"));
+
+        JobParameters params = new JobParametersBuilder()
+            .addLong("timestamp", System.currentTimeMillis())
+            .addString("input.file", "classpath:users.csv")
+            .toJobParameters();
+
+        // Act
+        JobExecution jobExecution = jobLauncherTestUtils.launchJob(params);
+
+        // Assert
+        assertThat(jobExecution.getStatus()).isEqualTo(BatchStatus.COMPLETED);
+        assertThat(userRepository.count()).isEqualTo(2);
+    }
+
+    @Test
+    void shouldFailJob_WhenInputIsInvalid() throws Exception {
+        // Arrange: seed with invalid data
+        userRepository.save(new User(null, "", "invalid-email"));
+
+        JobParameters params = new JobParametersBuilder()
+            .addLong("timestamp", System.currentTimeMillis())
+            .toJobParameters();
+
+        // Act
+        JobExecution jobExecution = jobLauncherTestUtils.launchJob(
+            "importUsersJob", params);
+
+        // Assert
+        assertThat(jobExecution.getStatus()).isEqualTo(BatchStatus.FAILED);
+        assertThat(jobExecution.getAllFailureExceptions()).isNotEmpty();
+    }
+}
+```
+
+### 8.3. Testing Individual Steps
+
+```java
+@SpringBatchTest
+@SpringBootTest
+class StepLevelTest {
+
+    @Autowired
+    private StepBuilderFactory stepBuilderFactory;
+
+    @Autowired
+    private JobLauncherTestUtils jobLauncherTestUtils;
+
+    @MockBean
+    private UserItemReader mockReader;
+
+    @MockBean
+    private UserItemWriter mockWriter;
+
+    @Test
+    void shouldProcessUsers_StepExecution() throws Exception {
+        // Mock reader tra ve danh sach users co dinh
+        List<User> users = List.of(
+            new User(1L, "alice", "alice@example.com"),
+            new User(2L, "bob", "bob@example.com")
+        );
+        when(mockReader.read())
+            .thenReturn(users.get(0))
+            .thenReturn(users.get(1))
+            .thenReturn(null);
+
+        JobParameters params = new JobParametersBuilder()
+            .addLong("run.id", 1L)
+            .toJobParameters();
+
+        // Chi chay step thay vi ca job
+        StepExecution stepExecution = jobLauncherTestUtils.launchStep(
+            "processUsersStep", params);
+
+        assertThat(stepExecution.getReadCount()).isEqualTo(2);
+        assertThat(stepExecution.getWriteCount()).isEqualTo(2);
+        assertThat(stepExecution.getSkipCount()).isEqualTo(0);
+        assertThat(stepExecution.getStatus()).isEqualTo(BatchStatus.COMPLETED);
+    }
+
+    @Test
+    void shouldSkipInvalidRecords() throws Exception {
+        // Mock reader voi mot ban ghi khong hop le
+        when(mockReader.read())
+            .thenReturn(new User(1L, "", "invalid")) // invalid
+            .thenReturn(new User(2L, "bob", "bob@example.com")) // valid
+            .thenReturn(null);
+
+        JobParameters params = new JobParametersBuilder()
+            .addLong("run.id", 1L)
+            .toJobParameters();
+
+        StepExecution stepExecution = jobLauncherTestUtils.launchStep(
+            "processUsersStep", params);
+
+        assertThat(stepExecution.getReadCount()).isEqualTo(2);
+        assertThat(stepExecution.getWriteCount()).isEqualTo(1);
+        assertThat(stepExecution.getSkipCount()).isEqualTo(1);
+        assertThat(stepExecution.getStatus()).isEqualTo(BatchStatus.COMPLETED);
+    }
+}
+```
+
+### 8.4. Testing voi @SpringBatchTest va TestJob
+
+```java
+@SpringBatchTest
+@SpringBootTest
+class JobExecutionTest {
+
+    @Autowired
+    private JobLauncherTestUtils jobLauncherTestUtils;
+
+    @Autowired
+    private JobRegistry jobRegistry;
+
+    @Test
+    void shouldLaunchJobByName() throws Exception {
+        Job job = jobRegistry.getJob("exportUsersJob");
+
+        JobParameters params = new JobParametersBuilder()
+            .addString("output.path", "/tmp/users-export.csv")
+            .addLong("timestamp", System.currentTimeMillis())
+            .toJobParameters();
+
+        JobExecution execution = jobLauncherTestUtils.launchJob(job, params);
+
+        assertThat(execution.getStatus()).isEqualTo(BatchStatus.COMPLETED);
+        assertThat(execution.getStepExecutions())
+            .hasSize(2); // step1 + step2
+    }
+}
+```
+
+## 9. Lifecycle & Auditing
+
+JPA auditing tu dong dien created/updated timestamps va user tao/sua entity.
+
+### 9.1. Enable JPA Auditing
+
+```java
+@SpringBootApplication
+@EnableJpaAuditing
+public class Application {
+    public static void main(String[] args) {
+        SpringApplication.run(Application.class, args);
+    }
+}
+```
+
+### 9.2. @CreatedDate va @LastModifiedDate
+
+```java
+@Entity
+@EntityListeners(AuditingEntityListener.class)
+public class User {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private String name;
+    private String email;
+
+    @CreatedDate
+    @Column(name = "created_at", updatable = false)
+    private LocalDateTime createdAt;
+
+    @LastModifiedDate
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
+    // getters and setters
+}
+```
+
+### 9.3. @CreatedBy va @LastModifiedBy voi AuditorAware
+
+```java
+// Cung cap auditor hien tai (vd tu Spring Security)
+@Component
+public class JpaAuditorConfig {
+
+    @Bean
+    public AuditorAware<String> auditorProvider() {
+        return () -> {
+            Authentication authentication =
+                SecurityContextHolder.getContext().getAuthentication();
+            if (authentication == null ||
+                !authentication.isAuthenticated() ||
+                authentication.getPrincipal().equals("anonymousUser")) {
+                return Optional.of("system");
+            }
+            return Optional.of(authentication.getName());
+        };
+    }
+}
+```
+
+```java
+@Entity
+@EntityListeners(AuditingEntityListener.class)
+public class User {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @CreatedDate
+    @Column(name = "created_at", updatable = false)
+    private LocalDateTime createdAt;
+
+    @CreatedBy
+    @Column(name = "created_by", updatable = false)
+    private String createdBy;
+
+    @LastModifiedDate
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
+    @LastModifiedBy
+    @Column(name = "updated_by")
+    private String updatedBy;
+
+    // ...
+}
+```
+
+### 9.4. Entity Lifecycle Callbacks
+
+| Annotation | Thoi diem chay |
+|-----------|---------------|
+| `@PrePersist` | Truoc khi entity duoc persist lan dau (INSERT) |
+| `@PostPersist` | Sau khi entity duoc persist lan dau |
+| `@PreUpdate` | Truoc khi trang thai entity duoc dong bo xuong DB (UPDATE) |
+| `@PostUpdate` | Sau khi trang thai entity duoc dong bo xuong DB |
+| `@PreRemove` | Truoc khi entity bi xoa (DELETE) |
+| `@PostRemove` | Sau khi entity bi xoa |
+| `@PostLoad` | Sau khi entity duoc load tu DB |
+
+```java
+@Entity
+@EntityListeners(AuditingEntityListener.class)
+public class Product {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private String name;
+    private BigDecimal price;
+
+    @Column(name = "created_at", updatable = false)
+    private LocalDateTime createdAt;
+
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
+    @Version
+    private Long version; // cho optimistic locking
+
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    @PostPersist
+    public void onPostPersist() {
+        // vd: publish domain event
+        System.out.println("Product created with ID: " + id);
+    }
+
+    @PreRemove
+    public void onPreRemove() {
+        // vd: validate business rule truoc khi xoa
+        if ("DISCONTINUED".equals(this.name)) {
+            throw new IllegalStateException("Cannot remove discontinued product");
+        }
+    }
+
+    @PostLoad
+    public void onPostLoad() {
+        // vd: decrypt truong nhay cam, khoi tao truong transient
+    }
+
+    // getters and setters
+}
+```
+
+### 9.5. Testing Auditing
+
+```java
+@DataJpaTest
+class UserAuditingTest {
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private EntityManager entityManager;
+
+    @Test
+    void shouldPopulateAuditingFields() {
+        User user = new User();
+        user.setName("Test User");
+        user.setEmail("test@example.com");
+
+        User saved = userRepository.save(user);
+        entityManager.flush();
+        entityManager.clear();
+
+        User found = userRepository.findById(saved.getId()).orElseThrow();
+
+        assertThat(found.getCreatedAt()).isNotNull();
+        assertThat(found.getUpdatedAt()).isNotNull();
+        // createdBy/updatedBy can @WithMockUser hoac test SecurityContext
+    }
+
+    @Test
+    void shouldUpdateTimestamp_OnModify() {
+        User user = new User();
+        user.setName("Original");
+        user.setEmail("test@example.com");
+        userRepository.save(user);
+        entityManager.flush();
+
+        LocalDateTime originalUpdatedAt = user.getUpdatedAt();
+
+        // Delay nho de dam bao timestamp khac nhau
+        user.setName("Modified");
+        userRepository.save(user);
+        entityManager.flush();
+
+        assertThat(user.getUpdatedAt()).isAfter(originalUpdatedAt);
+    }
+}
+```

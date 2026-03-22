@@ -130,7 +130,7 @@ flowchart LR
 
 ### 4.3. Các GC Collectors
 
-| Collector | Java Version | Mặc định | Phù hợp | Latency | Throughput |
+| Collector | Java Version | Mặc định | Phù hợp | Độ trễ | Throughput |
 |---|---|---|---|---|---|
 | **Serial GC** | Tất cả | Java < 8 (client) | Single-thread, test | Cao | Thấp |
 | **Parallel GC** | Tất cả | Java 8 server | Batch processing | Cao | **Cao** |
@@ -157,7 +157,7 @@ flowchart LR
 # Enable ZGC
 java -XX:+UseZGC -Xmx16g -jar app.jar
 
-// ZGC特点:
+// Đặc điểm của ZGC:
 // - Pause time < 1ms bất kể heap size
 // - Throughput similar to G1
 // - Phù hợp heap lớn (hàng trăm GB đến TB)
@@ -291,9 +291,41 @@ class EventManager {
 
 ---
 
-## 8. JVM Memory Structure — Heap và Non-Heap
+## 8. Class Loading
 
-### 8.1. Các vùng Heap Memory
+### 8.1. Class Loaders (Parent Delegation Model)
+
+| Class Loader | Load gì | Phạm vi |
+|-------------|---------|---------|
+| **Bootstrap ClassLoader** | Core Java classes (`java.lang`, etc.) | Core của JVM |
+| **Extension ClassLoader** | Classes trong `jre/lib/ext` | Thư viện mở rộng |
+| **Application ClassLoader** | Classes từ classpath | Code ứng dụng |
+
+### 8.2. Class Loading Process
+
+1. **Loading** — Tìm và load binary representation của class
+2. **Linking** — Verify, prepare, resolve
+3. **Initialization** — Execute static initializers, assign static fields
+
+---
+
+## 9. JIT Compiler
+
+**Just-In-Time (JIT) Compiler** compile bytecode thường xuyên được sử dụng thành **native machine code** tại runtime để cải thiện hiệu năng.
+
+| Khái niệm | Mô tả |
+|-----------|-------|
+| **Interpretation** | JVM ban đầu interpret bytecode trực tiếp (chậm) |
+| **JIT Compilation** | Hot methods (thường xuyên gọi) được compile thành native code |
+| **Tiered Compilation** | Client compiler (C1) cho startup nhanh, Server compiler (C2/Opt) cho hiệu năng cao |
+| **Inlining** | JIT thay method calls bằng actual method body (loại bỏ call overhead) |
+| **Deoptimization** | JIT revert compiled code nếu assumptions bị vi phạm |
+
+---
+
+## 10. JVM Memory Structure — Heap và Non-Heap
+
+### 10.1. Các vùng Heap Memory
 
 Heap được chia thành các generations để tối ưu GC performance dựa trên lifespan pattern của objects.
 
@@ -317,12 +349,12 @@ flowchart TD
 
 | Vùng | Mục đích | Tỷ lệ kích thước (G1 mặc định) |
 |------|---------|------------------------------|
-| **Eden** | New object allocation | ~80% của Young Gen |
-| **Survivor S0/S1** | Objects survive Minor GC | ~10% mỗi cái của Young Gen |
-| **Old Generation** | Long-lived objects | ~60% của total heap |
-| **Humongous** (chỉ G1) | Objects > 50% region size | Special regions |
+| **Eden** | Cấp phát object mới | ~80% của Young Gen |
+| **Survivor S0/S1** | Object sống qua Minor GC | ~10% mỗi cái của Young Gen |
+| **Old Generation** | Object sống lâu dài | ~60% của total heap |
+| **Humongous** (chỉ G1) | Object > 50% kích thước region | Regions đặc biệt |
 
-### 8.2. Các vùng Non-Heap Memory
+### 10.2. Các vùng Non-Heap Memory
 
 Non-heap memory nằm ngoài Java heap trong native memory.
 
@@ -335,13 +367,13 @@ flowchart TD
     end
 ```
 
-| Vùng | Mục đích | Growth Behavior |
+| Vùng | Mục đích | Hành vi tăng trưởng |
 |------|---------|----------------|
-| **Metaspace** | Class metadata, runtime constants, method info, static fields | Grows dynamically (limited by native memory) |
-| **Code Cache** | JIT-compiled machine code, inline stubs | Fixed by default |
-| **Direct Buffers** | NIO `ByteBuffer.allocateDirect()` memory | Not part of Java heap |
+| **Metaspace** | Class metadata, runtime constants, method info, static fields | Tự tăng trưởng (giới hạn bởi native memory) |
+| **Code Cache** | JIT-compiled machine code, inline stubs | Cố định theo mặc định |
+| **Direct Buffers** | NIO `ByteBuffer.allocateDirect()` memory | Không thuộc Java heap |
 
-### 8.3. Stack Memory (Mỗi Thread)
+### 10.3. Stack Memory (Mỗi Thread)
 
 Mỗi thread có stack riêng:
 
@@ -366,7 +398,7 @@ public class StackDemo {
 }
 ```
 
-### 8.4. JVM Flags cho các vùng nhớ
+### 10.4. JVM Flags cho các vùng nhớ
 
 ```bash
 # Heap Size
@@ -390,7 +422,7 @@ java -XX:SurvivorRatio=4              # Eden : Survivor = 4 : 1 : 1 (faster agin
 
 ---
 
-## 9. Chi tiết các thuật toán GC
+## 11. Chi tiết các thuật toán GC
 
 ### 9.1. Tổng quan thuật toán
 
@@ -441,9 +473,9 @@ java -XX:+UseParallelGC \
 
 #### Các loại Collection trong G1
 
-| Type | Trigger | What Happens | Pause Type |
+| Loại | Trigger | Xảy ra gì | Kiểu Pause |
 |------|---------|-------------|------------|
-| **Young Collection** | Eden full | Copy live objects từ Eden sang Survivor regions | Short STW |
+| **Young Collection** | Eden đầy | Copy live objects từ Eden sang Survivor regions | Short STW |
 | **Mixed Collection** | Old Gen occupancy vượt threshold | Collects Young + selected Old regions với nhiều garbage | Short STW |
 | **Humongous Allocation** | Object > 50% region size | Dedicated humongous regions | — |
 
@@ -460,13 +492,13 @@ java -XX:+UseG1GC \
 
 #### G1GC Tuning Guidelines
 
-| Symptom | Tuning Adjustment |
+| Triệu chứng | Điều chỉnh |
 |---------|-----------------|
 | **Pause times quá dài** | Giảm `-XX:MaxGCPauseMillis` |
-| **Too many mixed collections** | Tăng `-XX:InitiatingHeapOccupancyPercent` |
-| **Humongous allocation issues** | Tăng `-XX:G1HeapRegionSize` |
-| **Fragmentation** | Tăng heap size hoặc adjust survivor ratio |
-| **Young Gen quá lớn/nhỏ** | Adjust `-XX:NewRatio` hoặc `-XX:SurvivorRatio` |
+| **Quá nhiều mixed collections** | Tăng `-XX:InitiatingHeapOccupancyPercent` |
+| **Vấn đề về Humongous allocation** | Tăng `-XX:G1HeapRegionSize` |
+| **Fragmentation** | Tăng heap size hoặc điều chỉnh survivor ratio |
+| **Young Gen quá lớn/nhỏ** | Điều chỉnh `-XX:NewRatio` hoặc `-XX:SurvivorRatio` |
 
 ### 9.6. ZGC (`-XX:+UseZGC`) — Java 11+, Scalable Low-Latency
 
@@ -533,20 +565,20 @@ java -XX:+UseShenandoahGC \
 
 ---
 
-## 10. Chọn Garbage Collector đúng
+## 12. Chọn Garbage Collector đúng
 
-### 10.1. Ma trận quyết định
+### 12.1. Ma trận quyết định
 
-| Application Type | GC Recommendation | Reasoning |
+| Loại ứng dụng | Khuyến nghị GC | Lý do |
 |-----------------|-------------------|-----------|
-| **Batch / ETL / Background Jobs** | Parallel GC | Maximize throughput, pause time acceptable |
-| **Web Application / API Server** | G1GC (default) | Balanced throughput và latency |
-| **Low-latency Trading / Gaming** | ZGC | Sub-millisecond pauses required |
-| **Medium-scale, latency-sensitive** | Shenandoah | Good ZGC alternative nếu ZGC không có sẵn |
-| **Embedded / Small memory** | Serial GC | Single-threaded, minimal overhead |
-| **Short-lived CLI tools** | Epsilon GC | No GC overhead, no memory reclaim |
+| **Batch / ETL / Background Jobs** | Parallel GC | Tối đa hóa throughput, pause time có thể chấp nhận được |
+| **Web Application / API Server** | G1GC (mặc định) | Cân bằng throughput và latency |
+| **Low-latency Trading / Gaming** | ZGC | Yêu cầu pauses dưới millisecond |
+| **Medium-scale, latency-sensitive** | Shenandoah | Thay thế ZGC tốt nếu ZGC không có sẵn |
+| **Embedded / Small memory** | Serial GC | Single-threaded, overhead tối thiểu |
+| **Short-lived CLI tools** | Epsilon GC | Không GC overhead, không reclaim bộ nhớ |
 
-### 10.2. Throughput vs Latency Tradeoff
+### 12.2. Throughput vs Latency Tradeoff
 
 ```mermaid
 flowchart LR
@@ -555,23 +587,23 @@ flowchart LR
     BAL["Balanced\n(G1GC)"] -->|"Reasonable both"| BAL2["General-purpose\nMicroservices\nContainers"]
 ```
 
-### 10.3. Heap Size Guidelines
+### 12.3. Heap Size Guidelines
 
-| Heap Size | GC Choice | Notes |
+| Kích thước Heap | Lựa chọn GC | Ghi chú |
 |-----------|-----------|-------|
-| < 256MB | Serial | Minimal overhead |
-| 256MB - 4GB | G1GC | Default cho most applications |
-| 4GB - 64GB | G1GC or ZGC | G1 nếu latency target ~200ms; ZGC nếu <10ms |
-| 64GB - TB | ZGC | G1 pauses trở nên unacceptable ở scale này |
-| TB+ | ZGC | Chỉ ZGC maintain low latency ở scale này |
+| < 256MB | Serial | Overhead tối thiểu |
+| 256MB - 4GB | G1GC | Mặc định cho hầu hết các ứng dụng |
+| 4GB - 64GB | G1GC hoặc ZGC | G1 nếu latency target ~200ms; ZGC nếu <10ms |
+| 64GB - TB | ZGC | G1 pauses trở nên không thể chấp nhận ở scale này |
+| TB+ | ZGC | Chỉ ZGC duy trì low latency ở scale này |
 
 > **Warning:** Không bao giờ dùng `-XX:+UseSerialGC` trong production trừ khi có lý do cụ thể. Parallel GC hoặc G1GC luôn outperform nó trên multi-core systems.
 
 ---
 
-## 11. Advanced JVM Tuning
+## 13. Advanced JVM Tuning
 
-### 11.1. JVM Flags cho Production
+### 13.1. JVM Flags cho Production
 
 ```bash
 # Memory settings
@@ -602,14 +634,14 @@ java -Xms4g -Xmx4g \                  # Equal min/max heap
    -jar application.jar
 ```
 
-### 11.2. Monitoring Tools
+### 13.2. Monitoring Tools
 
-| Tool | Command | Purpose |
+| Công cụ | Command | Mục đích |
 |------|---------|---------|
-| **jstat** | `jstat -gcutil <pid> 1000` | Real-time GC statistics every 1s |
-| **jinfo** | `jinfo -flags <pid>` | View current JVM flags |
-| **jmap** | `jmap -heap <pid>` | Heap summary |
-| **jcmd** | `jcmd <pid> VM.flags` | All JVM flags |
-| **VisualVM** | GUI tool | Profiling, heap dumps, thread analysis |
-| **Java Flight Recorder** | `-XX:StartFlightRecording` | Continuous profiling |
+| **jstat** | `jstat -gcutil <pid> 1000` | Thống kê GC real-time mỗi 1s |
+| **jinfo** | `jinfo -flags <pid>` | Xem JVM flags hiện tại |
+| **jmap** | `jmap -heap <pid>` | Tóm tắt heap |
+| **jcmd** | `jcmd <pid> VM.flags` | Tất cả JVM flags |
+| **VisualVM** | GUI tool | Profiling, heap dumps, phân tích thread |
+| **Java Flight Recorder** | `-XX:StartFlightRecording` | Profiling liên tục |
 

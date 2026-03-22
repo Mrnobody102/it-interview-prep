@@ -193,12 +193,13 @@ executor.shutdown(); // không nhận task mới, chờ task đang chạy xong
 | `newCachedThreadPool()` | Thread mới khi cần, tái sử dụng thread rảnh |
 | `newSingleThreadExecutor()` | Một thread duy nhất |
 | `newScheduledThreadPool(n)` | Thread pool có thể lên lịch |
+| `newWorkStealingPool()` | Work-stealing pool (Java 8+) — tối ưu cho divide-and-conquer tasks |
 
 ## 7. Callable và Future
 
 | Tiêu chí | `Runnable` | `Callable<V>` |
 |---|---|---|
-| **Return type** | `void` | `V` (generic) |
+| **Kiểu trả về** | `void` | `V` (generic) |
 | **Exception** | Không ném checked | Có ném checked |
 | **Kết quả** | Không | Trả về qua `Future` |
 
@@ -301,6 +302,15 @@ System.out.println(counter.get()); // 6
 
 ## 10. Synchronizers
 
+Các utilities đồng bộ cấp cao để quản lý phối hợp giữa các threads.
+
+| Synchronizer | Mô tả | Method chính |
+|-------------|-------------|-------------|
+| `CountDownLatch` | Thread chờ đến khi countdown về 0 (một lần) | `countDown()`, `await()` |
+| `CyclicBarrier` | Threads chờ nhau tại một barrier point (tái sử dụng được) | `await()` |
+| `Semaphore` | Kiểm soát truy cập đến shared resource (permits) | `acquire()`, `release()` |
+| `Exchanger<V>` | Hai threads trao đổi dữ liệu | `exchange()` |
+
 ### 10.1. CountDownLatch
 
 Cho phép thread **chờ** đến khi một số tác vụ hoàn thành:
@@ -336,6 +346,36 @@ for (int i = 0; i < 3; i++) {
     }).start();
 }
 ```
+
+### 10.3. Exchanger<V>
+
+Cho hai thread **trao đổi dữ liệu** với nhau tại một điểm đồng bộ. Mỗi thread giữ một object và đợi để swap với thread kia.
+
+```java
+Exchanger<String> exchanger = new Exchanger<>();
+
+new Thread(() -> {
+    String data = "Gửi từ Thread 1";
+    try {
+        String received = exchanger.exchange(data);
+        System.out.println("Thread 1 nhận: " + received);
+    } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+    }
+}).start();
+
+new Thread(() -> {
+    String data = "Gửi từ Thread 2";
+    try {
+        String received = exchanger.exchange(data);
+        System.out.println("Thread 2 nhận: " + received);
+    } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+    }
+}).start();
+```
+
+> **Use case:** Cached data swapping, producer-consumer với hai chiều, genetic algorithms.
 
 ## 11. Fork/Join Framework
 
@@ -490,7 +530,7 @@ public class TransactionLivelock {
 | **Random backoff** | Thêm random delay giữa các retry — ngăn cản cả hai threads retry cùng lúc |
 | **Retry limit** | Từ bỏ sau N lần và fail gracefully |
 | **Lock-free structures** | Dùng `ConcurrentHashMap.compute()` thay vì manual locking |
-| **Thứ tự lock nhất quán** | Define consistent lock ordering across all code paths |
+| **Thứ tự lock nhất quán** | Định nghĩa thứ tự lock nhất quán cho tất cả code paths |
 | **Exponential backoff** | Tăng delay với mỗi retry (với jitter) |
 
 ---
@@ -507,8 +547,8 @@ public class TransactionLivelock {
 | **Chaining** | Không hỗ trợ | Hỗ trợ via `thenApply`, `thenCompose` |
 | **Exception handling** | Không hỗ trợ | Via `exceptionally`, `handle` |
 | **Combining futures** | Không hỗ trợ | `thenCombine`, `allOf`, `anyOf` |
-| **Multiple results** | Chỉ một kết quả | Stream of results possible |
-| **Callback style** | Blocking `get()` only | Non-blocking callbacks |
+| **Multiple results** | Chỉ một kết quả | Có thể trả về stream of results |
+| **Callback style** | Chỉ blocking `get()` | Non-blocking callbacks |
 
 ### 14.2. Tạo CompletableFutures
 
@@ -661,7 +701,7 @@ public CompletableFuture<UserProfile> getUserProfile(String userId) {
 |--------|-------|
 | `acquire()` | Acquire một permit (blocks nếu không có) |
 | `acquire(n)` | Acquire n permits |
-| `tryAcquire()` | Thử acquire không blocking (returns boolean) |
+| `tryAcquire()` | Thử acquire không blocking (trả về boolean) |
 | `tryAcquire(timeout)` | Thử acquire với timeout |
 | `release()` | Release một permit |
 | `release(n)` | Release n permits |
@@ -753,12 +793,12 @@ if (semaphore.tryAcquire(1, 5, TimeUnit.SECONDS)) {
 
 ### 15.4. Use Cases
 
-| Use Case | Ví dụ |
+| Trường hợp sử dụng | Ví dụ |
 |----------|-------|
 | **Rate limiting** | Giới hạn API calls đến N mỗi giây |
 | **Resource pooling** | Database connection pool, thread pool |
 | **Throttling** | Giới hạn concurrent requests đến một service |
-| **Coordination** | Traffic light pattern |
+| **Điều phối** | Traffic light pattern |
 
 ```java
 // Rate limiter sử dụng Semaphore
@@ -916,7 +956,7 @@ int currentPhase = phaser.getPhase();  // 0, 1, 2, ...
 
 ### 16.5. Khi nào dùng cái nào
 
-| Scenario | Synchronizer |
+| Trường hợp sử dụng | Synchronizer |
 |----------|-------------|
 | **Chờ N tasks hoàn thành, sau đó proceed** | `CountDownLatch` |
 | **Chờ N threads đến một barrier point, sau đó all proceed cùng nhau** | `CyclicBarrier` |

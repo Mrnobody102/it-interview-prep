@@ -47,5 +47,12 @@ export const otherSkills: Category = {
       id: "sonarqube",
       name: { vi: "SonarQube", en: "SonarQube" },
     },
+    {
+      id: "actuator-monitoring",
+      name: {
+        vi: "Spring Boot Actuator & Monitoring",
+        en: "Spring Boot Actuator & Monitoring",
+      },
+    },
   ],
 };

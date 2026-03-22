@@ -28,6 +28,10 @@ export const frontend: Category = {
       name: { vi: "React", en: "React" },
     },
     {
+      id: "javascript",
+      name: { vi: "JavaScript ES6+", en: "JavaScript ES6+" },
+    },
+    {
       id: "angular",
       name: { vi: "Angular", en: "Angular" },
     },
