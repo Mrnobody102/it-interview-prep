@@ -17,11 +17,11 @@
 ### 1.2. Các thành phần chính
 
 ```mermaid
-graph TB
-    subgraph "Job"
+flowchart TB
+    subgraph Job["Job"]
         J1[Job: ETL Pipeline]
     end
-    subgraph "Steps"
+    subgraph Steps["Steps"]
         S1[Step 1: Read]
         S2[Step 2: Process]
         S3[Step 3: Write]
@@ -584,7 +584,7 @@ public JdbcPagingItemReader<User> userReader(
 Để xử lý song song thực sự trên nhiều JVMs qua message queue:
 
 ```mermaid
-graph LR
+flowchart LR
     M[Mgr Process] -->|"Chunk requests"| MQ[Message Queue]
     MQ --> W1[Worker 1]
     MQ --> W2[Worker 2]

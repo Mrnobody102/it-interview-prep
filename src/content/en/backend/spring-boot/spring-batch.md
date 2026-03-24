@@ -17,16 +17,16 @@ Spring Batch is a lightweight, comprehensive batch processing framework designed
 ### 1.2. Key Components
 
 ```mermaid
-graph TB
-    subgraph "Job"
+flowchart TB
+    subgraph Job["Job"]
         J1[Job: ETL Pipeline]
     end
-    subgraph "Steps"
+    subgraph Steps["Steps"]
         S1[Step 1: Read]
         S2[Step 2: Process]
         S3[Step 3: Write]
     end
-    subgraph "Infrastructure"
+    subgraph Infrastructure["Infrastructure"]
         JR[JobRepository]
         JL[JobLauncher]
     end
@@ -584,7 +584,7 @@ public JdbcPagingItemReader<User> userReader(
 For truly parallel processing across multiple JVMs using a message queue:
 
 ```mermaid
-graph LR
+flowchart LR
     M[Mgr Process] -->|"Chunk requests"| MQ[Message Queue]
     MQ --> W1[Worker 1]
     MQ --> W2[Worker 2]

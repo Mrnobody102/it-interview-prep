@@ -323,9 +323,9 @@ Non-heap memory is managed outside the JVM heap in native memory.
 ```mermaid
 flowchart TD
     subgraph NONHEAP["Non-Heap Memory (Native)"]
-        META["Metaspace\nClass metadata, method info,\nstatic fields, annotations"]
-        CC["Code Cache\nJIT-compiled native code,\nbytecode stubs, profiling data"]
-        DB["Direct Buffers (NIO)\nOff-heap memory for\ndirect ByteBuffers"]
+        META["Metaspace<br/>Class metadata, method info,<br/>static fields, annotations"]
+        CC["Code Cache<br/>JIT-compiled native code,<br/>bytecode stubs, profiling data"]
+        DB["Direct Buffers (NIO)<br/>Off-heap memory for<br/>direct ByteBuffers"]
     end
 ```
 
@@ -392,10 +392,10 @@ java -XX:SurvivorRatio=4              # Eden : Survivor = 4 : 1 : 1 (faster agin
 ```mermaid
 flowchart TD
     subgraph GCS["Garbage Collection Algorithms"]
-        SM["Mark-Sweep\nMark live, sweep dead, no compaction"]
-        SC["Mark-Sweep-Compact\n+ Move objects to eliminate fragmentation"]
-        COP["Copying\nCopy live objects to new space"]
-        REF["Reference Counting\n+ Destroy when count=0\n(used by some languages, NOT by JVM)"]
+        SM["Mark-Sweep<br/>Mark live, sweep dead,<br/>no compaction"]
+        SC["Mark-Sweep-Compact<br/>+ Move objects to<br/>eliminate fragmentation"]
+        COP["Copying<br/>Copy live objects to new space"]
+        REF["Reference Counting<br/>+ Destroy when count=0<br/>(used by some languages, NOT by JVM)"]
     end
 
     SM -->|"Add compaction"| SC
@@ -446,12 +446,12 @@ java -XX:+UseConcMarkSweepGC -Xms2g -Xmx2g -jar legacy-app.jar
 ```mermaid
 flowchart TD
     subgraph G1_HEAP["G1 Heap (Divided into ~2048 Regions)"]
-        R1["Region 1\nYoung: Eden"]
-        R2["Region 2\nYoung: Eden"]
-        R3["Region 3\nYoung: S"]
-        R4["Region 4\nOld"]
-        R5["Region 5\nHumongous"]
-        R6["Region 6\nYoung: Eden"]
+        R1["Region 1<br/>Young: Eden"]
+        R2["Region 2<br/>Young: Eden"]
+        R3["Region 3<br/>Young: S"]
+        R4["Region 4<br/>Old"]
+        R5["Region 5<br/>Humongous"]
+        R6["Region 6<br/>Young: Eden"]
         RN["..."]
     end
 
@@ -572,9 +572,9 @@ java -XX:+UseShenandoahGC \
 
 ```mermaid
 flowchart LR
-    TH["Throughput Priority\n(Parallel GC)"] -->|"High throughput\nLonger pauses OK"| TH2["Batch Processing\nData pipelines\nHPC jobs"]
-    LAT["Latency Priority\n(ZGC / Shenandoah)"] -->|"Sub-ms pauses\nModerate throughput"| LAT2["Web APIs\nTrading systems\nReal-time apps"]
-    BAL["Balanced\n(G1GC)"] -->|"Reasonable both"| BAL2["General-purpose\nMicroservices\nContainers"]
+    TH["Throughput Priority<br/>(Parallel GC)"] -->|"High throughput<br/>Longer pauses OK"| TH2["Batch Processing<br/>Data pipelines<br/>HPC jobs"]
+    LAT["Latency Priority<br/>(ZGC / Shenandoah)"] -->|"Sub-ms pauses<br/>Moderate throughput"| LAT2["Web APIs<br/>Trading systems<br/>Real-time apps"]
+    BAL["Balanced<br/>(G1GC)"] -->|"Reasonable both"| BAL2["General-purpose<br/>Microservices<br/>Containers"]
 ```
 
 ### 11.3. Heap Size Guidelines

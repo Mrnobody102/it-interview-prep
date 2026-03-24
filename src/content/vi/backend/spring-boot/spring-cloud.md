@@ -508,7 +508,7 @@ public CompletableFuture<Result> timeoutFallback(Throwable t) {
 ### 14.1. Kiến trúc
 
 ```mermaid
-graph LR
+flowchart LR
     A[Spring Boot App] -->|JSON Logs| F[Filebeat]
     A -->|JSON Logs| L[Logstash]
     F --> E[Elasticsearch]

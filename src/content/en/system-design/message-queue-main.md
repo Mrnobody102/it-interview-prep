@@ -211,7 +211,7 @@ flowchart TB
         P[Publisher]
     end
     subgraph Exchange
-        E[Exchange\nDirect / Fanout / Topic / Headers]
+        E[Exchange<br/>Direct / Fanout / Topic / Headers]
     end
     subgraph Queues
         Q1[(Queue 1)]
@@ -297,15 +297,15 @@ channel.basicConsume("order.processing", false, deliverCallback, consumerTag -> 
 
 ```mermaid
 flowchart TD
-    Start[Choose Message Queue] --> Q1{Need very high throughput\nand message retention?}
+    Start[Choose Message Queue] --> Q1{Need very high throughput<br/>and message retention?}
     Q1 -->|Yes| Kafka[Apache Kafka]
-    Q1 -->|No| Q2{Need complex routing\nwith multiple consumers?}
+    Q1 -->|No| Q2{Need complex routing<br/>with multiple consumers?}
     Q2 -->|Yes| RabbitMQ[RabbitMQ]
-    Q2 -->|No| Q3{Need fully managed\ncloud solution?}
+    Q2 -->|No| Q3{Need fully managed<br/>cloud solution?}
     Q3 -->|Yes| SQS[Amazon SQS]
-    Q3 -->|No| Q4{Need extremely low latency\nwith existing Redis?}
+    Q3 -->|No| Q4{Need extremely low latency<br/>with existing Redis?}
     Q4 -->|Yes| Redis[Redis Streams]
-    Q4 -->|No| Default[Consider your ecosystem\nand team's expertise]
+    Q4 -->|No| Default[Consider your ecosystem<br/>and team's expertise]
 ```
 
 ## Best Practices

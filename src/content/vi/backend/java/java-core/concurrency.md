@@ -972,11 +972,11 @@ Fork/Join framework sử dụng **work-stealing** để cân bằng load hiệu 
 
 ```mermaid
 flowchart TD
-    W1["Worker Thread 1\nTasks: [A, B, C]"]
-    W2["Worker Thread 2\nTasks: []"]
-    W3["Worker Thread 3\nTasks: [X]"]
+    W1["Worker Thread 1<br/>Tasks: A, B, C"]
+    W2["Worker Thread 2<br/>Tasks: none"]
+    W3["Worker Thread 3<br/>Tasks: X"]
 
-    W1 -->|"Completes A, B, C\nNo more work"| W1Steal["Steal from W3: X"]
+    W1 -->|"Completes A, B, C<br/>No more work"| W1Steal["Steal from W3: X"]
     W3 -->|"X stolen"| Done["Thread 3 idle"]
 ```
 

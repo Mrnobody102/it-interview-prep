@@ -253,7 +253,7 @@ Bad shard key: `status` (only a few values, causes uneven distribution)
 ### Architecture Types
 
 ```mermaid
-graph TB
+flowchart TB
     App["Application"]
     Router["Shard Router / Proxy"]
     S1["Shard 1<br/>(DB Instance 1)"]

@@ -26,9 +26,9 @@ Observability trong hệ thống hiện đại dựa trên ba trụ cột:
 
 ```mermaid
 flowchart LR
-    Exporter1["node_exporter\n(Metrics)"] --> PS["Prometheus\nServer"]
-    Exporter2["cadvisor\n(Metrics)"] --> PS
-    Exporter3["app_exporter\n(Metrics)"] --> PS
+    Exporter1["node_exporter<br/>(Metrics)"] --> PS["Prometheus<br/>Server"]
+    Exporter2["cadvisor<br/>(Metrics)"] --> PS
+    Exporter3["app_exporter<br/>(Metrics)"] --> PS
     PG["Pushgateway"] --> PS
     PS --> TSDB["Time Series DB"]
     PS --> AM["Alertmanager"]
@@ -522,9 +522,9 @@ flowchart TD
     OT1 --> OTL["OTel Collector"]
     OT2 --> OTL
     OT3 --> OTL
-    OTL --> BA["Backend\n(Jaeger/Zipkin)"]
-    OTL --> ME["Metrics Backend\n(Prometheus)"]
-    OTL --> LO["Log Backend\n(Loki/ELK)"]
+    OTL --> BA["Backend<br/>(Jaeger/Zipkin)"]
+    OTL --> ME["Metrics Backend<br/>(Prometheus)"]
+    OTL --> LO["Log Backend<br/>(Loki/ELK)"]
 ```
 
 ### 8.2. Instrumenting a Node.js Application

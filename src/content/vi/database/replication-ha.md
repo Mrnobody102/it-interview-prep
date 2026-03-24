@@ -331,7 +331,7 @@ orchestrator -c graceful-master-takeover -i myhost:3306 -d mydb
 Read replicas cho phep ban scale read-heavy workloads bang cach phan phoi reads qua nhieu replicas.
 
 ```mermaid
-graph LR
+flowchart LR
     App["Application"]
     LB["Load Balancer"]
     P["Primary<br/>(Writes)"]

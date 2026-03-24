@@ -11,11 +11,11 @@ flowchart TD
     subgraph CL["CLIENT LAYER"]
         C["Browser / Mobile App"]
     end
-    C -->|HTTPS| CDN
+    C -->|HTTPS| CDN_EDGE
     subgraph CDN["CDN / EDGE LAYER"]
-        CDN["Cloudflare / CloudFront / Fastly"]
+        CDN_EDGE["Cloudflare / CloudFront / Fastly"]
     end
-    CDN --> LB
+    CDN_EDGE --> LB
     subgraph LB_LAYER["LOAD BALANCER LAYER"]
         LB["Nginx / HAProxy / AWS ALB"]
     end

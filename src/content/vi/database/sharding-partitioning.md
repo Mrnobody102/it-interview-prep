@@ -252,7 +252,7 @@ Shard key xau: `status` (chi it gia tri, phan phoi khong deu)
 ### Cac loai Architecture
 
 ```mermaid
-graph TB
+flowchart TB
     App["Application"]
     Router["Shard Router / Proxy"]
     S1["Shard 1<br/>(DB Instance 1)"]

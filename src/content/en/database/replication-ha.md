@@ -331,7 +331,7 @@ orchestrator -c graceful-master-takeover -i myhost:3306 -d mydb
 Read replicas allow you to scale read-heavy workloads by distributing reads across multiple replicas.
 
 ```mermaid
-graph LR
+flowchart LR
     App["Application"]
     LB["Load Balancer"]
     P["Primary<br/>(Writes)"]

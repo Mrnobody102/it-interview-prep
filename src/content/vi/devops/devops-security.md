@@ -6,11 +6,11 @@
 
 ```mermaid
 flowchart LR
-    Plan["Plan\n(Thiết kế)"] --> Code["Code\n(SAST)"]
-    Code --> Build["Build\n(Image Scan)"]
-    Build --> Test["Test\n(DAST)"]
-    Test --> Deploy["Deploy\n(Secret Scan)"]
-    Deploy --> Monitor["Monitor\n(Runtime)"]
+    Plan["Plan<br/>(Thiết kế)"] --> Code["Code<br/>(SAST)"]
+    Code --> Build["Build<br/>(Image Scan)"]
+    Build --> Test["Test<br/>(DAST)"]
+    Test --> Deploy["Deploy<br/>(Secret Scan)"]
+    Deploy --> Monitor["Monitor<br/>(Runtime)"]
     Plan -.-> Security["Security ở mọi giai đoạn"]
     Code -.-> Security
     Build -.-> Security
@@ -466,13 +466,13 @@ Một CI/CD security pipeline toàn diện nên bao gồm nhiều scanning stage
 
 ```mermaid
 flowchart TD
-    Code --> SAST["SAST\n(Static Analysis)"]
-    SAST --> Secrets["Secret Scan\n(Gitleaks)"]
-    Secrets --> Build["Build\n(Image Build)"]
-    Build --> Image["Image Scan\n(Trivy/Snyk)"]
-    Image --> DAST["DAST\n(Dynamic Analysis)"]
-    DAST --> Deploy["Deploy\nwith Policy Check"]
-    Image -.-> SBOM["SBOM\nGeneration"]
+    Code --> SAST["SAST<br/>(Static Analysis)"]
+    SAST --> Secrets["Secret Scan<br/>(Gitleaks)"]
+    Secrets --> Build["Build<br/>(Image Build)"]
+    Build --> Image["Image Scan<br/>(Trivy/Snyk)"]
+    Image --> DAST["DAST<br/>(Dynamic Analysis)"]
+    DAST --> Deploy["Deploy<br/>with Policy Check"]
+    Image -.-> SBOM["SBOM<br/>Generation"]
 ```
 
 ### 6.1. Ví dụ Complete Security Pipeline

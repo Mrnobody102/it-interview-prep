@@ -182,11 +182,11 @@ Mỗi phần được mã hóa Base64URL.
 
 ```mermaid
 flowchart LR
-    A["Header\n{ alg: HS256,\n  typ: JWT }"] --> B["Base64URL(A)"]
-    C["Payload\n{ sub: user123,\n  roles: USER,\n  exp: 1699999999 }"] --> D["Base64URL(C)"]
+    A["Header<br/>{ alg: HS256,<br/>  typ: JWT }"] --> B["Base64URL(A)"]
+    C["Payload<br/>{ sub: user123,<br/>  roles: USER,<br/>  exp: 1699999999 }"] --> D["Base64URL(C)"]
     B --> E["Header.Payload.Signature"]
     D --> E
-    F["Secret Key\n(chỉ server biết)"] --> G["HMAC-SHA256\n(Header.Payload, key)"]
+    F["Secret Key<br/>(chỉ server biết)"] --> G["HMAC-SHA256<br/>(Header.Payload, key)"]
     G --> E
 ```
 
@@ -301,8 +301,8 @@ Dùng chỉ một token có thời hạn dài rất nguy hiểm — nếu bị l
 ```mermaid
 flowchart TD
     subgraph Tokens["Hai loại Token"]
-        AT["Access Token\nNgắn hạn: 5-15 phút\nLưu: memory / localStorage"]
-        RT["Refresh Token\nDài hạn: 7-30 ngày\nLưu: HttpOnly cookie / Redis"]
+        AT["Access Token<br/>Ngắn hạn: 5-15 phút<br/>Lưu: memory / localStorage"]
+        RT["Refresh Token<br/>Dài hạn: 7-30 ngày<br/>Lưu: HttpOnly cookie / Redis"]
     end
 
     subgraph Flow["Luồng xác thực"]
@@ -628,11 +628,11 @@ Security Filter Chain là trái tim của Spring Security. Mọi HTTP request đ
 ```mermaid
 flowchart LR
     A["HTTP Request"] --> B["Security Filter Chain"]
-    B --> C["CsrfFilter\nBảo vệ CSRF"]
-    B --> D["CorsFilter\nXử lý CORS"]
-    B --> E["UsernamePasswordAuthenticationFilter\nTrích xuất credentials"]
-    B --> F["JwtAuthenticationFilter\nTrích xuất & xác minh JWT"]
-    B --> G["AuthorizationFilter\nKiểm tra quyền"]
+    B --> C["CsrfFilter<br/>Bảo vệ CSRF"]
+    B --> D["CorsFilter<br/>Xử lý CORS"]
+    B --> E["UsernamePasswordAuthenticationFilter<br/>Trích xuất credentials"]
+    B --> F["JwtAuthenticationFilter<br/>Trích xuất & xác minh JWT"]
+    B --> G["AuthorizationFilter<br/>Kiểm tra quyền"]
     G -->|Được phép| H["Controller"]
     G -->|Không được phép| I["403 Forbidden"]
     E -->|Credentials không hợp lệ| J["401 Unauthorized"]

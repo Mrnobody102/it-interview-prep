@@ -182,11 +182,11 @@ Each part is Base64URL-encoded.
 
 ```mermaid
 flowchart LR
-    A["Header\n{ alg: HS256,\n  typ: JWT }"] --> B["Base64URL(A)"]
-    C["Payload\n{ sub: user123,\n  roles: USER,\n  exp: 1699999999 }"] --> D["Base64URL(C)"]
+    A["Header<br/>{ alg: HS256,<br/>  typ: JWT }"] --> B["Base64URL(A)"]
+    C["Payload<br/>{ sub: user123,<br/>  roles: USER,<br/>  exp: 1699999999 }"] --> D["Base64URL(C)"]
     B --> E["Header.Payload.Signature"]
     D --> E
-    F["Secret Key\n(server-only)"] --> G["HMAC-SHA256\n(Header.Payload, key)"]
+    F["Secret Key<br/>(server-only)"] --> G["HMAC-SHA256<br/>(Header.Payload, key)"]
     G --> E
 ```
 
@@ -301,8 +301,8 @@ Using only one token with a long expiration is dangerous — if leaked, an attac
 ```mermaid
 flowchart TD
     subgraph Tokens["Token Types"]
-        AT["Access Token\nShort-lived: 5-15 min\nStored: memory / localStorage"]
-        RT["Refresh Token\nLong-lived: 7-30 days\nStored: HttpOnly cookie / Redis"]
+        AT["Access Token<br/>Short-lived: 5-15 min<br/>Stored: memory / localStorage"]
+        RT["Refresh Token<br/>Long-lived: 7-30 days<br/>Stored: HttpOnly cookie / Redis"]
     end
 
     subgraph Flow["Authentication Flow"]
@@ -628,11 +628,11 @@ The Security Filter Chain is the heart of Spring Security. Every HTTP request pa
 ```mermaid
 flowchart LR
     A["HTTP Request"] --> B["Security Filter Chain"]
-    B --> C["CsrfFilter\nCSRF protection"]
-    B --> D["CorsFilter\nCORS handling"]
-    B --> E["UsernamePasswordAuthenticationFilter\nExtract credentials"]
-    B --> F["JwtAuthenticationFilter\nExtract & validate JWT"]
-    B --> G["AuthorizationFilter\nCheck permissions"]
+    B --> C["CsrfFilter<br/>CSRF protection"]
+    B --> D["CorsFilter<br/>CORS handling"]
+    B --> E["UsernamePasswordAuthenticationFilter<br/>Extract credentials"]
+    B --> F["JwtAuthenticationFilter<br/>Extract & validate JWT"]
+    B --> G["AuthorizationFilter<br/>Check permissions"]
     G -->|Authorized| H["Controller"]
     G -->|Not Authorized| I["403 Forbidden"]
     E -->|Invalid credentials| J["401 Unauthorized"]

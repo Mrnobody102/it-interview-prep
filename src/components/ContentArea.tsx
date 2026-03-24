@@ -1,7 +1,9 @@
-import { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeRaw from "rehype-raw";
+import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
+import { vscDarkPlus, vs } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { type Category, type Topic } from "../data/categories";
 import { getContentForTopicAsync } from "../lib/content";
 import mermaid from "mermaid";
@@ -200,7 +202,7 @@ export function ContentArea({
             remarkPlugins={[remarkGfm]}
             rehypePlugins={[rehypeRaw]}
             components={{
-              code({ node, className, children, ...props }) {
+              code({ className, children }) {
                 const match = /language-(\w+)/.exec(className || "");
                 const codeStr = String(children).replace(/\n$/, "");
 
@@ -211,11 +213,32 @@ export function ContentArea({
                   );
                 }
 
+                const language = match ? match[1] : "text";
+                const isDark = typeof window !== "undefined"
+                  ? window.matchMedia("(prefers-color-scheme: dark)").matches
+                  : false;
                 return (
-                  <code className={className} {...props}>
-                    {children}
-                  </code>
+                  <SyntaxHighlighter
+                    language={language}
+                    style={isDark ? vscDarkPlus : vs}
+                    customStyle={{
+                      margin: "1em 0",
+                      borderRadius: "0.5rem",
+                      fontSize: "0.875rem",
+                      padding: "1rem 1.25rem",
+                    }}
+                    codeTagProps={{
+                      style: {
+                        fontFamily: "inherit",
+                      },
+                    }}
+                  >
+                    {codeStr}
+                  </SyntaxHighlighter>
                 );
+              },
+              pre({ children }: { children?: React.ReactNode }) {
+                return <>{children}</>;
               },
             }}
           >
