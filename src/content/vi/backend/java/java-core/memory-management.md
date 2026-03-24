@@ -108,15 +108,15 @@ Object **reachable** nếu có thể truy cập từ một GC Root. Chỉ object
 
 ```mermaid
 flowchart LR
-    CREATED["Object được tạo<br/>(Eden Space)"]
-    YG["Young Generation<br/>(Survivor S0/S1)"]
-    OG["Old Generation<br/>(Tenured)"]
+    CREATED["Object được tạo<br>(Eden Space)"]
+    YG["Young Generation<br>(Survivor S0/S1)"]
+    OG["Old Generation<br>(Tenured)"]
     DEAD["Garbage Collected"]
 
-    CREATED -->|"Minor GC<br/>(survives)"| YG
-    YG -->|"Aging<br/>(tenuring threshold)"| OG
+    CREATED -->|"Minor GC<br>(survives)"| YG
+    YG -->|"Aging<br>(tenuring threshold)"| OG
     OG -->|"Major/Full GC"| DEAD
-    CREATED -->|"Minor GC<br/>(dies)"| DEAD
+    CREATED -->|"Minor GC<br>(dies)"| DEAD
 ```
 
 ---

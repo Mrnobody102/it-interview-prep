@@ -25,12 +25,12 @@ flowchart TD
         Sched["Scheduler"]
         API["REST API"]
     end
-    Master --> Storage["Config / Build History<br/>(Disk)"]
+    Master --> Storage["Config / Build History<br>(Disk)"]
 
     subgraph Agents["Jenkins Agents (Nodes)"]
-        Agent1["Agent 1<br/>(Linux)"]
-        Agent2["Agent 2<br/>(Windows)"]
-        Agent3["Agent 3<br/>(Docker)"]
+        Agent1["Agent 1<br>(Linux)"]
+        Agent2["Agent 2<br>(Windows)"]
+        Agent3["Agent 3<br>(Docker)"]
     end
 
     WebUI --> Sched

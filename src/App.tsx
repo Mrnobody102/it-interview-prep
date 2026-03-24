@@ -140,6 +140,7 @@ export default function App() {
           selectedCategory={selectedCategory}
           selectedTopic={selectedTopic}
           language={language}
+          isDarkMode={isDarkMode}
           onTopicSelect={handleTopicSelect}
         />
       </div>

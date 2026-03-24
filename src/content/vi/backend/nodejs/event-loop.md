@@ -14,7 +14,7 @@ Node.js chạy trên một single thread (main thread), nhưng xử lý concurre
 flowchart TD
     subgraph V8["V8 Engine (Single Thread)"]
         STACK["Call Stack"]
-        EV["Event Loop<br/>timers → pending → poll → check → close"]
+        EV["Event Loop<br>timers → pending → poll → check → close"]
     end
     TP["Thread Pool (libuv)"]
     IO["I/O Callbacks"]
@@ -49,12 +49,12 @@ Event loop trong Node.js có 6 phases chính, mỗi phase xử lý một loại 
 ```mermaid
 flowchart TD
     subgraph EL["Event Loop Phases"]
-        T["1. Timers<br/>setTimeout, setInterval"]
-        P["2. Pending Callbacks<br/>I/O callbacks deferred"]
-        IP["3. Idle, Prepare<br/>Internal only"]
-        POLL["4. Poll<br/>Retrieve new I/O, execute callbacks"]
-        CHK["5. Check<br/>setImmediate()"]
-        CL["6. Close Callbacks<br/>socket.on('close')"]
+        T["1. Timers<br>setTimeout, setInterval"]
+        P["2. Pending Callbacks<br>I/O callbacks deferred"]
+        IP["3. Idle, Prepare<br>Internal only"]
+        POLL["4. Poll<br>Retrieve new I/O, execute callbacks"]
+        CHK["5. Check<br>setImmediate()"]
+        CL["6. Close Callbacks<br>socket.on('close')"]
     end
     T --> P --> IP --> POLL --> CHK --> CL
     CL -.->|"repeat"| T

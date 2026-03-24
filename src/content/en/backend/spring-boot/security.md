@@ -182,11 +182,11 @@ Each part is Base64URL-encoded.
 
 ```mermaid
 flowchart LR
-    A["Header<br/>{ alg: HS256,<br/>  typ: JWT }"] --> B["Base64URL(A)"]
-    C["Payload<br/>{ sub: user123,<br/>  roles: USER,<br/>  exp: 1699999999 }"] --> D["Base64URL(C)"]
+    A["Header<br>{ alg: HS256,<br>  typ: JWT }"] --> B["Base64URL(A)"]
+    C["Payload<br>{ sub: user123,<br>  roles: USER,<br>  exp: 1699999999 }"] --> D["Base64URL(C)"]
     B --> E["Header.Payload.Signature"]
     D --> E
-    F["Secret Key<br/>(server-only)"] --> G["HMAC-SHA256<br/>(Header.Payload, key)"]
+    F["Secret Key<br>(server-only)"] --> G["HMAC-SHA256<br>(Header.Payload, key)"]
     G --> E
 ```
 
@@ -262,12 +262,12 @@ sequenceDiagram
     Client->>Auth_Server: POST /login (username, password)
     Auth_Server->>Auth_Server: Verify credentials
     Auth_Server->>Client: Return JWT (access + refresh tokens)
-    Note over Client: Store access token in memory<br/>Store refresh token in HttpOnly cookie
+    Note over Client: Store access token in memory<br>Store refresh token in HttpOnly cookie
 
-    Client->>API_Server: GET /api/protected<br/>Authorization: Bearer <access_token>
+    Client->>API_Server: GET /api/protected<br>Authorization: Bearer <access_token>
     API_Server->>API_Server: Verify JWT signature & expiration
     API_Server->>Client: Return protected resource
-    Note over API_Server: No session storage needed<br/>Stateless verification
+    Note over API_Server: No session storage needed<br>Stateless verification
 
     Client->>Auth_Server: POST /refresh (with refresh token)
     Auth_Server->>Auth_Server: Verify refresh token
@@ -301,8 +301,8 @@ Using only one token with a long expiration is dangerous — if leaked, an attac
 ```mermaid
 flowchart TD
     subgraph Tokens["Token Types"]
-        AT["Access Token<br/>Short-lived: 5-15 min<br/>Stored: memory / localStorage"]
-        RT["Refresh Token<br/>Long-lived: 7-30 days<br/>Stored: HttpOnly cookie / Redis"]
+        AT["Access Token<br>Short-lived: 5-15 min<br>Stored: memory / localStorage"]
+        RT["Refresh Token<br>Long-lived: 7-30 days<br>Stored: HttpOnly cookie / Redis"]
     end
 
     subgraph Flow["Authentication Flow"]
@@ -565,7 +565,7 @@ sequenceDiagram
     User->>Client: Callback with authorization code
     Client->>Auth_Server: POST /token (code, client_secret, redirect_uri)
     Auth_Server->>Client: Return access_token + refresh_token
-    Client->>Resource_Server: GET /api/resource<br/>Authorization: Bearer <access_token>
+    Client->>Resource_Server: GET /api/resource<br>Authorization: Bearer <access_token>
     Resource_Server->>Auth_Server: Validate token (or check JWKS)
     Auth_Server->>Resource_Server: Token valid, return claims
     Resource_Server->>Client: Protected resource
@@ -628,11 +628,11 @@ The Security Filter Chain is the heart of Spring Security. Every HTTP request pa
 ```mermaid
 flowchart LR
     A["HTTP Request"] --> B["Security Filter Chain"]
-    B --> C["CsrfFilter<br/>CSRF protection"]
-    B --> D["CorsFilter<br/>CORS handling"]
-    B --> E["UsernamePasswordAuthenticationFilter<br/>Extract credentials"]
-    B --> F["JwtAuthenticationFilter<br/>Extract & validate JWT"]
-    B --> G["AuthorizationFilter<br/>Check permissions"]
+    B --> C["CsrfFilter<br>CSRF protection"]
+    B --> D["CorsFilter<br>CORS handling"]
+    B --> E["UsernamePasswordAuthenticationFilter<br>Extract credentials"]
+    B --> F["JwtAuthenticationFilter<br>Extract & validate JWT"]
+    B --> G["AuthorizationFilter<br>Check permissions"]
     G -->|Authorized| H["Controller"]
     G -->|Not Authorized| I["403 Forbidden"]
     E -->|Invalid credentials| J["401 Unauthorized"]
@@ -651,13 +651,13 @@ sequenceDiagram
 
     Client->>FilterChain: HTTP Request with token
     FilterChain->>Filters: Pass through each filter (CSRF, CORS, etc.)
-    Filters->>Filters: Extract credentials<br/>(username/password or JWT)
+    Filters->>Filters: Extract credentials<br>(username/password or JWT)
     Filters->>AuthManager: Delegate to AuthenticationManager
-    AuthManager->>AuthProvider: AuthenticationProvider<br/>verifies credentials
+    AuthManager->>AuthProvider: AuthenticationProvider<br>verifies credentials
     AuthProvider-->>AuthManager: Return authenticated Principal
     AuthManager-->>Filters: Authentication object
-    Filters->>Filters: Store Authentication in<br/>SecurityContextHolder
-    Filters->>Filters: Run authorization checks<br/>(roles, authorities)
+    Filters->>Filters: Store Authentication in<br>SecurityContextHolder
+    Filters->>Filters: Run authorization checks<br>(roles, authorities)
     alt Authorized
         Filters->>Controller: Request proceeds
         Controller-->>Client: Response
@@ -803,19 +803,19 @@ In a microservices architecture, the API Gateway is the single entry point for a
 sequenceDiagram
     participant Client
     participant Gateway as API Gateway
-    participant Auth as Auth Server<br/>(JWKS)
-    participant Service as Downstream<br/>Microservice
+    participant Auth as Auth Server<br>(JWKS)
+    participant Service as Downstream<br>Microservice
 
-    Client->>Gateway: GET /api/orders/123<br/>Authorization: Bearer <jwt>
+    Client->>Gateway: GET /api/orders/123<br>Authorization: Bearer <jwt>
     Gateway->>Gateway: Route to /api/orders/**
     Gateway->>Gateway: Extract JWT from header
-    Gateway->>Auth: GET /.well-known/jwks.json<br/>Fetch public key
+    Gateway->>Auth: GET /.well-known/jwks.json<br>Fetch public key
     Auth-->>Gateway: Public key (RSA)
     Gateway->>Gateway: Verify JWT signature
     Gateway->>Gateway: Check expiration, issuer, audience
     Gateway->>Gateway: Extract roles/claims from token
     Gateway->>Gateway: Evaluate authorization rules
-    Gateway->>Service: Forward request with headers<br/>X-User-Id: user123<br/>X-User-Roles: ADMIN,USER
+    Gateway->>Service: Forward request with headers<br>X-User-Id: user123<br>X-User-Roles: ADMIN,USER
     Service->>Service: Business logic
     Service-->>Gateway: Response
     Gateway-->>Client: Response

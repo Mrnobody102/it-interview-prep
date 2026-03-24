@@ -22,11 +22,11 @@ The event loop processes callbacks in a specific order across multiple phases:
 ```mermaid
 flowchart TD
     subgraph EL["EVENT LOOP"]
-        T["Timers Phase<br/>setTimeout, setInterval"]
+        T["Timers Phase<br>setTimeout, setInterval"]
         P["Pending Callbacks"]
         IP["Idle, Prepare"]
-        POLL["Poll Phase<br/>I/O events"]
-        CHK["Check Phase<br/>setImmediate"]
+        POLL["Poll Phase<br>I/O events"]
+        CHK["Check Phase<br>setImmediate"]
         CL["Close Callbacks"]
     end
     T --> P --> IP --> POLL --> CHK --> CL

@@ -182,11 +182,11 @@ Mỗi phần được mã hóa Base64URL.
 
 ```mermaid
 flowchart LR
-    A["Header<br/>{ alg: HS256,<br/>  typ: JWT }"] --> B["Base64URL(A)"]
-    C["Payload<br/>{ sub: user123,<br/>  roles: USER,<br/>  exp: 1699999999 }"] --> D["Base64URL(C)"]
+    A["Header<br>{ alg: HS256,<br>  typ: JWT }"] --> B["Base64URL(A)"]
+    C["Payload<br>{ sub: user123,<br>  roles: USER,<br>  exp: 1699999999 }"] --> D["Base64URL(C)"]
     B --> E["Header.Payload.Signature"]
     D --> E
-    F["Secret Key<br/>(chỉ server biết)"] --> G["HMAC-SHA256<br/>(Header.Payload, key)"]
+    F["Secret Key<br>(chỉ server biết)"] --> G["HMAC-SHA256<br>(Header.Payload, key)"]
     G --> E
 ```
 
@@ -262,12 +262,12 @@ sequenceDiagram
     Client->>Auth_Server: POST /login (username, password)
     Auth_Server->>Auth_Server: Xác minh thông tin đăng nhập
     Auth_Server->>Client: Trả về JWT (access + refresh tokens)
-    Note over Client: Lưu access token vào bộ nhớ<br/>Lưu refresh token vào HttpOnly cookie
+    Note over Client: Lưu access token vào bộ nhớ<br>Lưu refresh token vào HttpOnly cookie
 
-    Client->>API_Server: GET /api/protected<br/>Authorization: Bearer <access_token>
+    Client->>API_Server: GET /api/protected<br>Authorization: Bearer <access_token>
     API_Server->>API_Server: Xác minh chữ ký & hạn token
     API_Server->>Client: Trả về dữ liệu được bảo vệ
-    Note over API_Server: Không cần lưu session<br/>Xác minh không trạng thái
+    Note over API_Server: Không cần lưu session<br>Xác minh không trạng thái
 
     Client->>Auth_Server: POST /refresh (kèm refresh token)
     Auth_Server->>Auth_Server: Xác minh refresh token
@@ -301,8 +301,8 @@ Dùng chỉ một token có thời hạn dài rất nguy hiểm — nếu bị l
 ```mermaid
 flowchart TD
     subgraph Tokens["Hai loại Token"]
-        AT["Access Token<br/>Ngắn hạn: 5-15 phút<br/>Lưu: memory / localStorage"]
-        RT["Refresh Token<br/>Dài hạn: 7-30 ngày<br/>Lưu: HttpOnly cookie / Redis"]
+        AT["Access Token<br>Ngắn hạn: 5-15 phút<br>Lưu: memory / localStorage"]
+        RT["Refresh Token<br>Dài hạn: 7-30 ngày<br>Lưu: HttpOnly cookie / Redis"]
     end
 
     subgraph Flow["Luồng xác thực"]
@@ -565,7 +565,7 @@ sequenceDiagram
     User->>Client: Callback với authorization code
     Client->>Auth_Server: POST /token (code, client_secret, redirect_uri)
     Auth_Server->>Client: Trả về access_token + refresh_token
-    Client->>Resource_Server: GET /api/resource<br/>Authorization: Bearer <access_token>
+    Client->>Resource_Server: GET /api/resource<br>Authorization: Bearer <access_token>
     Resource_Server->>Auth_Server: Xác minh token (hoặc check JWKS)
     Auth_Server->>Resource_Server: Token hợp lệ, trả về claims
     Resource_Server->>Client: Tài nguyên được bảo vệ
@@ -628,11 +628,11 @@ Security Filter Chain là trái tim của Spring Security. Mọi HTTP request đ
 ```mermaid
 flowchart LR
     A["HTTP Request"] --> B["Security Filter Chain"]
-    B --> C["CsrfFilter<br/>Bảo vệ CSRF"]
-    B --> D["CorsFilter<br/>Xử lý CORS"]
-    B --> E["UsernamePasswordAuthenticationFilter<br/>Trích xuất credentials"]
-    B --> F["JwtAuthenticationFilter<br/>Trích xuất & xác minh JWT"]
-    B --> G["AuthorizationFilter<br/>Kiểm tra quyền"]
+    B --> C["CsrfFilter<br>Bảo vệ CSRF"]
+    B --> D["CorsFilter<br>Xử lý CORS"]
+    B --> E["UsernamePasswordAuthenticationFilter<br>Trích xuất credentials"]
+    B --> F["JwtAuthenticationFilter<br>Trích xuất & xác minh JWT"]
+    B --> G["AuthorizationFilter<br>Kiểm tra quyền"]
     G -->|Được phép| H["Controller"]
     G -->|Không được phép| I["403 Forbidden"]
     E -->|Credentials không hợp lệ| J["401 Unauthorized"]
@@ -651,13 +651,13 @@ sequenceDiagram
 
     Client->>FilterChain: HTTP Request với token
     FilterChain->>Filters: Đi qua từng filter (CSRF, CORS,...)
-    Filters->>Filters: Trích xuất credentials<br/>(username/password hoặc JWT)
+    Filters->>Filters: Trích xuất credentials<br>(username/password hoặc JWT)
     Filters->>AuthManager: Ủy quyền cho AuthenticationManager
-    AuthManager->>AuthProvider: AuthenticationProvider<br/>xác minh credentials
+    AuthManager->>AuthProvider: AuthenticationProvider<br>xác minh credentials
     AuthProvider-->>AuthManager: Trả về Principal đã xác thực
     AuthManager-->>Filters: Đối tượng Authentication
-    Filters->>Filters: Lưu Authentication vào<br/>SecurityContextHolder
-    Filters->>Filters: Chạy kiểm tra authorization<br/>(roles, authorities)
+    Filters->>Filters: Lưu Authentication vào<br>SecurityContextHolder
+    Filters->>Filters: Chạy kiểm tra authorization<br>(roles, authorities)
     alt Được phép
         Filters->>Controller: Request tiếp tục
         Controller-->>Client: Response
@@ -803,19 +803,19 @@ Trong kiến trúc microservices, API Gateway là điểm vào duy nhất cho t�
 sequenceDiagram
     participant Client
     participant Gateway as API Gateway
-    participant Auth as Auth Server<br/>(JWKS)
-    participant Service as Microservice<br/>Downstream
+    participant Auth as Auth Server<br>(JWKS)
+    participant Service as Microservice<br>Downstream
 
-    Client->>Gateway: GET /api/orders/123<br/>Authorization: Bearer <jwt>
+    Client->>Gateway: GET /api/orders/123<br>Authorization: Bearer <jwt>
     Gateway->>Gateway: Route đến /api/orders/**
     Gateway->>Gateway: Trích xuất JWT từ header
-    Gateway->>Auth: GET /.well-known/jwks.json<br/>Lấy public key
+    Gateway->>Auth: GET /.well-known/jwks.json<br>Lấy public key
     Auth-->>Gateway: Public key (RSA)
     Gateway->>Gateway: Xác minh chữ ký JWT
     Gateway->>Gateway: Kiểm tra expiration, issuer, audience
     Gateway->>Gateway: Trích xuất roles/claims từ token
     Gateway->>Gateway: Đánh giá quy tắc authorization
-    Gateway->>Service: Chuyển tiếp request với headers<br/>X-User-Id: user123<br/>X-User-Roles: ADMIN,USER
+    Gateway->>Service: Chuyển tiếp request với headers<br>X-User-Id: user123<br>X-User-Roles: ADMIN,USER
     Service->>Service: Business logic
     Service-->>Gateway: Response
     Gateway-->>Client: Response

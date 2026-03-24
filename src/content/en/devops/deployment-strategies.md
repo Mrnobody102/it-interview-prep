@@ -110,7 +110,7 @@ flowchart LR
     User1["User Traffic"] --> LB["Load Balancer"]
     User2["User Traffic"] --> LB
     LB -->|Switch Command| Green["Green Environment v2"]
-    LB -.->|Routed to| Blue["Blue Environment v1<br/>(Standby)"]
+    LB -.->|Routed to| Blue["Blue Environment v1<br>(Standby)"]
     Green -.->|Rollback| Blue
 ```
 
@@ -406,8 +406,8 @@ const isEnabled = (hashString(userId + 'newCheckoutFlow') % 100) < percentage;
 ```mermaid
 flowchart LR
     User["User Traffic"] --> Router["Traffic Router"]
-    Router -->|50%| A["Version A<br/>(Control)"]
-    Router -->|50%| B["Version B<br/>(Treatment)"]
+    Router -->|50%| A["Version A<br>(Control)"]
+    Router -->|50%| B["Version B<br>(Treatment)"]
     A --> MetricsA["Collect Metrics"]
     B --> MetricsB["Collect Metrics"]
     MetricsA --> Analysis["Statistical Analysis"]

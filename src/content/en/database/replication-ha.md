@@ -334,10 +334,10 @@ Read replicas allow you to scale read-heavy workloads by distributing reads acro
 flowchart LR
     App["Application"]
     LB["Load Balancer"]
-    P["Primary<br/>(Writes)"]
-    R1["Replica 1<br/>(Reads)"]
-    R2["Replica 2<br/>(Reads)"]
-    R3["Replica 3<br/>(Reads)"]
+    P["Primary<br>(Writes)"]
+    R1["Replica 1<br>(Reads)"]
+    R2["Replica 2<br>(Reads)"]
+    R3["Replica 3<br>(Reads)"]
 
     App --> LB
     LB --> P

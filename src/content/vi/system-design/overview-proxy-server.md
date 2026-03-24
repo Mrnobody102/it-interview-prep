@@ -73,7 +73,7 @@ flowchart LR
 ```mermaid
 flowchart LR
     C["Client"]
-    RP["Reverse Proxy<br/>(Nginx, Cloudflare)"]
+    RP["Reverse Proxy<br>(Nginx, Cloudflare)"]
     SA["Server A"]
     SB["Server B"]
     SC["Server C"]

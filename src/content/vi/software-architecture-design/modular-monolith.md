@@ -42,9 +42,9 @@ Microservices      →  Tách thành nhiều "nồi" nhỏ riêng biệt
 flowchart TB
     subgraph MONOLITH["MONOLITH"]
         subgraph MODULES["Modules"]
-            O["Module Order<br/>domain/ service/ repo/"]
-            U["Module User<br/>domain/ service/ repo/"]
-            P["Module Payment<br/>domain/ service/ repo/"]
+            O["Module Order<br>domain/ service/ repo/"]
+            U["Module User<br>domain/ service/ repo/"]
+            P["Module Payment<br>domain/ service/ repo/"]
         end
         SHARED["Shared / Common"]
         MODULES --> SHARED

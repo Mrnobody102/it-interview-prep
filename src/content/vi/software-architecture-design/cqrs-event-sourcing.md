@@ -13,8 +13,8 @@ flowchart TD
     CMD["Command"]
     QRY["Query"]
 
-    CMD --> W["Write Model<br/>(Domain)"]
-    QRY --> R["Read Model<br/>(Projections)"]
+    CMD --> W["Write Model<br>(Domain)"]
+    QRY --> R["Read Model<br>(Projections)"]
 
     W -->|"Changes"| PUB["Event Publisher"]
     PUB --> SUB["Event Handlers"]
@@ -214,15 +214,15 @@ Event Sourcing lưu trữ **events**, không phải state. Mỗi thay đổi đ�
 ```mermaid
 flowchart LR
     subgraph Traditional["Traditional Storage"]
-        TDB[("Database<br/>Current State")]
+        TDB[("Database<br>Current State")]
     end
 
     subgraph EventSourced["Event Sourcing"]
         ES1[("Event Store")]
-        ES2[("Event 1<br/>OrderCreated")]
-        ES3[("Event 2<br/>ItemAdded")]
-        ES4[("Event 3<br/>ItemRemoved")]
-        ES5[("Event 4<br/>OrderConfirmed")]
+        ES2[("Event 1<br>OrderCreated")]
+        ES3[("Event 2<br>ItemAdded")]
+        ES4[("Event 3<br>ItemRemoved")]
+        ES5[("Event 4<br>OrderConfirmed")]
     end
 
     ES1 --> ES2
@@ -398,7 +398,7 @@ flowchart TD
     CMD --> CH["Command Handler"]
     CH --> DOM["Domain Model"]
     DOM --> EVT["Domain Events"]
-    EVT --> ES["Event Store<br/>(Source of Truth)"]
+    EVT --> ES["Event Store<br>(Source of Truth)"]
     ES --> PUB["Event Bus"]
     PUB --> PH["Projection Handlers"]
     PH --> RDB["Read Database"]

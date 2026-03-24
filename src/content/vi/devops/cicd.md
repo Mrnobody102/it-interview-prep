@@ -65,10 +65,10 @@
 ```mermaid
 flowchart LR
     COMMIT["Commit & Push"]
-    BUILD["Build<br/>Compile & Bundle"]
-    TEST["Test<br/>Unit & Integration"]
-    STAGING["Staging Deploy<br/>Smoke & E2E"]
-    PROD["Production Deploy<br/>Manual/Auto"]
+    BUILD["Build<br>Compile & Bundle"]
+    TEST["Test<br>Unit & Integration"]
+    STAGING["Staging Deploy<br>Smoke & E2E"]
+    PROD["Production Deploy<br>Manual/Auto"]
     COMMIT --> BUILD --> TEST --> STAGING --> PROD
 ```
 
@@ -91,16 +91,16 @@ Sơ đồ Mermaid chi tiết từ commit đến production:
 
 ```mermaid
 flowchart TD
-    COMMIT["Code Commit<br/>Push to Git"] --> LINT["Lint &<br/>Code Quality"]
-    LINT --> BUILD["Build<br/>Compile & Bundle"]
+    COMMIT["Code Commit<br>Push to Git"] --> LINT["Lint &<br>Code Quality"]
+    LINT --> BUILD["Build<br>Compile & Bundle"]
     BUILD --> UNIT["Unit Tests"]
     UNIT --> INT["Integration Tests"]
-    INT --> SONAR["Security Scan<br/>SonarQube"]
-    SONAR --> DOCKERBUILD["Build Docker<br/>Image"]
-    DOCKERBUILD --> PUSH["Push to<br/>Container Registry"]
-    PUSH --> K8S["Deploy to K8s<br/>Rolling Update"]
+    INT --> SONAR["Security Scan<br>SonarQube"]
+    SONAR --> DOCKERBUILD["Build Docker<br>Image"]
+    DOCKERBUILD --> PUSH["Push to<br>Container Registry"]
+    PUSH --> K8S["Deploy to K8s<br>Rolling Update"]
     K8S --> SMOKE["Smoke Tests"]
-    SMOKE --> MONITOR["Monitor &<br/>Alert"]
+    SMOKE --> MONITOR["Monitor &<br>Alert"]
     SONAR -.->|"Fail on Critical Issues"| FAIL["Pipeline Fails"]
     K8S -.->|"Rollback on Failure"| MONITOR
     SMOKE -.->|"Test Failure"| FAIL

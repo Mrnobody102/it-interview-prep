@@ -255,9 +255,9 @@ Shard key xau: `status` (chi it gia tri, phan phoi khong deu)
 flowchart TB
     App["Application"]
     Router["Shard Router / Proxy"]
-    S1["Shard 1<br/>(DB Instance 1)"]
-    S2["Shard 2<br/>(DB Instance 2)"]
-    S3["Shard N<br/>(DB Instance N)"]
+    S1["Shard 1<br>(DB Instance 1)"]
+    S2["Shard 2<br>(DB Instance 2)"]
+    S3["Shard N<br>(DB Instance N)"]
 
     App --> Router
     Router --> S1

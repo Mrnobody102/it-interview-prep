@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Search, X } from 'lucide-react';
 import { categories, type Category, type Topic } from '../data/categories/index';
+import { searchContent, initSearchIndex, type ContentSearchResult } from '../lib/content';
 
 interface SearchModalProps {
   isOpen: boolean;
@@ -10,15 +11,53 @@ interface SearchModalProps {
 }
 
 interface SearchResult {
+  type: 'topic' | 'content';
   topic: Topic;
   category: Category;
   path: string[];
+  snippet?: string;
+}
+
+function buildTopicMap(lang: 'vi' | 'en') {
+  const topicMap = new Map<string, { topicId: string; topicName: string; categoryId: string; categoryName: string }>();
+
+  function topicIdToFilename(topicId: string, parentId?: string): string {
+    if (!parentId) return topicId;
+    const prefix = parentId + '-';
+    if (topicId.startsWith(prefix)) return topicId.slice(prefix.length);
+    return topicId;
+  }
+
+  function processTopics(topics: Topic[], catId: string, catName: string, parentId?: string) {
+    for (const t of topics) {
+      const filename = topicIdToFilename(t.id, parentId);
+      topicMap.set(`${lang}:${filename}`, {
+        topicId: t.id,
+        topicName: t.name[lang],
+        categoryId: catId,
+        categoryName: catName,
+      });
+      if (t.subtopics) processTopics(t.subtopics, catId, catName, t.id);
+    }
+  }
+
+  for (const cat of categories) {
+    processTopics(cat.topics, cat.id, cat.name[lang]);
+  }
+
+  return topicMap;
 }
 
 export function SearchModal({ isOpen, onClose, language, onTopicSelect }: SearchModalProps) {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<SearchResult[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // Initialize search index once
+  const searchIndexRef = useRef<ReturnType<typeof initSearchIndex> | null>(null);
+  if (!searchIndexRef.current) {
+    searchIndexRef.current = initSearchIndex(buildTopicMap(language));
+  }
 
   useEffect(() => {
     if (isOpen) {
@@ -34,16 +73,20 @@ export function SearchModal({ isOpen, onClose, language, onTopicSelect }: Search
       return;
     }
 
-    const searchResults: SearchResult[] = [];
+    const combinedResults: SearchResult[] = [];
+    const seen = new Set<string>();
     const lowerQuery = query.toLowerCase();
 
+    // 1. Search by topic name
     const searchTopic = (topic: Topic, category: Category, path: string[]) => {
       const topicName = topic.name[language].toLowerCase();
-
       if (topicName.includes(lowerQuery)) {
-        searchResults.push({ topic, category, path: [...path, topic.name[language]] });
+        const key = `${category.id}:${topic.id}`;
+        if (!seen.has(key)) {
+          seen.add(key);
+          combinedResults.push({ type: 'topic', topic, category, path: [...path, topic.name[language]] });
+        }
       }
-
       if (topic.subtopics) {
         topic.subtopics.forEach((subtopic) =>
           searchTopic(subtopic, category, [...path, topic.name[language]])
@@ -51,14 +94,45 @@ export function SearchModal({ isOpen, onClose, language, onTopicSelect }: Search
       }
     };
 
-    categories.forEach((category) => {
-      category.topics.forEach((topic) => {
+    for (const category of categories) {
+      for (const topic of category.topics) {
         searchTopic(topic, category, [category.name[language]]);
-      });
-    });
+      }
+    }
 
-    setResults(searchResults.slice(0, 10));
+    // 2. Search by content
+    const contentResults: ContentSearchResult[] = searchContent(query, language, 10);
+    for (const cr of contentResults) {
+      const key = `${cr.categoryId}:${cr.topicId}`;
+      if (!seen.has(key)) {
+        seen.add(key);
+        const cat = categories.find((c) => c.id === cr.categoryId);
+        if (!cat) continue;
+        const topic = findTopicById(cat.topics, cr.topicId);
+        if (!topic) continue;
+        combinedResults.push({
+          type: 'content',
+          topic,
+          category: cat,
+          path: [cat.name[language]],
+          snippet: cr.snippet,
+        });
+      }
+    }
+
+    setResults(combinedResults.slice(0, 15));
   }, [query, language]);
+
+  function findTopicById(topics: Topic[], id: string): Topic | null {
+    for (const t of topics) {
+      if (t.id === id) return t;
+      if (t.subtopics) {
+        const found = findTopicById(t.subtopics, id);
+        if (found) return found;
+      }
+    }
+    return null;
+  }
 
   if (!isOpen) return null;
 
@@ -101,8 +175,20 @@ export function SearchModal({ isOpen, onClose, language, onTopicSelect }: Search
               }}
               className="w-full px-4 py-3 text-left hover:bg-gray-50 dark:hover:bg-gray-700 border-b border-gray-100 dark:border-gray-700 last:border-0 transition-colors"
             >
-              <div className="text-gray-900 dark:text-white mb-1">{result.topic.name[language]}</div>
-              <div className="text-sm text-gray-500 dark:text-gray-400">{result.path.join(' > ')}</div>
+              <div className="flex items-center gap-2 mb-0.5">
+                {result.type === 'content' && (
+                  <span className="text-xs px-1.5 py-0.5 rounded bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 font-medium">
+                    {language === 'vi' ? 'ND' : 'CONTENT'}
+                  </span>
+                )}
+                <div className="text-gray-900 dark:text-white font-medium">{result.topic.name[language]}</div>
+              </div>
+              <div className="text-xs text-gray-500 dark:text-gray-400 mb-0.5">{result.path.join(' > ')}</div>
+              {result.snippet && (
+                <div className="text-sm text-gray-600 dark:text-gray-300 mt-1 line-clamp-2">
+                  ...{result.snippet}...
+                </div>
+              )}
             </button>
           ))}
         </div>

@@ -44,7 +44,7 @@ flowchart TD
     end
 
     subgraph AL["Application Layer"]
-        US["Use Cases<br/>(Application Services)"]
+        US["Use Cases<br>(Application Services)"]
         INTP["Interfaces (Ports)"]
     end
 
@@ -275,13 +275,13 @@ flowchart TD
         end
 
         subgraph PORTS["Ports"]
-            DRIV["Driving Ports<br/>(Primary/Input)"]
-            DRIVN["Driven Ports<br/>(Secondary/Output)"]
+            DRIV["Driving Ports<br>(Primary/Input)"]
+            DRIVN["Driven Ports<br>(Secondary/Output)"]
         end
 
         subgraph ADAPTERS["Adapters"]
-            PRIM["Primary Adapters<br/>(REST, CLI, UI)"]
-            SEC["Secondary Adapters<br/>(DB, Email, External APIs)"]
+            PRIM["Primary Adapters<br>(REST, CLI, UI)"]
+            SEC["Secondary Adapters<br>(DB, Email, External APIs)"]
         end
 
         PRIM -->|"Uses"| DRIV
@@ -372,10 +372,10 @@ Onion Architecture, introduced by Jeffrey Palermo, organizes layers in concentri
 ```mermaid
 flowchart TD
     subgraph ONION["Onion Architecture"]
-        CORE["Core Domain<br/>(Entities, Value Objects)"]
-        APP["Application Services<br/>(Use Cases)"]
-        PORTS["Ports<br/>(Interfaces)"]
-        INFRA["Infrastructure<br/>(Adapters, Repositories, Services)"]
+        CORE["Core Domain<br>(Entities, Value Objects)"]
+        APP["Application Services<br>(Use Cases)"]
+        PORTS["Ports<br>(Interfaces)"]
+        INFRA["Infrastructure<br>(Adapters, Repositories, Services)"]
     end
 
     INFRA -->|"depends on"| PORTS

@@ -8,9 +8,9 @@ Testing pyramid định nghĩa các loại tests theo tỷ lệ và chi phí:
 
 ```mermaid
 flowchart TD
-    E2E["E2E Tests (Few)<br/>Few, Slow, Expensive<br/>5-10 tests"]
-    INT["Integration Tests (Some)<br/>Some, Medium<br/>20-50 tests"]
-    UNIT["Unit Tests (Many)<br/>Many, Fast, Cheap<br/>100-500 tests"]
+    E2E["E2E Tests (Few)<br>Few, Slow, Expensive<br>5-10 tests"]
+    INT["Integration Tests (Some)<br>Some, Medium<br>20-50 tests"]
+    UNIT["Unit Tests (Many)<br>Many, Fast, Cheap<br>100-500 tests"]
     E2E --> INT --> UNIT
 ```
 

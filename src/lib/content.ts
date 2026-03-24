@@ -151,3 +151,103 @@ export async function getAllContentKeys(lang: Language): Promise<string[]> {
 export async function initContent() {
   loadCache();
 }
+
+// --- Content Search Index ---
+
+export interface ContentSearchEntry {
+  filename: string;
+  filepath: string;
+  topicId: string;
+  topicName: string;
+  categoryId: string;
+  categoryName: string;
+  content: string;
+}
+
+export interface SearchIndex {
+  vi: ContentSearchEntry[];
+  en: ContentSearchEntry[];
+}
+
+let searchIndex: SearchIndex | null = null;
+
+export function buildSearchIndex(
+  topicMap: Map<string, { topicId: string; topicName: string; categoryId: string; categoryName: string }>
+): SearchIndex {
+  const idx: SearchIndex = { vi: [], en: [] };
+
+  for (const lang of ["vi", "en"] as const) {
+    for (const [filename, content] of Object.entries(cache[lang])) {
+      const info = topicMap.get(`${lang}:${filename}`);
+      if (!info) continue;
+
+      idx[lang].push({
+        filename,
+        filepath: `/src/content/${lang}/${info.categoryId}/${filename}.md`,
+        topicId: info.topicId,
+        topicName: info.topicName,
+        categoryId: info.categoryId,
+        categoryName: info.categoryName,
+        content: content.slice(0, 5000), // limit for search performance
+      });
+    }
+  }
+
+  return idx;
+}
+
+export function initSearchIndex(
+  topicMap: Map<string, { topicId: string; topicName: string; categoryId: string; categoryName: string }>
+): SearchIndex {
+  if (!searchIndex) {
+    searchIndex = buildSearchIndex(topicMap);
+  }
+  return searchIndex;
+}
+
+export interface ContentSearchResult {
+  topicId: string;
+  topicName: string;
+  categoryId: string;
+  categoryName: string;
+  snippet: string;
+  matchedText: string;
+}
+
+export function searchContent(
+  query: string,
+  lang: Language,
+  limit = 10
+): ContentSearchResult[] {
+  if (!searchIndex) return [];
+  if (!query.trim()) return [];
+
+  const lowerQuery = query.toLowerCase();
+  const results: ContentSearchResult[] = [];
+
+  for (const entry of searchIndex[lang]) {
+    const lowerContent = entry.content.toLowerCase();
+    const matchIdx = lowerContent.indexOf(lowerQuery);
+    if (matchIdx === -1) continue;
+
+    // Extract snippet around match
+    const start = Math.max(0, matchIdx - 40);
+    const end = Math.min(entry.content.length, matchIdx + query.length + 60);
+    let snippet = entry.content.slice(start, end).replace(/[#*`\[\]]/g, "").trim();
+    if (start > 0) snippet = "..." + snippet;
+    if (end < entry.content.length) snippet = snippet + "...";
+
+    results.push({
+      topicId: entry.topicId,
+      topicName: entry.topicName,
+      categoryId: entry.categoryId,
+      categoryName: entry.categoryName,
+      snippet,
+      matchedText: entry.content.slice(matchIdx, matchIdx + query.length),
+    });
+
+    if (results.length >= limit) break;
+  }
+
+  return results;
+}

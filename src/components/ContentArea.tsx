@@ -1,27 +1,25 @@
-import React, { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeRaw from "rehype-raw";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-import { vscDarkPlus, vs } from "react-syntax-highlighter/dist/esm/styles/prism";
+import { vscDarkPlus, solarizedlight } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { type Category, type Topic } from "../data/categories";
 import { getContentForTopicAsync } from "../lib/content";
 import mermaid from "mermaid";
 
-// Initialize mermaid once
-mermaid.initialize({
-  startOnLoad: false,
-  theme: "default",
-  securityLevel: "loose",
-  fontFamily: "inherit",
-});
-
 // Mermaid diagram component
-function MermaidDiagram({ code, id }: { code: string; id: string }) {
+function MermaidDiagram({ code, id, isDark }: { code: string; id: string; isDark: boolean }) {
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (ref.current) {
+      mermaid.initialize({
+        startOnLoad: false,
+        theme: isDark ? "dark" : "default",
+        securityLevel: "loose",
+        fontFamily: "inherit",
+      });
       mermaid
         .render(id, code)
         .then(({ svg }) => {
@@ -35,7 +33,7 @@ function MermaidDiagram({ code, id }: { code: string; id: string }) {
           }
         });
     }
-  }, [code, id]);
+  }, [code, id, isDark]);
 
   return (
     <div className="mermaid" ref={ref} />
@@ -46,6 +44,7 @@ interface ContentAreaProps {
   selectedCategory: Category | null;
   selectedTopic: Topic | null;
   language: "vi" | "en";
+  isDarkMode: boolean;
   onTopicSelect?: (topic: Topic) => void;
 }
 
@@ -53,6 +52,7 @@ export function ContentArea({
   selectedCategory,
   selectedTopic,
   language,
+  isDarkMode,
   onTopicSelect,
 }: ContentAreaProps) {
   const [content, setContent] = useState("");
@@ -202,43 +202,43 @@ export function ContentArea({
             remarkPlugins={[remarkGfm]}
             rehypePlugins={[rehypeRaw]}
             components={{
-              code({ className, children }) {
+              code({ className, children, ...props }) {
                 const match = /language-(\w+)/.exec(className || "");
-                const codeStr = String(children).replace(/\n$/, "");
 
                 if (match && match[1] === "mermaid") {
+                  const codeStr = String(children).replace(/\n$/, "");
                   const id = `mermaid-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+                  return <MermaidDiagram code={codeStr} id={id} isDark={isDarkMode} />;
+                }
+
+                if (match) {
+                  const codeStr = String(children).replace(/\n$/, "");
+                  const isDark = isDarkMode;
                   return (
-                    <MermaidDiagram code={codeStr} id={id} />
+                    <SyntaxHighlighter
+                      language={match[1]}
+                      style={isDark ? vscDarkPlus : solarizedlight}
+                      customStyle={{
+                        margin: "1em 0",
+                        borderRadius: "0.5rem",
+                        fontSize: "0.875rem",
+                        padding: "1rem 1.25rem",
+                        background: isDark ? "#1e1e1e" : "#fdf6e3",
+                      }}
+                      codeTagProps={{
+                        style: { fontFamily: "inherit" },
+                      }}
+                    >
+                      {codeStr}
+                    </SyntaxHighlighter>
                   );
                 }
 
-                const language = match ? match[1] : "text";
-                const isDark = typeof window !== "undefined"
-                  ? window.matchMedia("(prefers-color-scheme: dark)").matches
-                  : false;
                 return (
-                  <SyntaxHighlighter
-                    language={language}
-                    style={isDark ? vscDarkPlus : vs}
-                    customStyle={{
-                      margin: "1em 0",
-                      borderRadius: "0.5rem",
-                      fontSize: "0.875rem",
-                      padding: "1rem 1.25rem",
-                    }}
-                    codeTagProps={{
-                      style: {
-                        fontFamily: "inherit",
-                      },
-                    }}
-                  >
-                    {codeStr}
-                  </SyntaxHighlighter>
+                  <code className={className} {...props}>
+                    {children}
+                  </code>
                 );
-              },
-              pre({ children }: { children?: React.ReactNode }) {
-                return <>{children}</>;
               },
             }}
           >

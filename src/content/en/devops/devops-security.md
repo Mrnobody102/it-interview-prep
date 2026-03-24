@@ -6,11 +6,11 @@
 
 ```mermaid
 flowchart LR
-    Plan["Plan<br/>(Design)"] --> Code["Code<br/>(SAST)"]
-    Code --> Build["Build<br/>(Image Scan)"]
-    Build --> Test["Test<br/>(DAST)"]
-    Test --> Deploy["Deploy<br/>(Secret Scan)"]
-    Deploy --> Monitor["Monitor<br/>(Runtime)"]
+    Plan["Plan<br>(Design)"] --> Code["Code<br>(SAST)"]
+    Code --> Build["Build<br>(Image Scan)"]
+    Build --> Test["Test<br>(DAST)"]
+    Test --> Deploy["Deploy<br>(Secret Scan)"]
+    Deploy --> Monitor["Monitor<br>(Runtime)"]
     Plan -.-> Security["Security at every stage"]
     Code -.-> Security
     Build -.-> Security
@@ -466,13 +466,13 @@ A comprehensive CI/CD security pipeline should include multiple scanning stages.
 
 ```mermaid
 flowchart TD
-    Code --> SAST["SAST<br/>(Static Analysis)"]
-    SAST --> Secrets["Secret Scan<br/>(Gitleaks)"]
-    Secrets --> Build["Build<br/>(Image Build)"]
-    Build --> Image["Image Scan<br/>(Trivy/Snyk)"]
-    Image --> DAST["DAST<br/>(Dynamic Analysis)"]
-    DAST --> Deploy["Deploy<br/>with Policy Check"]
-    Image -.-> SBOM["SBOM<br/>Generation"]
+    Code --> SAST["SAST<br>(Static Analysis)"]
+    SAST --> Secrets["Secret Scan<br>(Gitleaks)"]
+    Secrets --> Build["Build<br>(Image Build)"]
+    Build --> Image["Image Scan<br>(Trivy/Snyk)"]
+    Image --> DAST["DAST<br>(Dynamic Analysis)"]
+    DAST --> Deploy["Deploy<br>with Policy Check"]
+    Image -.-> SBOM["SBOM<br>Generation"]
 ```
 
 ### 6.1. Complete Security Pipeline Example

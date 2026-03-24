@@ -100,7 +100,7 @@ flowchart LR
     end
 
     ORDER -->|"Customer-Supplier"| CUST
-    ORDER -->|"Conformist<br/>(catalog data)| CATA
+    ORDER -->|"Conformist<br>(catalog data)"| CATA
     BILL -->|"Anticorruption Layer"| ORDER
     CUST -->|"Shared Kernel"| BILL
 ```

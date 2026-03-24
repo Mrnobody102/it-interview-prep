@@ -338,7 +338,7 @@ flowchart TD
             S1["Survivor Space 1 (S1)"]
         end
         OLD["Old Generation (Tenured)"]
-        HUM["Humongous Region<br/>(G1 only — object > 50% region)"]
+        HUM["Humongous Region<br>(G1 only — object > 50% region)"]
     end
 
     E -->|"Survive Minor GC"| S0
@@ -361,9 +361,9 @@ Non-heap memory nằm ngoài Java heap trong native memory.
 ```mermaid
 flowchart TD
     subgraph NONHEAP["Non-Heap Memory (Native)"]
-        META["Metaspace<br/>Class metadata, method info,<br/>static fields, annotations"]
-        CC["Code Cache<br/>JIT-compiled native code,<br/>bytecode stubs, profiling data"]
-        DB["Direct Buffers (NIO)<br/>Off-heap memory cho<br/>direct ByteBuffers"]
+        META["Metaspace<br>Class metadata, method info,<br>static fields, annotations"]
+        CC["Code Cache<br>JIT-compiled native code,<br>bytecode stubs, profiling data"]
+        DB["Direct Buffers (NIO)<br>Off-heap memory cho<br>direct ByteBuffers"]
     end
 ```
 
@@ -428,9 +428,9 @@ java -XX:SurvivorRatio=4              # Eden : Survivor = 4 : 1 : 1 (faster agin
 
 ```mermaid
 flowchart TD
-    SM["Mark-Sweep<br/>Mark live, sweep dead, no compaction"]
-    SC["Mark-Sweep-Compact<br/>+ Move objects để loại fragmentation"]
-    COP["Copying<br/>Copy live objects sang new space"]
+    SM["Mark-Sweep<br>Mark live, sweep dead, no compaction"]
+    SC["Mark-Sweep-Compact<br>+ Move objects để loại fragmentation"]
+    COP["Copying<br>Copy live objects sang new space"]
     SM -->|"Thêm compaction"| SC
     SM -->|"Dùng half of space"| COP
 ```
@@ -582,9 +582,9 @@ java -XX:+UseShenandoahGC \
 
 ```mermaid
 flowchart LR
-    TH["Throughput Priority<br/>(Parallel GC)"] -->|"High throughput<br/>Longer pauses OK"| TH2["Batch Processing<br/>Data pipelines<br/>HPC jobs"]
-    LAT["Latency Priority<br/>(ZGC / Shenandoah)"] -->|"Sub-ms pauses<br/>Moderate throughput"| LAT2["Web APIs<br/>Trading systems<br/>Real-time apps"]
-    BAL["Balanced<br/>(G1GC)"] -->|"Reasonable both"| BAL2["General-purpose<br/>Microservices<br/>Containers"]
+    TH["Throughput Priority<br>(Parallel GC)"] -->|"High throughput<br>Longer pauses OK"| TH2["Batch Processing<br>Data pipelines<br>HPC jobs"]
+    LAT["Latency Priority<br>(ZGC / Shenandoah)"] -->|"Sub-ms pauses<br>Moderate throughput"| LAT2["Web APIs<br>Trading systems<br>Real-time apps"]
+    BAL["Balanced<br>(G1GC)"] -->|"Reasonable both"| BAL2["General-purpose<br>Microservices<br>Containers"]
 ```
 
 ### 12.3. Heap Size Guidelines
