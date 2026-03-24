@@ -18,31 +18,44 @@ interface SearchResult {
   snippet?: string;
 }
 
-function buildTopicMap(lang: 'vi' | 'en') {
+function buildTopicMap() {
   const topicMap = new Map<string, { topicId: string; topicName: string; categoryId: string; categoryName: string }>();
 
+  const noStripTopicIds = new Set([
+    'java-core-oop',
+    'java-core-collections',
+    'java-core-concurrency',
+    'java-core-lambda-stream',
+    'java-core-generics',
+    'java-core-io',
+    'java-core-jvm-gc',
+    'java-core-memory-management',
+    'java-core-versions',
+  ]);
+
   function topicIdToFilename(topicId: string, parentId?: string): string {
-    if (!parentId) return topicId;
+    if (!parentId || noStripTopicIds.has(topicId)) return topicId;
     const prefix = parentId + '-';
     if (topicId.startsWith(prefix)) return topicId.slice(prefix.length);
     return topicId;
   }
 
-  function processTopics(topics: Topic[], catId: string, catName: string, parentId?: string) {
+  function processTopics(topics: Topic[], catId: string, lang: 'vi' | 'en', parentId?: string) {
     for (const t of topics) {
       const filename = topicIdToFilename(t.id, parentId);
       topicMap.set(`${lang}:${filename}`, {
         topicId: t.id,
         topicName: t.name[lang],
         categoryId: catId,
-        categoryName: catName,
+        categoryName: categories.find((c) => c.id === catId)?.name[lang] || catId,
       });
-      if (t.subtopics) processTopics(t.subtopics, catId, catName, t.id);
+      if (t.subtopics) processTopics(t.subtopics, catId, lang, t.id);
     }
   }
 
   for (const cat of categories) {
-    processTopics(cat.topics, cat.id, cat.name[lang]);
+    processTopics(cat.topics, cat.id, 'vi');
+    processTopics(cat.topics, cat.id, 'en');
   }
 
   return topicMap;
@@ -56,7 +69,7 @@ export function SearchModal({ isOpen, onClose, language, onTopicSelect }: Search
   // Initialize search index once
   const searchIndexRef = useRef<ReturnType<typeof initSearchIndex> | null>(null);
   if (!searchIndexRef.current) {
-    searchIndexRef.current = initSearchIndex(buildTopicMap(language));
+    searchIndexRef.current = initSearchIndex(buildTopicMap());
   }
 
   useEffect(() => {

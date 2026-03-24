@@ -28,6 +28,10 @@ export const frontend: Category = {
       name: { vi: "React", en: "React" },
     },
     {
+      id: "nextjs",
+      name: { vi: "Next.js", en: "Next.js" },
+    },
+    {
       id: "javascript",
       name: { vi: "JavaScript ES6+", en: "JavaScript ES6+" },
     },

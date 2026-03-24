@@ -40,8 +40,20 @@ function loadCache() {
 
 export type Language = "vi" | "en";
 
+const NO_STRIP_TOPIC_IDS = new Set([
+  "java-core-oop",
+  "java-core-collections",
+  "java-core-concurrency",
+  "java-core-lambda-stream",
+  "java-core-generics",
+  "java-core-io",
+  "java-core-jvm-gc",
+  "java-core-memory-management",
+  "java-core-versions",
+]);
+
 function topicIdToFilename(topicId: string, parentId?: string): string {
-  if (!parentId) return topicId;
+  if (!parentId || NO_STRIP_TOPIC_IDS.has(topicId)) return topicId;
   const prefix = parentId + "-";
   if (topicId.startsWith(prefix)) {
     return topicId.slice(prefix.length);
@@ -199,6 +211,7 @@ export function buildSearchIndex(
 export function initSearchIndex(
   topicMap: Map<string, { topicId: string; topicName: string; categoryId: string; categoryName: string }>
 ): SearchIndex {
+  loadCache();
   if (!searchIndex) {
     searchIndex = buildSearchIndex(topicMap);
   }

@@ -10,6 +10,10 @@ export const devops: Category = {
   icon: "☁️",
   topics: [
     {
+      id: "git-fundamentals",
+      name: { vi: "Git Fundamentals", en: "Git Fundamentals" },
+    },
+    {
       id: "linux",
       name: { vi: "Linux", en: "Linux" },
     },

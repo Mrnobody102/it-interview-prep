@@ -73,7 +73,7 @@ export const systemDesign: Category = {
           },
         },
         {
-          id: "scenario-request-response-flow",
+          id: "request-response-flow",
           name: {
             vi: "Một luồng request-response client đi qua các thành phần của một hệ thống web application hiện đại thế nào",
             en: "Request-response flow in modern web application",
