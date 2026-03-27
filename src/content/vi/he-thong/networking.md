@@ -1,8 +1,6 @@
-# System Design
+# Networking
 
-## 9. Networking
-
-### 9.1. Các khái niệm Networking quan trọng
+### Các khái niệm Networking quan trọng
 
 | Khái niệm | Mô tả |
 |---|---|
@@ -14,7 +12,7 @@
 
 ---
 
-### 9.2. OSI Model
+### OSI Model
 
 | Layer | Số | Protocols | Chức năng |
 |---|---|---|---|
@@ -28,9 +26,9 @@
 
 ---
 
-### 9.3. Application Layer Protocols
+### Application Layer Protocols
 
-#### 9.3.1. HTTP / HTTPS
+#### HTTP / HTTPS
 
 ```
 HTTP Methods:
@@ -48,7 +46,7 @@ HTTP Methods:
 | **4xx** | Client Error | 400 Bad Request, 401 Unauthorized, 403 Forbidden, 404 Not Found, 429 Too Many Requests |
 | **5xx** | Server Error | 500 Internal Server Error, 502 Bad Gateway, 503 Service Unavailable, 504 Gateway Timeout |
 
-#### 9.3.2. WebSocket
+#### WebSocket
 
 - **Full-duplex:** Giao tiếp hai chiều realtime qua một TCP connection duy nhất
 - **Persistent:** Connection giữ open cho đến khi client hoặc server đóng
@@ -72,7 +70,7 @@ ws.onclose = () => {
 };
 ```
 
-#### 9.3.3. RPC (Remote Procedure Call)
+#### RPC (Remote Procedure Call)
 
 - **Mục đích:** Giao tiếp service-to-service với latency thấp
 - **Khái niệm:** Gọi một function trên remote server như thể nó là local
@@ -80,14 +78,14 @@ ws.onclose = () => {
 
 ---
 
-### 9.4. Transport Layer Protocols
+### Transport Layer Protocols
 
 | Protocol | Đặc điểm | Trường hợp sử dụng |
 |---|---|---|
 | **TCP** | Connection-oriented, đáng tin cậy, ordered delivery, flow control | Web, APIs, email, file transfer, databases |
 | **UDP** | Connectionless, nhanh, không đảm bảo delivery, không ordering | Streaming, gaming, VoIP, DNS queries, video calls |
 
-#### 9.4.1. TCP vs. UDP
+#### TCP vs. UDP
 
 | Khía cạnh | TCP | UDP |
 |---|---|---|
@@ -101,7 +99,7 @@ ws.onclose = () => {
 
 ---
 
-### 9.5. Network Layer Protocols
+### Network Layer Protocols
 
 | Protocol | Mục đích |
 |---|---|
@@ -113,9 +111,9 @@ ws.onclose = () => {
 
 ---
 
-### 9.6. DNS (Domain Name System)
+### DNS (Domain Name System)
 
-#### 9.6.1. DNS Record Types
+#### DNS Record Types
 
 | Record Type | Mục đích | Ví dụ |
 |---|---|---|
@@ -126,7 +124,7 @@ ws.onclose = () => {
 | **TXT** | SPF, DKIM, verification | `v=spf1 include:_spf.example.com ~all` |
 | **NS** | Name server delegation | `example.com -> ns1.example.com` |
 
-#### 9.6.2. DNS Resolution Flow
+#### DNS Resolution Flow
 
 ```
 Client → Resolver (ISP/8.8.8.8)
@@ -140,7 +138,7 @@ Client → Resolver (ISP/8.8.8.8)
 
 ---
 
-### 9.7. HTTP/1.1 vs. HTTP/2 vs. HTTP/3
+### HTTP/1.1 vs. HTTP/2 vs. HTTP/3
 
 | Tính năng | HTTP/1.1 | HTTP/2 | HTTP/3 |
 |---|---|---|---|
@@ -153,7 +151,7 @@ Client → Resolver (ISP/8.8.8.8)
 
 ---
 
-### 9.8. CIDR (Classless Inter-Domain Routing)
+### CIDR (Classless Inter-Domain Routing)
 
 | Ký hiệu | Dải địa chỉ | Số lượng IP |
 |---|---|---|

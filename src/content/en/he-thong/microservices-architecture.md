@@ -1,12 +1,12 @@
-# Software Architecture
+# Microservices Architecture
 
-## 2. Microservices Architecture
+## Microservices Architecture
 
-### 2.1. Overview
+### Overview
 
 Each function is separated into small, independent services that communicate via APIs (REST, gRPC, GraphQL). Each service owns its own data and can be developed, deployed, and scaled independently.
 
-### 2.2. Key Characteristics
+### Key Characteristics
 
 - **Single Responsibility:** Each service does one thing well
 - **Independent Deployment:** Services can be deployed without coordinating with others
@@ -14,7 +14,7 @@ Each function is separated into small, independent services that communicate via
 - **Technology Diversity:** Services can use different languages, frameworks, and databases
 - **Resilience:** Failure in one service does not cascade to others
 
-### 2.3. Communication Patterns
+### Communication Patterns
 
 | Pattern | Description | Use Case |
 |---|---|---|
@@ -22,7 +22,7 @@ Each function is separated into small, independent services that communicate via
 | **Asynchronous (Message Queue)** | Fire-and-forget via Kafka, RabbitMQ | Event-driven, background jobs |
 | **GraphQL** | Flexible queries from client | Complex data requirements |
 
-### 2.4. Advantages
+### Advantages
 
 - **Independent Scaling:** Scale individual services based on demand (e.g., scale the recommendation service without scaling the entire app)
 - **Independent Deployment:** Deploy fixes and features without touching other services
@@ -30,7 +30,7 @@ Each function is separated into small, independent services that communicate via
 - **Technology Flexibility:** Use the best tool for each job (Go for high-performance services, Python for ML, etc.)
 - **Team Autonomy:** Teams can own services end-to-end
 
-### 2.5. Disadvantages
+### Disadvantages
 
 - **Operational Complexity:** Requires strong DevOps practices — CI/CD pipelines, container orchestration (Kubernetes), service mesh, monitoring
 - **Network Latency:** Inter-service communication over the network adds latency
@@ -38,7 +38,7 @@ Each function is separated into small, independent services that communicate via
 - **Network Security:** More attack surfaces; requires service-to-service authentication (mTLS, JWT)
 - **Testing Complexity:** Integration testing across services is harder than testing a monolith
 
-### 2.6. Essential Supporting Components
+### Essential Supporting Components
 
 - **API Gateway:** Entry point for all client requests. Handles routing, authentication, rate limiting
 - **Service Discovery:** Tools like Consul or Kubernetes built-in DNS for services to find each other
@@ -46,7 +46,7 @@ Each function is separated into small, independent services that communicate via
 - **Distributed Tracing:** Jaeger or Zipkin to trace requests across services
 - **Container Orchestration:** Kubernetes for deployment, scaling, and management
 
-### 2.7. When to Choose Microservices
+### When to Choose Microservices
 
 - Large teams (10+ developers) working on different features
 - Application with distinct functional domains that scale independently

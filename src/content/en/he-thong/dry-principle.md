@@ -1,23 +1,23 @@
-# Design Principles
+# DRY Principle
 
-## 3. DRY — Don't Repeat Yourself
+## 
 
-### 3.1. Core Concept
+### Core Concept
 
 > Every piece of logic should exist in exactly one, authoritative place in the system.
 
 The DRY principle states that duplicates of logic — whether in code, data, or documentation — create maintenance nightmares and increase the likelihood of bugs.
 
-### 3.2. Purpose
+### Purpose
 
 - **Reduce bugs:** Fix logic in one place, not N places
 - **Improve maintainability:** Changes propagate consistently across the codebase
 - **Increase clarity:** Single source of truth makes code easier to understand
 - **Better reusability:** Shared logic can be tested once and reused everywhere
 
-### 3.3. How to Apply DRY
+### How to Apply DRY
 
-#### 3.3.1. Extract Reusable Functions / Methods
+#### Extract Reusable Functions / Methods
 
 Instead of duplicating logic:
 
@@ -32,7 +32,7 @@ function calculateArea(width, height) {
 }
 ```
 
-#### 3.3.2. Use Inheritance or Composition
+#### Use Inheritance or Composition
 
 ```typescript
 // Composition over inheritance
@@ -49,7 +49,7 @@ class Dog extends Animal {
 }
 ```
 
-#### 3.3.3. Centralize Constants and Configuration
+#### Centralize Constants and Configuration
 
 ```typescript
 // Bad: Magic numbers scattered across code
@@ -68,7 +68,7 @@ export const API_ENDPOINTS = {
 } as const;
 ```
 
-#### 3.3.4. Extract Shared Utilities
+#### Extract Shared Utilities
 
 ```typescript
 // utils/validation.ts
@@ -78,7 +78,7 @@ export function isValidEmail(email: string): boolean {
 }
 ```
 
-### 3.4. DRY vs. WET
+### DRY vs. WET
 
 | Aspect | DRY | WET (Write Every Time) |
 |---|---|---|
@@ -87,7 +87,7 @@ export function isValidEmail(email: string): boolean {
 | **Readability** | Can be abstract | More explicit |
 | **Risk of over-abstraction** | Yes | No |
 
-### 3.5. When NOT to Apply DRY
+### When NOT to Apply DRY
 
 > **Important:** DRY is a guideline, not an absolute rule. Over-applying DRY leads to over-engineering.
 

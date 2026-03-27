@@ -1,8 +1,8 @@
-# System Design
+# Networking
 
-## 9. Networking
+## 
 
-### 9.1. Key Networking Concepts
+### Key Networking Concepts
 
 | Concept | Description |
 |---|---|
@@ -12,7 +12,7 @@
 | **DNS (Domain Name System)** | Translates domain names (google.com) to IP addresses |
 | **CDN (Content Delivery Network)** | Distributed network of servers for delivering static content |
 
-### 9.2. Network Protocol Stack (OSI Model)
+### Network Protocol Stack (OSI Model)
 
 | Layer | Number | Protocols | What it Does |
 |---|---|---|---|
@@ -24,9 +24,9 @@
 | **Data Link** | 2 | Ethernet, Wi-Fi, ARP | Physical addressing (MAC) |
 | **Physical** | 1 | Cables, hubs, signals | Physical transmission |
 
-### 9.3. Application Layer Protocols
+### Application Layer Protocols
 
-#### 9.3.1. HTTP / HTTPS
+#### HTTP / HTTPS
 
 ```
 HTTP Methods:
@@ -44,7 +44,7 @@ HTTP Methods:
 | **4xx** | Client Error | 400 Bad Request, 401 Unauthorized, 403 Forbidden, 404 Not Found, 429 Too Many Requests |
 | **5xx** | Server Error | 500 Internal Server Error, 502 Bad Gateway, 503 Service Unavailable, 504 Gateway Timeout |
 
-#### 9.3.2. WebSocket
+#### WebSocket
 
 - **Full-duplex:** Real-time two-way communication over a single TCP connection
 - **Persistent:** Connection stays open until closed by client or server
@@ -73,20 +73,20 @@ ws.onclose = () => {
 };
 ```
 
-#### 9.3.3. RPC (Remote Procedure Call)
+#### RPC (Remote Procedure Call)
 
 - **Purpose:** Service-to-service communication with low latency
 - **Concept:** Call a function on a remote server as if it were local
 - **Formats:** gRPC (binary, uses Protocol Buffers), Thrift
 
-### 9.4. Transport Layer Protocols
+### Transport Layer Protocols
 
 | Protocol | Characteristics | Use Cases |
 |---|---|---|
 | **TCP** | Connection-oriented, reliable, ordered delivery, flow control, congestion control | Web, APIs, email, file transfer, databases |
 | **UDP** | Connectionless, fast, no delivery guarantee, no ordering | Streaming, gaming, VoIP, DNS queries, video calls |
 
-#### 9.4.1. TCP vs. UDP
+#### TCP vs. UDP
 
 | Aspect | TCP | UDP |
 |---|---|---|
@@ -98,7 +98,7 @@ ws.onclose = () => {
 | **Congestion Control** | Yes | No |
 | **Header Size** | 20+ bytes | 8 bytes |
 
-### 9.5. Network Layer Protocols
+### Network Layer Protocols
 
 | Protocol | Purpose |
 |---|---|
@@ -108,9 +108,9 @@ ws.onclose = () => {
 | **OSPF** | Interior gateway protocol for routing within an autonomous system |
 | **BGP** | Border Gateway Protocol — routing between autonomous systems (the Internet's backbone) |
 
-### 9.6. DNS (Domain Name System)
+### DNS (Domain Name System)
 
-#### 9.6.1. DNS Record Types
+#### DNS Record Types
 
 | Record Type | Purpose | Example |
 |---|---|---|
@@ -121,7 +121,7 @@ ws.onclose = () => {
 | **TXT** | SPF, DKIM, verification | `v=spf1 include:_spf.example.com ~all` |
 | **NS** | Name server delegation | `example.com -> ns1.example.com` |
 
-#### 9.6.2. DNS Resolution Flow
+#### DNS Resolution Flow
 
 ```
 Client → Resolver (ISP/8.8.8.8)
@@ -133,7 +133,7 @@ Client → Resolver (ISP/8.8.8.8)
 
 > **Note:** DNS records have a **TTL (Time To Live)** which controls how long resolvers cache the result. Lower TTL = more frequent lookups but faster propagation of changes.
 
-### 9.7. HTTP/1.1 vs. HTTP/2 vs. HTTP/3
+### HTTP/1.1 vs. HTTP/2 vs. HTTP/3
 
 | Feature | HTTP/1.1 | HTTP/2 | HTTP/3 |
 |---|---|---|---|
@@ -144,7 +144,7 @@ Client → Resolver (ISP/8.8.8.8)
 | **Encryption** | Optional | TLS required | TLS required |
 | **Connection Reuse** | Single request per connection | Multiplexed streams | Stream-based |
 
-### 9.8. CIDR (Classless Inter-Domain Routing)
+### CIDR (Classless Inter-Domain Routing)
 
 | Notation | Address Range | Number of IPs |
 |---|---|---|

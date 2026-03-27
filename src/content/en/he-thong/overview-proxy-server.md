@@ -1,12 +1,10 @@
-# System Design
+# Proxy Server
 
-## 14. Proxy Server
-
-### 14.1. Overview
+### Overview
 
 A **proxy server** is an intermediate component that sits between clients and servers, forwarding requests and responses. It can provide caching, filtering, load balancing, security, and anonymity.
 
-### 14.2. Forward Proxy vs. Reverse Proxy
+### Forward Proxy vs. Reverse Proxy
 
 | Aspect | Forward Proxy | Reverse Proxy |
 |---|---|---|
@@ -17,9 +15,9 @@ A **proxy server** is an intermediate component that sits between clients and se
 | **Primary use** | Access control, anonymity | Load balancing, caching, security |
 | **Example** | Corporate firewall, browser VPN extension | Nginx, AWS ELB, Cloudflare |
 
-### 14.3. Forward Proxy
+### Forward Proxy
 
-#### 14.3.1. How It Works
+#### How It Works
 
 ```mermaid
 flowchart LR
@@ -31,7 +29,7 @@ flowchart LR
     Server --> Internet --> FP --> Client
 ```
 
-#### 14.3.2. Use Cases
+#### Use Cases
 
 | Use Case | Description |
 |---|---|
@@ -41,9 +39,9 @@ flowchart LR
 | **Bypassing geo-restrictions** | Route traffic through a proxy in a different region |
 | **Monitoring & Logging** | Log all outbound web requests |
 
-### 14.4. Reverse Proxy
+### Reverse Proxy
 
-#### 14.4.1. How It Works
+#### How It Works
 
 ```mermaid
 flowchart LR
@@ -59,7 +57,7 @@ flowchart LR
     RP --> ServerC
 ```
 
-#### 14.4.2. Use Cases
+#### Use Cases
 
 | Use Case | Description |
 |---|---|
@@ -72,7 +70,7 @@ flowchart LR
 | **Canary Deployment** | Gradually shift traffic to new versions |
 | **API Gateway** | Authentication, rate limiting, request transformation |
 
-#### 14.4.3. Reverse Proxy Examples
+#### Reverse Proxy Examples
 
 | Product | Type | Notable Features |
 |---|---|---|
@@ -83,9 +81,9 @@ flowchart LR
 | **HAProxy** | Software, L4/L7 | High performance, TCP expert |
 | **Traefik** | Cloud-native | Kubernetes-native, auto-discovery |
 
-### 14.5. Key Proxy Server Features
+### Key Proxy Server Features
 
-#### 14.5.1. SSL/TLS Termination
+#### SSL/TLS Termination
 
 ```nginx
 # Nginx: SSL termination
@@ -106,7 +104,7 @@ server {
 }
 ```
 
-#### 14.5.2. Caching
+#### Caching
 
 ```nginx
 # Cache static assets for 1 week
@@ -118,7 +116,7 @@ location ~* \.(jpg|jpeg|png|gif|ico|css|js)$ {
 }
 ```
 
-#### 14.5.3. Rate Limiting
+#### Rate Limiting
 
 ```nginx
 # Rate limiting configuration
@@ -134,7 +132,7 @@ server {
 }
 ```
 
-#### 14.5.4. WAF (Web Application Firewall)
+#### WAF (Web Application Firewall)
 
 | Rule Type | Purpose |
 |---|---|
@@ -144,7 +142,7 @@ server {
 | **Geo-blocking** | Block traffic from specific countries |
 | **Bot Detection** | Block known bot signatures |
 
-### 14.6. Proxy vs. VPN
+### Proxy vs. VPN
 
 | Aspect | Proxy | VPN |
 |---|---|---|
@@ -154,7 +152,7 @@ server {
 | **Setup** | Per-app configuration | System-wide |
 | **Use Case** | Web browsing, API routing | Privacy, security, bypassing restrictions |
 
-### 14.7. Common Interview Points
+### Common Interview Points
 
 | Question | Answer |
 |---|---|

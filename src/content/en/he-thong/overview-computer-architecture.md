@@ -1,8 +1,6 @@
-# System Design
+# Computer Architecture
 
-## 7. Computer Architecture
-
-### 7.1. Memory Hierarchy
+### Memory Hierarchy
 
 Understanding the memory hierarchy is fundamental to designing performant systems.
 
@@ -19,7 +17,7 @@ Understanding the memory hierarchy is fundamental to designing performant system
 
 > **Key concept:** The CPU always checks caches first. A **cache hit** means the data was found in cache (fast). A **cache miss** means it must be fetched from the next level down.
 
-### 7.2. Speed Comparison
+### Speed Comparison
 
 ```
 Register (0.5 ns)  >>>  L1 Cache (1 ns)  >>>  L2 (5 ns)  >>>  L3 (10 ns)
@@ -30,18 +28,18 @@ Register (0.5 ns)  >>>  L1 Cache (1 ns)  >>>  L2 (5 ns)  >>>  L3 (10 ns)
 |---|---|---|---|---|---|---|---|
 | **Register** | 1x | 2x | 10x | 20x | 200x | 200,000x | 20,000,000x |
 
-### 7.3. CPU Cache Basics
+### CPU Cache Basics
 
-#### 7.3.1. Cache Lines
+#### Cache Lines
 
 Data is transferred between memory and cache in fixed-size blocks called **cache lines**, typically 64 bytes.
 
-#### 7.3.2. Temporal vs. Spatial Locality
+#### Temporal vs. Spatial Locality
 
 - **Temporal Locality:** Recently accessed data is likely to be accessed again. Cached by keeping data in L1/L2/L3.
 - **Spatial Locality:** Items near recently accessed data are likely to be accessed next. Exploited by loading entire cache lines.
 
-#### 7.3.3. Cache Eviction Policies
+#### Cache Eviction Policies
 
 | Policy | Description |
 |---|---|
@@ -50,23 +48,23 @@ Data is transferred between memory and cache in fixed-size blocks called **cache
 | **FIFO** | Evict oldest entry |
 | **Random** | Evict randomly (used by some real-world CPUs) |
 
-### 7.4. CPU Architecture
+### CPU Architecture
 
-#### 7.4.1. Von Neumann vs. Harvard
+#### Von Neumann vs. Harvard
 
 | Model | Description | Use Case |
 |---|---|---|
 | **Von Neumann** | Shared memory for code and data | Most general-purpose CPUs |
 | **Harvard** | Separate memory for code and data | Embedded, DSP, microcontrollers |
 
-#### 7.4.2. Single-Core vs. Multi-Core
+#### Single-Core vs. Multi-Core
 
 - **Single-core:** One processing unit, one execution thread
 - **Multi-core:** Multiple independent cores on a single chip
 - **Hyper-Threading:** Each physical core appears as 2 logical cores (Intel)
 - **SIMD (SSE/AVX):** Single instruction, multiple data — vector processing
 
-### 7.5. Important Terminology
+### Important Terminology
 
 | Term | Definition |
 |---|---|
@@ -78,7 +76,7 @@ Data is transferred between memory and cache in fixed-size blocks called **cache
 | **TLB (Translation Lookaside Buffer)** | Cache for virtual-to-physical address translations |
 | **Prefetching** | CPU predicts future memory access and loads data in advance |
 
-### 7.6. Practical Implications for System Design
+### Practical Implications for System Design
 
 - **Database indexing:** Minimizes disk I/O (slow) by keeping data in RAM
 - **Caching:** Redis/Memcached keep hot data in RAM, far faster than disk

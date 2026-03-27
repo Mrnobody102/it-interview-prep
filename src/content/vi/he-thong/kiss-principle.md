@@ -1,6 +1,6 @@
-# KISS Principle - Keep It Simple, Stupid
+# KISS Principle
 
-## 1. Tổng quan
+## Tổng quan
 
 **KISS** (Keep It Simple, Stupid) là nguyên tắc thiết kế nhấn mạnh rằng: **thiết kế đơn giản nhất có thể luôn là lựa chọn tốt nhất**. Code phức tạp không phải lúc nào cũng tốt hơn — ngược lại, nó thường khó bảo trì, dễ lỗi và khó hiểu.
 
@@ -8,9 +8,9 @@
 
 ---
 
-## 2. Nguyên tắc cốt lõi
+## Nguyên tắc cốt lõi
 
-### 2.1. Ba trụ cột của KISS
+### Ba trụ cột của KISS
 
 | Trụ cột | Mô tả |
 |---------|-------|
@@ -18,7 +18,7 @@
 | **Tránh over-engineering** | Đừng tổng quát hóa khi chỉ cần giải pháp cụ thể |
 | **Tách nhỏ vấn đề** | Chia bài toán lớn thành các phần nhỏ, đơn giản |
 
-### 2.2. Tại sao đơn giản lại quan trọng?
+### Tại sao đơn giản lại quan trọng?
 
 - **Thời gian đọc > Thời gian viết**: Code được đọc nhiều lần, được viết một lần. Hãy tối ưu cho người đọc sau (có thể là chính mình sau 6 tháng).
 - **Bug ẩn trong complexity**: Càng phức tạp, càng nhiều bug tiềm ẩn.
@@ -27,9 +27,9 @@
 
 ---
 
-## 3. Ví dụ thực tế
+## Ví dụ thực tế
 
-### 3.1. Bad: Over-complicated
+### Bad: Over-complicated
 
 ```java
 // ❌ Over-engineered — 10 tham số, logic rối rắm, khó hiểu
@@ -68,7 +68,7 @@ public int calculateScore(List<Player> players) {
 }
 ```
 
-### 3.2. Good: Simple & Clear
+### Good: Simple & Clear
 
 ```java
 // ✅ Simple — mỗi method một việc, rõ ràng, dễ test
@@ -128,7 +128,7 @@ public class PaymentService {
 }
 ```
 
-### 3.3. Good: Tách function nhỏ, dễ đọc
+### Good: Tách function nhỏ, dễ đọc
 
 ```java
 // ✅ Rõ ràng, mỗi function một việc, tên hàm mô tả rõ mục đích
@@ -179,9 +179,9 @@ public class UserRegistration {
 
 ---
 
-## 4. Khi nào nên giữ đơn giản?
+## Khi nào nên giữ đơn giản?
 
-### 4.1. Bảng quyết định
+### Bảng quyết định
 
 | Nên | Không nên |
 |-----|----------|
@@ -192,7 +192,7 @@ public class UserRegistration {
 | Thiết kế vừa đủ cho requirements hiện tại | Xây dựng framework của riêng mình khi có thư viện tốt |
 | YAGNI — You Aren't Gonna Need It | Xây dựng tính năng "phòng thân" không cần thiết |
 
-### 4.2. Premature Optimization vs. Just-in-time Optimization
+### Premature Optimization vs. Just-in-time Optimization
 
 ```java
 // ❌ Premature Optimization — tối ưu trước khi cần thiết
@@ -222,9 +222,9 @@ public Map<String, List<User>> getUsersGroupedByCity(List<User> users) {
 
 ---
 
-## 5. Common KISS Violations
+## Common KISS Violations
 
-### 5.1. Tổng hợp các vi phạm phổ biến
+### Tổng hợp các vi phạm phổ biến
 
 | Vi phạm | Ví dụ | Giải pháp |
 |--------|-------|-----------|
@@ -236,7 +236,7 @@ public Map<String, List<User>> getUsersGroupedByCity(List<User> users) {
 | **Copy-paste code** | Cùng một đoạn code lặp 5+ lần | Trích xuất thành method |
 | **Tên biến không mô tả** | `int x, d, tmp` | `int totalAmount, daysSinceLastLogin, tempBuffer` |
 
-### 5.2. Ví dụ: Magic Numbers
+### Ví dụ: Magic Numbers
 
 ```java
 // ❌ Magic numbers — không biết 6570 là gì
@@ -253,7 +253,7 @@ public boolean isAdult(User user) {
 }
 ```
 
-### 5.3. Ví dụ: Deep Nesting
+### Ví dụ: Deep Nesting
 
 ```java
 // ❌ Deep nesting — khó theo dõi flow
@@ -286,13 +286,13 @@ public void processOrder(Order order) {
 
 ---
 
-## 6. Lưu ý quan trọng
+## Lưu ý quan trọng
 
 > *"Simple" không có nghĩa là "primitive". Một giải pháp **simple** có thể rất **sophisticated** về mặt kiến trúc (ví dụ: microservices chia nhỏ), nhưng vẫn dễ hiểu và dễ maintain.*
 >
 > *"Simplicity is not about writing less code. It's about writing code that **communicates intent** clearly.*
 
-### 6.1. KISS vs. other principles
+### KISS vs. other principles
 
 | Nguyên tắc | Tập trung | Mối quan hệ với KISS |
 |-----------|----------|---------------------|
@@ -301,7 +301,7 @@ public void processOrder(Order order) {
 | **YAGNI** | Không làm thừa | Thực hành KISS = không thêm thứ không cần |
 | **Single Responsibility** | Một class, một việc | Trực tiếp hỗ trợ KISS |
 
-### 6.2. Checklist
+### Checklist
 
 - [ ] Method có quá nhiều tham số (> 3)? Tách thành object hoặc chia nhỏ.
 - [ ] Method có hơn 50 dòng? Xem xét tách.

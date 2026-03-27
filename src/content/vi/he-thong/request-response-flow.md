@@ -1,4 +1,4 @@
-# Request-Response Flow - Luồng xử lý yêu cầu-trả lời
+# Request-Response Flow
 
 ## 1. Tổng quan
 
@@ -32,7 +32,7 @@ API Gateway / Load Balancer
 
 ## 3. Chi tiết từng bước
 
-### 3.1. Bước 1: DNS Resolution
+### Bước 1: DNS Resolution
 
 | Khía cạnh | Mô tả |
 |-----------|-------|
@@ -45,7 +45,7 @@ API Gateway / Load Balancer
 Browser Cache ─► OS Cache ─► Resolver Cache ─► Root Server ─► TLD Server ─► Authoritative NS
 ```
 
-### 3.2. Bước 2: CDN (Content Delivery Network)
+### Bước 2: CDN (Content Delivery Network)
 
 | Khía cạnh | Mô tả |
 |-----------|-------|
@@ -63,7 +63,7 @@ ETag: "abc123"
 Last-Modified: Sat, 20 Mar 2026 10:00:00 GMT
 ```
 
-### 3.3. Bước 3: WAF (Web Application Firewall)
+### Bước 3: WAF (Web Application Firewall)
 
 | Khía cạnh | Mô tả |
 |-----------|-------|
@@ -79,7 +79,7 @@ Last-Modified: Sat, 20 Mar 2026 10:00:00 GMT
 # Block: <script>alert()
 ```
 
-### 3.4. Bước 4: Load Balancer
+### Bước 4: Load Balancer
 
 | Khía cạnh | Mô tả |
 |-----------|-------|
@@ -105,7 +105,7 @@ server {
 }
 ```
 
-### 3.5. Bước 5: API Gateway
+### Bước 5: API Gateway
 
 | Khía cạnh | Mô tả |
 |-----------|-------|
@@ -136,7 +136,7 @@ server {
       rateLimit: 50
 ```
 
-### 3.6. Bước 6: Microservices
+### Bước 6: Microservices
 
 | Khía cạnh | Mô tả |
 |-----------|-------|
@@ -188,7 +188,7 @@ public class OrderService {
 }
 ```
 
-### 3.7. Bước 7: Database Layer
+### Bước 7: Database Layer
 
 | Thành phần | Vai trò | Ví dụ |
 |-----------|---------|-------|
@@ -199,7 +199,7 @@ public class OrderService {
 | **Object Storage** | Lưu file, media | AWS S3, GCS |
 | **Time-series DB** | Dữ liệu theo thời gian | InfluxDB, TimescaleDB |
 
-### 3.8. Bước 8: Response quay về
+### Bước 8: Response quay về
 
 ```
 Response đi ngược qua cùng chuỗi:
@@ -217,7 +217,7 @@ Render trang web
 
 ## 4. Ví dụ luồng đầy đủ
 
-### 4.1. GET /api/users/123
+### GET /api/users/123
 
 ```
 TỐI ƯU: 1. Browser check CDN cache (Cache-Control)
@@ -228,7 +228,7 @@ TỐI ƯU: 1. Browser check CDN cache (Cache-Control)
         6. Browser cache với Cache-Control
 ```
 
-### 4.2. POST /api/orders
+### POST /api/orders
 
 ```
 TỐI ƯU: 1. Validate request (DTO validation)

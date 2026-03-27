@@ -29,7 +29,7 @@ flowchart TD
 
 ### 2. CQRS (Command Query Responsibility Segregation)
 
-#### 2.1. The Problem with Traditional Architecture
+#### The Problem with Traditional Architecture
 
 In a traditional CRUD architecture, the same model handles both reads and writes:
 
@@ -48,7 +48,7 @@ In a traditional CRUD architecture, the same model handles both reads and writes
 └─────────────────────────────────────────────────────────────┘
 ```
 
-#### 2.2. CQRS Solution
+#### CQRS Solution
 
 CQRS separates the read and write sides into distinct models, optimized for their respective purposes.
 
@@ -78,7 +78,7 @@ CQRS separates the read and write sides into distinct models, optimized for thei
 └─────────────────────────────────────────────────────────────┘
 ```
 
-#### 2.3. CQRS Benefits
+#### CQRS Benefits
 
 | Benefit | Description |
 |---------|-------------|
@@ -89,7 +89,7 @@ CQRS separates the read and write sides into distinct models, optimized for thei
 | **Flexibility** | Change read model without affecting write model |
 | **Performance** | Optimize queries without impacting domain model |
 
-#### 2.4. CQRS Implementation
+#### CQRS Implementation
 
 ```java
 // ========== COMMAND SIDE (Write) ==========
@@ -222,7 +222,7 @@ public class OrderApplicationService {
 
 ### 3. Event Sourcing
 
-#### 3.1. The Problem with State-Based Storage
+#### The Problem with State-Based Storage
 
 Traditional systems store the **current state** of entities:
 
@@ -238,7 +238,7 @@ Problem: We lose all history. We cannot answer:
 - "How did the order evolve over time?"
 - "What was the state at 3 PM yesterday?"
 
-#### 3.2. Event Sourcing Solution
+#### Event Sourcing Solution
 
 Event Sourcing stores **events**, not state. Every change is recorded as an immutable event.
 
@@ -271,7 +271,7 @@ Event: ItemRemoved (product=phone)
 Event: OrderConfirmed
 ```
 
-#### 3.3. Event Sourcing Implementation
+#### Event Sourcing Implementation
 
 ```java
 // ========== EVENTS ==========
@@ -383,7 +383,7 @@ public class JpaEventStore implements EventStore {
 }
 ```
 
-#### 3.4. Event Sourcing Advantages
+#### Event Sourcing Advantages
 
 | Advantage | Description |
 |-----------|-------------|
@@ -394,7 +394,7 @@ public class JpaEventStore implements EventStore {
 | **Debugging** | Replay events to understand exactly what happened |
 | **Time Travel** | Travel back to any moment and see the system state |
 
-#### 3.5. Challenges
+#### Challenges
 
 | Challenge | Solution |
 |-----------|----------|

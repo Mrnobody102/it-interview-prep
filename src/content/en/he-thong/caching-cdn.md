@@ -1,14 +1,14 @@
-# System Design
+# Caching & CDN
 
-## 11. Caching & CDN
+## 
 
-### 11.1. Caching
+### Caching
 
-#### 11.1.1. Overview
+#### Overview
 
 Caching temporarily stores data in layers closer to the user to serve frequent requests quickly. The goal is to reduce database load, minimize latency, and improve overall system throughput.
 
-#### 11.1.2. Caching in the System Stack
+#### Caching in the System Stack
 
 ```mermaid
 flowchart TD
@@ -23,7 +23,7 @@ flowchart TD
     DB -->|"← Slowest"| DB
 ```
 
-#### 11.1.3. Cache Strategies
+#### Cache Strategies
 
 | Strategy | Description | Use Case |
 |---|---|---|
@@ -55,7 +55,7 @@ async function getUser(userId: string): Promise<User> {
 }
 ```
 
-### 11.2. Cache Invalidation
+### Cache Invalidation
 
 > **The two hard problems in computer science:** cache invalidation, naming things, and off-by-one errors.
 
@@ -66,7 +66,7 @@ async function getUser(userId: string): Promise<User> {
 | **Versioned keys** | Include version in cache key | Precise invalidation | More memory usage |
 | **Manual** | Explicitly invalidate | Full control | Error-prone, forget to invalidate |
 
-### 11.3. Eviction Policies
+### Eviction Policies
 
 | Policy | Description | Best For |
 |---|---|---|
@@ -76,13 +76,13 @@ async function getUser(userId: string): Promise<User> {
 | **TTL-based** | Evict by expiration time | Time-sensitive data |
 | **Random** | Evict randomly | Testing, extreme scale |
 
-### 11.4. CDN (Content Delivery Network)
+### CDN (Content Delivery Network)
 
-#### 11.4.1. Overview
+#### Overview
 
 A CDN is a globally distributed network of servers that caches and serves static content (HTML, CSS, JS, images, videos) from edge locations closest to the user.
 
-#### 11.4.2. How CDN Works
+#### How CDN Works
 
 ```
 User Request → CDN Edge Server (closest to user)
@@ -92,7 +92,7 @@ User Request → CDN Edge Server (closest to user)
                           → Return to User
 ```
 
-#### 11.4.3. CDN Benefits
+#### CDN Benefits
 
 | Benefit | Description |
 |---|---|
@@ -103,7 +103,7 @@ User Request → CDN Edge Server (closest to user)
 | **Better Security** | HTTPS, WAF, bot protection at edge |
 | **Bandwidth Savings** | Compression, deduplication at CDN level |
 
-#### 11.4.4. CDN Providers
+#### CDN Providers
 
 | Provider | Notable Features |
 |---|---|
@@ -113,7 +113,7 @@ User Request → CDN Edge Server (closest to user)
 | **Akamai** | Largest network, enterprise-grade |
 | **Google Cloud CDN** | GCP integration, global load balancing |
 
-#### 11.4.5. Cache-Control Headers
+#### Cache-Control Headers
 
 ```bash
 # Common cache-control directives
@@ -125,7 +125,7 @@ Cache-Control: private                # Only cached by browser
 Cache-Control: immutable              # Content never changes (for versioning)
 ```
 
-### 11.5. Redis as a Cache
+### Redis as a Cache
 
 | Command | Description | Time Complexity |
 |---|---|---|
@@ -137,7 +137,7 @@ Cache-Control: immutable              # Content never changes (for versioning)
 | `HGETALL key` | Get all fields in hash | O(N) |
 | `LRANGE key 0 -1` | Get list range | O(N) |
 
-### 11.6. Caching Anti-Patterns
+### Caching Anti-Patterns
 
 | Anti-pattern | Problem | Solution |
 |---|---|---|

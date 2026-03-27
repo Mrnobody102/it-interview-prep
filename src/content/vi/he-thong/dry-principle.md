@@ -1,23 +1,21 @@
-# Nguyên lý thiết kế
+# Nguyên lý DRY — Don't Repeat Yourself
 
-## 3. Nguyên lý DRY — Don't Repeat Yourself
-
-### 3.1. Khái niệm cốt lõi
+## Khái niệm cốt lõi
 
 > Mỗi phần logic chỉ nên tồn tại ở **một, duy nhất một** vị trí có thẩm quyền trong hệ thống.
 
 Nguyên lý DRY phát biểu rằng việc trùng lặp logic — dù là trong code, data, hay tài liệu — tạo ra cơn ác mộng bảo trì và tăng khả năng có bug.
 
-### 3.2. Mục đích
+### Mục đích
 
 - **Giảm bug:** Sửa logic ở một chỗ, không phải N chỗ
 - **Cải thiện khả năng bảo trì:** Thay đổi lan truyền nhất quán trong codebase
 - **Tăng rõ ràng:** Một nguồn sự thật duy nhất giúp code dễ hiểu
 - **Khả năng tái sử dụng tốt hơn:** Logic dùng chung có thể test một lần và dùng ở mọi nơi
 
-### 3.3. Cách áp dụng DRY
+### Cách áp dụng DRY
 
-#### 3.3.1. Trích xuất hàm/phương thức dùng chung
+#### Trích xuất hàm/phương thức dùng chung
 
 Thay vì trùng lặp logic:
 
@@ -35,7 +33,7 @@ const area1 = calculateArea(width1, height1);
 const area2 = calculateArea(width2, height2);
 ```
 
-#### 3.3.2. Sử dụng Inheritance hoặc Composition
+#### Sử dụng Inheritance hoặc Composition
 
 ```typescript
 // Composition over inheritance
@@ -58,7 +56,7 @@ class Dog extends Animal {
 }
 ```
 
-#### 3.3.3. Tập trung hóa Constants và Configuration
+#### Tập trung hóa Constants và Configuration
 
 ```typescript
 // Bad: Số ma thuật trải rộng trong code
@@ -78,7 +76,7 @@ export const API_ENDPOINTS = {
 } as const;
 ```
 
-#### 3.3.4. Trích xuất Utilities dùng chung
+#### Trích xuất Utilities dùng chung
 
 ```typescript
 // utils/validation.ts
@@ -93,7 +91,7 @@ export function isValidPhone(phone: string): boolean {
 }
 ```
 
-### 3.4. DRY vs. WET
+### DRY vs. WET
 
 | Khía cạnh | DRY | WET (Write Every Time) |
 |---|---|---|
@@ -102,7 +100,7 @@ export function isValidPhone(phone: string): boolean {
 | **Độ dễ đọc** | Có thể trừu tượng | Rõ ràng hơn |
 | **Rủi ro over-abstraction** | Có | Không |
 
-### 3.5. Khi nào KHÔNG nên áp dụng DRY
+### Khi nào KHÔNG nên áp dụng DRY
 
 > **Quan trọng:** DRY là nguyên tắc chỉ đạo, không phải quy luật tuyệt đối. Áp dụng DRY quá đà dẫn đến over-engineering.
 
@@ -112,7 +110,7 @@ export function isValidPhone(phone: string): boolean {
 
 > **Tip:** Code trùng lặp mà tiến hóa cùng nhau là một smell. Code trùng lặp mà thay đổi vì lý do khác nhau thì đôi khi acceptable. Hỏi: "Hai phần code này sẽ thay đổi vì cùng lý do không?"
 
-### 3.6. Mối quan hệ DRY và YAGNI
+### Mối quan hệ DRY và YAGNI
 
 DRY và YAGNI bổ sung cho nhau nhưng đôi khi xung đột:
 

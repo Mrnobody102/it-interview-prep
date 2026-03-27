@@ -1,14 +1,14 @@
 # SOA - Service-Oriented Architecture
 
-## 1. Tổng quan
+## Tổng quan
 
 **SOA (Service-Oriented Architecture)** là kiến trúc tổ chức hệ thống thành các **service có khả năng tái sử dụng**, giao tiếp với nhau qua **ESB (Enterprise Service Bus)**. SOA ra đời từ những năm 2000 và được sử dụng rộng rãi trong các doanh nghiệp lớn để tích hợp các hệ thống legacy với nhau.
 
 ---
 
-## 2. Các thành phần cốt lõi
+## Các thành phần cốt lõi
 
-### 2.1. ESB (Enterprise Service Bus)
+### ESB (Enterprise Service Bus)
 
 | Khía cạnh | Mô tả |
 |-----------|-------|
@@ -38,7 +38,7 @@
 └─────────┘ └─────────┘ └─────────┘
 ```
 
-### 2.2. Service Registry
+### Service Registry
 
 | Khía cạnh | Mô tả |
 |-----------|-------|
@@ -46,7 +46,7 @@
 | **Vai trò** | Giúp discover và binding service động |
 | **Tiêu chuẩn** | UDDI (Universal Description, Discovery and Integration) |
 
-### 2.3. Service Repository
+### Service Repository
 
 | Khía cạnh | Mô tả |
 |-----------|-------|
@@ -55,7 +55,7 @@
 
 ---
 
-## 3. Đặc điểm chính của SOA
+## Đặc điểm chính của SOA
 
 | Đặc điểm | Mô tả |
 |---------|-------|
@@ -66,7 +66,7 @@
 | **Interoperability** | Hỗ trợ nhiều protocol: SOAP, REST, JMS, WS-* |
 | **Governance** | Governance tập trung ở enterprise level |
 
-### 3.1. Service Classification
+### Service Classification
 
 | Loại | Mô tả | Ví dụ |
 |------|-------|-------|
@@ -77,7 +77,7 @@
 
 ---
 
-## 4. So sánh SOA với Microservices
+## So sánh SOA với Microservices
 
 | Tiêu chí | SOA | Microservices |
 |----------|-----|--------------|
@@ -95,7 +95,7 @@
 | **Scalability** | Vertical và một phần horizontal | Full horizontal scaling |
 | **Use case phổ biến** | Doanh nghiệp lớn, legacy integration | Cloud-native, rapid development |
 
-### 4.1. Sơ đồ so sánh
+### Sơ đồ so sánh
 
 ```
 SOA:
@@ -126,7 +126,7 @@ Microservices:
 
 ---
 
-## 5. Ưu điểm của SOA
+## Ưu điểm của SOA
 
 | Ưu điểm | Mô tả |
 |---------|-------|
@@ -139,7 +139,7 @@ Microservices:
 
 ---
 
-## 6. Nhược điểm của SOA
+## Nhược điểm của SOA
 
 | Nhược điểm | Mô tả |
 |-----------|-------|
@@ -153,9 +153,9 @@ Microservices:
 
 ---
 
-## 7. Khi nào nên dùng SOA?
+## Khi nào nên dùng SOA?
 
-### 7.1. Use Cases phù hợp
+### Use Cases phù hợp
 
 | Scenario | Mô tả |
 |----------|-------|
@@ -165,7 +165,7 @@ Microservices:
 | **Business process orchestration** | Cần BPM (Business Process Management) |
 | **Legacy modernization** | Dần dần expose legacy systems qua service layer |
 
-### 7.2. Use Cases không phù hợp
+### Use Cases không phù hợp
 
 | Scenario | Thay thế tốt hơn |
 |----------|------------------|
@@ -177,7 +177,7 @@ Microservices:
 
 ---
 
-## 8. SOA vs Microservices vs Monolith
+## SOA vs Microservices vs Monolith
 
 | Tiêu chí | Monolith | SOA | Microservices |
 |----------|----------|-----|--------------|
@@ -191,7 +191,7 @@ Microservices:
 
 ---
 
-## 9. Các tiêu chuẩn và công nghệ trong SOA
+## Các tiêu chuẩn và công nghệ trong SOA
 
 | Tiêu chuẩn/Công nghệ | Mô tả |
 |---------------------|-------|

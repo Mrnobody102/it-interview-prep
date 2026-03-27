@@ -1,6 +1,6 @@
-# API Design - Thiết kế API
+# API Design
 
-## 1. Tổng quan
+## Tổng quan
 
 **API (Application Programming Interface)** là cầu nối giữa các thành phần phần mềm. Thiết kế API tốt giúp:
 - **Developer experience** tốt — dễ hiểu, dễ sử dụng
@@ -10,9 +10,9 @@
 
 ---
 
-## 2. Các kiểu API phổ biến
+## Các kiểu API phổ biến
 
-### 2.1. REST (Representational State Transfer)
+### REST (Representational State Transfer)
 
 | Khía cạnh | Mô tả |
 |-----------|-------|
@@ -31,7 +31,7 @@ PUT    /api/users/123      -- Cập nhật user 123
 DELETE /api/users/123      -- Xóa user 123
 ```
 
-### 2.2. GraphQL
+### GraphQL
 
 | Khía cạnh | Mô tả |
 |-----------|-------|
@@ -57,7 +57,7 @@ query {
 }
 ```
 
-### 2.3. gRPC (Google Remote Procedure Call)
+### gRPC (Google Remote Procedure Call)
 
 | Khía cặnh | Mô tả |
 |-----------|-------|
@@ -88,7 +88,7 @@ message User {
 }
 ```
 
-### 2.4. So sánh REST vs GraphQL vs gRPC
+### So sánh REST vs GraphQL vs gRPC
 
 | Tiêu chí | REST | GraphQL | gRPC |
 |----------|------|---------|------|
@@ -105,9 +105,9 @@ message User {
 
 ---
 
-## 3. REST Best Practices
+## REST Best Practices
 
-### 3.1. Naming Conventions
+### Naming Conventions
 
 | Quy tắc | Tốt | Xấu |
 |---------|-----|-----|
@@ -116,7 +116,7 @@ message User {
 | **Snake_case hay kebab-case** | `/user-profiles`, `/order_items` | `/userProfiles` |
 | **Nhất quán** | `/users/{id}/orders` | `/getUserOrders?id=` |
 
-### 3.2. HTTP Status Codes
+### HTTP Status Codes
 
 | Code | Ý nghĩa | Khi nào dùng |
 |------|---------|-------------|
@@ -133,7 +133,7 @@ message User {
 | **500 Internal Server Error** | Lỗi server | Lỗi không xác định |
 | **503 Service Unavailable** | Service tạm dừng | Maintenance, overload |
 
-### 3.3. API Versioning
+### API Versioning
 
 | Phương pháp | Ví dụ | Ưu điểm | Nhược điểm |
 |-------------|-------|---------|-----------|
@@ -144,7 +144,7 @@ message User {
 
 > **Khuyến nghị**: Dùng **URL Path versioning** — đơn giản, rõ ràng, dễ debug.
 
-### 3.4. Pagination
+### Pagination
 
 ```json
 // Offset-based pagination
@@ -168,7 +168,7 @@ GET /api/users?cursor=eyJpZCI6MTIzfQ&limit=20
 }
 ```
 
-### 3.5. Error Response Format
+### Error Response Format
 
 ```json
 // ✅ Chuẩn error format
@@ -194,9 +194,9 @@ GET /api/users?cursor=eyJpZCI6MTIzfQ&limit=20
 
 ---
 
-## 4. Authentication & Security
+## Authentication & Security
 
-### 4.1. Các phương pháp Authentication
+### Các phương pháp Authentication
 
 | Phương pháp | Mô tả | Phù hợp |
 |-------------|-------|--------|
@@ -206,7 +206,7 @@ GET /api/users?cursor=eyJpZCI6MTIzfQ&limit=20
 | **OAuth 2.0** | Delegated authorization | Public APIs, third-party access |
 | **mTLS** | Mutual TLS (certificate) | High-security internal APIs |
 
-### 4.2. JWT Structure
+### JWT Structure
 
 ```
 eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9
@@ -233,7 +233,7 @@ SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
 }
 ```
 
-### 4.3. Rate Limiting
+### Rate Limiting
 
 ```json
 // Response headers
@@ -245,9 +245,9 @@ Retry-After: 30              // Số giây chờ (khi bị limit)
 
 ---
 
-## 5. API Documentation
+## API Documentation
 
-### 5.1. OpenAPI (Swagger)
+### OpenAPI (Swagger)
 
 ```yaml
 # openapi.yaml
@@ -293,7 +293,7 @@ components:
 
 ---
 
-## 6. Performance Optimization
+## Performance Optimization
 
 | Kỹ thuật | Mô tả |
 |----------|-------|

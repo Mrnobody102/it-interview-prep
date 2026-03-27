@@ -1,40 +1,36 @@
-# System Design
+# Production Application Architecture
 
-## 8. Production Application Architecture
-
-Một ứng dụng web production điển hình bao gồm nhiều layers, mỗi layer có trách nhiệm cụ thể.
-
-### 8.1. Tổng quan kiến trúc
+## Tổng quan kiến trúc
 
 ```mermaid
 flowchart TD
     subgraph CL["TẦNG CLIENT"]
-        C["Browser / Mobile App"]
+        C_CLIENT["Browser /<br>Mobile App"]
     end
-    C -->|HTTPS| CDN_EDGE
+    C_CLIENT -->|HTTPS| CDN_EDGE
     subgraph CDN["TẦNG CDN / EDGE"]
-        CDN_EDGE["Cloudflare / CloudFront / Fastly"]
+        CDN_EDGE["Cloudflare /<br>CloudFront /<br>Fastly"]
     end
     CDN_EDGE --> LB
     subgraph LB_LAYER["TẦNG LOAD BALANCER"]
-        LB["Nginx / HAProxy / AWS ALB"]
+        LB["Nginx / HAProxy /<br>AWS ALB"]
     end
     LB --> AG1
     LB --> AG2
-    AG1["API Gateway (Auth, Rate Limit)"]
-    AG2["API Gateway (Backup)"]
+    AG1["API Gateway<br>(Auth, Rate Limit)"]
+    AG2["API Gateway<br>(Backup)"]
     AG1 --> SM
     AG2 --> SM
     subgraph SM["SERVICE MESH / KUBERNETES"]
-        A["Service A (Auth)"]
-        B["Service B (Users)"]
-        C["Service C (Orders)"]
-        D["Service D (Search)"]
+        SVC_A["Service A (Auth)"]
+        SVC_B["Service B (Users)"]
+        SVC_C["Service C (Orders)"]
+        SVC_D["Service D (Search)"]
     end
-    A --> MQ
-    B --> MQ
-    C --> MQ
-    D --> MQ
+    SVC_A --> MQ
+    SVC_B --> MQ
+    SVC_C --> MQ
+    SVC_D --> MQ
     subgraph MQ_LAYER["TẦNG MESSAGE QUEUE"]
         MQ["Kafka / RabbitMQ"]
     end
@@ -49,7 +45,7 @@ flowchart TD
 
 ---
 
-### 8.2. Frontend Layer
+### Frontend Layer
 
 | Concern | Technology |
 |---|---|
@@ -60,7 +56,7 @@ flowchart TD
 
 ---
 
-### 8.3. Backend Layer
+### Backend Layer
 
 | Component | Description |
 |---|---|
@@ -70,7 +66,7 @@ flowchart TD
 
 ---
 
-### 8.4. Database Layer
+### Database Layer
 
 | Type | Examples | Use Case |
 |---|---|---|
@@ -81,7 +77,7 @@ flowchart TD
 | **Graph** | Neo4j | Relationships, social networks |
 | **Search** | Elasticsearch | Full-text search, log analysis |
 
-#### 8.4.1. Database Best Practices
+#### Database Best Practices
 
 - **Replication:** Primary-replica setup cho read scaling và failover
 - **Sharding:** Horizontal partitioning cho very large datasets
@@ -90,7 +86,7 @@ flowchart TD
 
 ---
 
-### 8.5. Caching Layer
+### Caching Layer
 
 | Technology | Use Case |
 |---|---|
@@ -100,7 +96,7 @@ flowchart TD
 
 ---
 
-### 8.6. Message Queue Layer
+### Message Queue Layer
 
 | Technology | Characteristics |
 |---|---|
@@ -111,7 +107,7 @@ flowchart TD
 
 ---
 
-### 8.7. File Storage
+### File Storage
 
 | Service | Description |
 |---|---|
@@ -122,7 +118,7 @@ flowchart TD
 
 ---
 
-### 8.8. DevOps & CI/CD
+### DevOps & CI/CD
 
 | Category | Tools |
 |---|---|
@@ -134,7 +130,7 @@ flowchart TD
 
 ---
 
-### 8.9. Monitoring & Logging
+### Monitoring & Logging
 
 | Category | Tools |
 |---|---|
@@ -146,7 +142,7 @@ flowchart TD
 
 ---
 
-### 8.10. Security Layer
+### Security Layer
 
 | Concern | Solution |
 |---|---|
@@ -159,7 +155,7 @@ flowchart TD
 
 ---
 
-### 8.11. High Availability & Scalability
+### High Availability & Scalability
 
 | Strategy | Description |
 |---|---|

@@ -1,10 +1,8 @@
-# System Design
+# Design Requirements
 
-## 10. Design Requirements
+### Identifying Requirements
 
-### 10.1. Identifying Requirements
-
-#### 10.1.1. Functional Requirements
+#### Functional Requirements
 
 What the system must do:
 
@@ -15,7 +13,7 @@ What the system must do:
 - Payment processing
 - Reporting and analytics
 
-#### 10.1.2. Non-Functional Requirements (Quality Attributes)
+#### Non-Functional Requirements (Quality Attributes)
 
 How the system performs:
 
@@ -30,21 +28,21 @@ How the system performs:
 | **Cost** | Deployment and operational expenses | Stay within budget constraints |
 | **Observability** | Visibility into system state | Logs, metrics, traces |
 
-### 10.2. Scalability Dimensions
+### Scalability Dimensions
 
-#### 10.2.1. Vertical Scaling (Scale Up)
+#### Vertical Scaling (Scale Up)
 
 - Add more CPU, RAM, or storage to existing machines
 - **Pros:** Simpler, no code changes needed
 - **Cons:** Hardware limits, single point of failure, expensive at scale
 
-#### 10.2.2. Horizontal Scaling (Scale Out)
+#### Horizontal Scaling (Scale Out)
 
 - Add more machines to the pool
 - **Pros:** Near-unlimited scale, fault tolerance
 - **Cons:** More complex (load balancing, data partitioning, session management)
 
-### 10.3. CAP Theorem
+### CAP Theorem
 
 The **CAP theorem** states that a distributed system can only guarantee **two out of three** properties simultaneously.
 
@@ -56,7 +54,7 @@ The **CAP theorem** states that a distributed system can only guarantee **two ou
 
 > **Key insight:** Network partitions are inevitable in distributed systems. Therefore, you must choose between **CP** (Consistency + Partition Tolerance) or **AP** (Availability + Partition Tolerance).
 
-#### 10.3.1. CP vs. AP in Practice
+#### CP vs. AP in Practice
 
 | System Type | Priority | Rationale |
 |---|---|---|
@@ -65,7 +63,7 @@ The **CAP theorem** states that a distributed system can only guarantee **two ou
 | **E-commerce inventory** | CP (usually) | Prevent overselling products |
 | **CDN / DNS** | AP | Always serve cached content, even if slightly outdated |
 
-### 10.4. Consistency Models
+### Consistency Models
 
 | Model | Description | Example Systems |
 |---|---|---|
@@ -74,7 +72,7 @@ The **CAP theorem** states that a distributed system can only guarantee **two ou
 | **Causal Consistency** | Respects causality — if A causes B, B sees A's effects | Some NoSQL databases |
 | **Read-your-Writes** | A client always sees its own writes | Session guarantees |
 
-### 10.5. PACELC Model
+### PACELC Model
 
 An extension of CAP — even when there is **no partition**, you must choose between **Latency (L)** and **Consistency (C)**:
 
@@ -88,7 +86,7 @@ An extension of CAP — even when there is **no partition**, you must choose bet
 | Bigtable / HBase | PC/EC |
 | MongoDB | PA/EC (configurable) |
 
-### 10.6. Common Trade-offs
+### Common Trade-offs
 
 | Trade-off | Consideration |
 |---|---|
@@ -98,7 +96,7 @@ An extension of CAP — even when there is **no partition**, you must choose bet
 | **Monolith vs. Microservices** | Simplicity vs. scalability |
 | **Sync vs. Async** | Simpler with sync. More resilient with async (but more complex) |
 
-### 10.7. SLA (Service Level Agreement)
+### SLA (Service Level Agreement)
 
 | Availability | Downtime per Year | Downtime per Month | Downtime per Week |
 |---|---|---|---|

@@ -1,8 +1,8 @@
-# System Design
+# Load Balancer
 
-## 13. Load Balancer
+## 
 
-### 13.1. Overview
+### Overview
 
 A **load balancer** distributes incoming request traffic evenly across multiple backend servers. It acts as a single entry point for clients and ensures no single server bears too much load.
 
@@ -20,14 +20,14 @@ flowchart LR
     LB --> S3["Server C"]
 ```
 
-### 13.2. Types of Load Balancers
+### Types of Load Balancers
 
 | Type | OSI Layer | Description |
 |---|---|---|
 | **Layer 4 (Transport)** | L4 | Distributes traffic by IP address and port (TCP, UDP). Faster, less aware of content. |
 | **Layer 7 (Application)** | L7 | Distributes traffic by HTTP/HTTPS content (URL, cookies, headers). Smarter but more overhead. |
 
-#### 13.2.1. L4 vs. L7 Comparison
+#### L4 vs. L7 Comparison
 
 | Aspect | L4 Load Balancer | L7 Load Balancer |
 |---|---|---|
@@ -38,7 +38,7 @@ flowchart LR
 | **Content-based routing** | No | Yes (e.g., `/api/*` → backend) |
 | **Examples** | HAProxy (TCP mode), AWS NLB | Nginx, AWS ALB, HAProxy (HTTP mode) |
 
-### 13.3. Load Balancing Algorithms
+### Load Balancing Algorithms
 
 | Algorithm | Description | Best For |
 |---|---|---|
@@ -50,7 +50,7 @@ flowchart LR
 | **Least Response Time** | Route to server with lowest response time | Latency-sensitive apps |
 | **Random** | Random selection | Simple, works well with caching |
 
-### 13.4. Health Checks
+### Health Checks
 
 | Type | Description | Example |
 |---|---|---|
@@ -73,7 +73,7 @@ health_check uri=/health interval=5s timeout=2s
              rises=2 falls=3 port=8080;
 ```
 
-### 13.5. Session Persistence (Sticky Sessions)
+### Session Persistence (Sticky Sessions)
 
 | Method | Description | Pros | Cons |
 |---|---|---|---|
@@ -83,7 +83,7 @@ health_check uri=/health interval=5s timeout=2s
 
 > **Note:** Sticky sessions are often unnecessary when the backend is **stateless**. Use JWT tokens or store sessions in Redis instead of relying on server affinity.
 
-### 13.6. Advanced Features
+### Advanced Features
 
 | Feature | Description |
 |---|---|
@@ -93,7 +93,7 @@ health_check uri=/health interval=5s timeout=2s
 | **Auto-scaling Integration** | Add/remove servers based on load |
 | **Request/Response Rewriting** | Modify headers, paths, or payloads |
 
-### 13.7. Load Balancer Solutions
+### Load Balancer Solutions
 
 | Product | Type | Notes |
 |---|---|---|
@@ -104,7 +104,7 @@ health_check uri=/health interval=5s timeout=2s
 | **Envoy** | Service proxy, L7 | Used as sidecar in service mesh |
 | **Cloudflare** | CDN + LB | Global anycast network |
 
-### 13.8. DNS-Based Load Balancing
+### DNS-Based Load Balancing
 
 | Method | Description |
 |---|---|
@@ -119,7 +119,7 @@ health_check uri=/health interval=5s timeout=2s
 # Default: US server IPs
 ```
 
-### 13.9. Configuration Example: Nginx
+### Configuration Example: Nginx
 
 ```nginx
 # nginx.conf

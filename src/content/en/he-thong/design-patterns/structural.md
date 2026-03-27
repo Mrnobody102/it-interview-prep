@@ -4,23 +4,23 @@
 
 Structural patterns explain how to compose classes and objects to form larger structures. They focus on simplifying relationships between entities.
 
-### 6.1. Adapter Pattern
+### Adapter Pattern
 
-#### 6.1.1. Concept
+#### Concept
 
 Convert the interface of one class into another interface that the client expects. Allows incompatible interfaces to work together.
 
-#### 6.1.2. Real-World Analogy
+#### Real-World Analogy
 
 A power adapter converts plug types (e.g., US to EU) without changing the underlying device.
 
-#### 6.1.3. When to Use
+#### When to Use
 
 - Integrating third-party libraries with different interfaces
 - Converting between DTOs and domain entities
 - Wrapping legacy code with a modern interface
 
-#### 6.1.4. Code Example
+#### Code Example
 
 ```typescript
 // Third-party library with incompatible interface
@@ -57,19 +57,19 @@ console.log(adapter.age);  // 30
 
 ---
 
-### 6.2. Decorator Pattern
+### Decorator Pattern
 
-#### 6.2.1. Concept
+#### Concept
 
 Attach additional responsibilities to an object dynamically. Subclassing is replaced by wrapping objects in decorator objects.
 
-#### 6.2.2. When to Use
+#### When to Use
 
 - Adding features to objects without modifying their class
 - Combining behaviors at runtime
 - Extending closed classes (from Open/Closed principle)
 
-#### 6.2.3. Code Example
+#### Code Example
 
 ```typescript
 // Base component
@@ -130,7 +130,7 @@ compressed.writeData('sensitive data');
 // Data flows: "sensitive data" → compressed → encrypted → file
 ```
 
-#### 6.2.4. Real-World Examples
+#### Real-World Examples
 
 - Java I/O streams: `BufferedInputStream(InputStream)`
 - Node.js middleware: `app.use()` chain
@@ -138,19 +138,19 @@ compressed.writeData('sensitive data');
 
 ---
 
-### 6.3. Facade Pattern
+### Facade Pattern
 
-#### 6.3.1. Concept
+#### Concept
 
 Provide a simplified, unified interface to a complex subsystem. Hide the complexity behind a single entry point.
 
-#### 6.3.2. When to Use
+#### When to Use
 
 - Simplifying complex libraries or frameworks
 - Creating a simple API over a multi-step process
 - Reducing dependencies between clients and subsystem classes
 
-#### 6.3.3. Code Example
+#### Code Example
 
 ```typescript
 // Complex subsystem classes
@@ -195,7 +195,7 @@ const computer = new ComputerFacade();
 computer.start();
 ```
 
-#### 6.3.4. Real-World Examples
+#### Real-World Examples
 
 - Service layer hiding multiple repository calls
 - `console.log` hiding complex browser APIs
@@ -203,13 +203,13 @@ computer.start();
 
 ---
 
-### 6.4. Proxy Pattern
+### Proxy Pattern
 
-#### 6.4.1. Concept
+#### Concept
 
 Create a representative object that controls access to another object. Acts as a surrogate or placeholder.
 
-#### 6.4.2. Types of Proxy
+#### Types of Proxy
 
 | Type | Purpose |
 |---|---|
@@ -219,7 +219,7 @@ Create a representative object that controls access to another object. Acts as a
 | **Cache Proxy** | Store results to avoid repeated expensive operations |
 | **Logging Proxy** | Log method calls and arguments |
 
-#### 6.4.3. Code Example
+#### Code Example
 
 ```typescript
 // Subject interface
@@ -275,7 +275,7 @@ images[1].display(); // Loads and displays photo2.jpg
 // photo3.jpg never loaded — memory saved
 ```
 
-#### 6.4.4. Real-World Examples
+#### Real-World Examples
 
 - **Spring AOP proxy:** Transaction management, security annotations
 - **Hibernate proxy:** Lazy-loading entity relationships

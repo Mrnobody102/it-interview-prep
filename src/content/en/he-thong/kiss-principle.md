@@ -1,6 +1,6 @@
 # KISS Principle
 
-## Keep It Simple, Stupid
+## Overview
 
 > Design as simply as possible. Complex code is not always better.
 

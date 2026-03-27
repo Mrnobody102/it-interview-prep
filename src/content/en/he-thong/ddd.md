@@ -30,7 +30,7 @@ DDD was popularized by Eric Evans in his book **"Domain-Driven Design: Tackling 
 
 Strategic design is about understanding the **big picture** — how different parts of the domain relate to each other, where boundaries exist, and how teams should be organized.
 
-#### 2.1. Bounded Context
+#### Bounded Context
 
 A **Bounded Context** is a delimited boundary within which a particular domain model is valid and consistent. Inside the boundary, terms have specific meanings, and the model is complete.
 
@@ -64,7 +64,7 @@ Why boundaries matter:
 - A "Product" in Catalog (items for sale) differs from "Product" in an Order (what was purchased)
 - Enforcing one unified model across boundaries leads to **god objects** and **anemia**
 
-#### 2.2. Ubiquitous Language
+#### Ubiquitous Language
 
 The **Ubiquitous Language** is a shared, consistent language used by both developers and domain experts. It is used in code, conversations, documentation, and tests.
 
@@ -77,7 +77,7 @@ The **Ubiquitous Language** is a shared, consistent language used by both develo
 
 > Avoid technical jargon in domain language. The language should reflect **how the business actually talks**.
 
-#### 2.3. Context Map
+#### Context Map
 
 A **Context Map** shows the relationships between Bounded Contexts in the system.
 
@@ -100,14 +100,14 @@ flowchart LR
     end
 
     ORDER -->|"Customer-Supplier"| CUST
-    ORDER -->|"Conformist<br>(catalog data)"| CATA
+    ORDER -->|"Conformist"| CATA
     BILL -->|"Anticorruption Layer"| ORDER
     CUST -->|"Shared Kernel"| BILL
 ```
 
 ### 3. Bounded Context Relationships
 
-#### 3.1. Shared Kernel
+#### Shared Kernel
 
 Two contexts **share a subset** of the domain model. Changes to the shared part affect both contexts. Use sparingly — requires tight coordination.
 
@@ -118,7 +118,7 @@ Two contexts **share a subset** of the domain model. Changes to the shared part 
 └──────────────┘                  └──────────────┘
 ```
 
-#### 3.2. Customer-Supplier
+#### Customer-Supplier
 
 One context (Supplier) provides services/data to another (Customer). The Customer can request changes, and the Supplier decides whether to fulfill them.
 
@@ -129,11 +129,11 @@ One context (Supplier) provides services/data to another (Customer). The Custome
 └──────────────┘   data/services   └──────────────┘
 ```
 
-#### 3.3. Conformist
+#### Conformist
 
 The downstream context **adopts** the model of the upstream context without translation. Simpler but creates dependency.
 
-#### 3.4. Anticorruption Layer (ACL)
+#### Anticorruption Layer (ACL)
 
 The downstream context creates an **adapter layer** that translates between models, protecting its own domain from external changes.
 
@@ -154,7 +154,7 @@ public class CatalogProductAdapter {
 }
 ```
 
-#### 3.5. Open Host Service (OHS) & Published Language (PL)
+#### Open Host Service (OHS) & Published Language (PL)
 
 The upstream context defines a **protocol** (Open Host Service) and a **data format** (Published Language) that downstream contexts can use to integrate.
 
@@ -164,7 +164,7 @@ The upstream context defines a **protocol** (Open Host Service) and a **data for
 
 Tactical design provides the **implementation patterns** for building models within a Bounded Context.
 
-#### 4.1. Entity vs Value Object
+#### Entity vs Value Object
 
 | Aspect | Entity | Value Object |
 |--------|--------|-------------|
@@ -234,7 +234,7 @@ public class Money {
 }
 ```
 
-#### 4.2. Aggregate
+#### Aggregate
 
 An **Aggregate** is a cluster of related entities and value objects with a single **Aggregate Root** that is the only object accessible from outside.
 
@@ -318,7 +318,7 @@ public class OrderService {
 }
 ```
 
-#### 4.3. Repository Pattern
+#### Repository Pattern
 
 A **Repository** provides access to Aggregates. It abstracts the persistence layer, giving the domain a collection-like interface.
 
@@ -354,7 +354,7 @@ public class JpaOrderRepository implements OrderRepository {
 
 > **Key principle**: Repository interfaces live in the **domain layer**, but implementations live in the **infrastructure layer**. The domain never depends on infrastructure.
 
-#### 4.4. Domain Events
+#### Domain Events
 
 **Domain Events** represent something significant that happened in the domain. They are immutable records of a past occurrence.
 
@@ -408,7 +408,7 @@ public class OrderEventHandler {
 }
 ```
 
-#### 4.5. Domain Services vs Application Services vs Infrastructure Services
+#### Domain Services vs Application Services vs Infrastructure Services
 
 | Service Type | Responsibility | Location | Dependencies |
 |---|---|---|---|
@@ -471,7 +471,7 @@ public class EmailNotificationService implements NotificationService {
 }
 ```
 
-#### 4.6. Factory Pattern in DDD
+#### Factory Pattern in DDD
 
 The **Factory** pattern encapsulates complex object creation, especially for Aggregates with complex creation rules.
 
@@ -509,14 +509,14 @@ public class OrderFactory {
 
 ### 5. When to Use DDD
 
-#### 5.1. Good fit for DDD
+#### Good fit for DDD
 
 - **Complex business domains** with rich rules and logic (banking, insurance, healthcare, e-commerce)
 - **Large teams** where shared understanding of the domain is critical
 - **Long-lived systems** where domain model evolution matters
 - **Strategic importance** — the domain is the core competitive advantage
 
-#### 5.2. DDD may be overkill when
+#### DDD may be overkill when
 
 - **Simple CRUD applications** with minimal business logic
 - **Data-centric systems** where the primary goal is storage and retrieval

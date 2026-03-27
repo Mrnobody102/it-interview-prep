@@ -1,10 +1,8 @@
-# System Design
+# Yêu cầu thiết kế hệ thống
 
-## 10. Yêu cầu thiết kế hệ thống
+### Xác định yêu cầu
 
-### 10.1. Xác định yêu cầu
-
-#### 10.1.1. Functional Requirements (Yêu cầu chức năng)
+#### Functional Requirements (Yêu cầu chức năng)
 
 Những gì hệ thống **phải làm**:
 
@@ -15,7 +13,7 @@ Những gì hệ thống **phải làm**:
 - Payment processing
 - Reporting và analytics
 
-#### 10.1.2. Non-Functional Requirements (Yêu cầu phi chức năng)
+#### Non-Functional Requirements (Yêu cầu phi chức năng)
 
 Hệ thống **hoạt động như thế nào**:
 
@@ -32,7 +30,7 @@ Hệ thống **hoạt động như thế nào**:
 
 ---
 
-### 10.2. CAP Theorem
+### CAP Theorem
 
 **CAP theorem** phát biểu rằng một distributed system chỉ có thể đảm bảo **hai trong ba** thuộc tính cùng lúc.
 
@@ -44,7 +42,7 @@ Hệ thống **hoạt động như thế nào**:
 
 > **Khái niệm quan trọng:** Network partitions là không thể tránh khỏi trong distributed systems. Do đó, phải chọn giữa **CP** (Consistency + Partition Tolerance) hoặc **AP** (Availability + Partition Tolerance).
 
-#### 10.2.1. CP vs. AP trong thực tế
+#### CP vs. AP trong thực tế
 
 | Loại hệ thống | Ưu tiên | Lý do |
 |---|---|---|
@@ -55,7 +53,7 @@ Hệ thống **hoạt động như thế nào**:
 
 ---
 
-### 10.3. PACELC Model
+### PACELC Model
 
 Mở rộng của CAP — ngay cả khi **không có partition**, phải chọn giữa **Latency (L)** và **Consistency (C)**:
 
@@ -71,7 +69,7 @@ Mở rộng của CAP — ngay cả khi **không có partition**, phải chọn 
 
 ---
 
-### 10.4. Consistency Models
+### Consistency Models
 
 | Model | Mô tả | Ví dụ Systems |
 |---|---|---|
@@ -82,7 +80,7 @@ Mở rộng của CAP — ngay cả khi **không có partition**, phải chọn 
 
 ---
 
-### 10.5. Các Trade-offs phổ biến
+### Các Trade-offs phổ biến
 
 | Trade-off | Cân nhắc |
 |---|---|
@@ -94,7 +92,7 @@ Mở rộng của CAP — ngay cả khi **không có partition**, phải chọn 
 
 ---
 
-### 10.6. SLA (Service Level Agreement)
+### SLA (Service Level Agreement)
 
 | Availability | Downtime/năm | Downtime/tháng | Downtime/tuần |
 |---|---|---|---|

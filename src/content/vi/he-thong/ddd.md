@@ -1,6 +1,4 @@
-# Kiến trúc phần mềm
-
-## Domain-Driven Design (DDD)
+# Domain-Driven Design (DDD)
 
 ### 1. Tổng quan
 
@@ -30,7 +28,7 @@ DDD được phổ biến bởi Eric Evans trong cuốn sách **"Domain-Driven D
 
 Strategic design giúp hiểu **bức tranh lớn** — các phần khác nhau của domain liên quan với nhau như thế nào, ranh giới ở đâu, và cách teams nên được tổ chức.
 
-#### 2.1. Bounded Context
+#### Bounded Context
 
 **Bounded Context** là một ranh giới giới hạn trong đó một domain model cụ thể là hợp lệ và nhất quán. Bên trong ranh giới, các thuật ngữ có ý nghĩa cụ thể, và model là đầy đủ.
 
@@ -63,7 +61,7 @@ Tại sao boundaries quan trọng:
 - "Product" trong Catalog (mặt hàng để bán) khác với "Product" trong Order (sản phẩm đã đặt)
 - Ép buộc một unified model qua các boundaries dẫn đến **god objects** và **anemia**
 
-#### 2.2. Ubiquitous Language
+#### Ubiquitous Language
 
 **Ubiquitous Language** là ngôn ngữ chung, nhất quán được sử dụng bởi cả developers và domain experts. Nó được dùng trong code, cuộc trò chuyện, tài liệu và tests.
 
@@ -76,7 +74,7 @@ Tại sao boundaries quan trọng:
 
 > Tránh technical jargon trong domain language. Ngôn ngữ nên phản ánh **cách doanh nghiệp thực sự nói chuyện**.
 
-#### 2.3. Context Map
+#### Context Map
 
 **Context Map** hiển thị các mối quan hệ giữa các Bounded Contexts trong hệ thống.
 
@@ -106,19 +104,19 @@ flowchart LR
 
 ### 3. Các mối quan hệ giữa Bounded Contexts
 
-#### 3.1. Shared Kernel
+#### Shared Kernel
 
 Hai contexts **chia sẻ một phần** của domain model. Thay đổi phần chia sẻ ảnh hưởng cả hai contexts. Sử dụng ít — yêu cầu phối hợp chặt chẽ.
 
-#### 3.2. Customer-Supplier
+#### Customer-Supplier
 
 Một context (Supplier) cung cấp services/data cho context khác (Customer). Customer có thể yêu cầu thay đổi, và Supplier quyết định có đáp ứng hay không.
 
-#### 3.3. Conformist
+#### Conformist
 
 Context downstream **chấp nhận** model của upstream context mà không cần translation. Đơn giản hơn nhưng tạo dependency.
 
-#### 3.4. Anticorruption Layer (ACL)
+#### Anticorruption Layer (ACL)
 
 Context downstream tạo một **adapter layer** dịch giữa các models, bảo vệ domain riêng khỏi các thay đổi bên ngoài.
 
@@ -139,7 +137,7 @@ public class CatalogProductAdapter {
 }
 ```
 
-#### 3.5. Open Host Service (OHS) & Published Language (PL)
+#### Open Host Service (OHS) & Published Language (PL)
 
 Context upstream định nghĩa một **protocol** (Open Host Service) và một **data format** (Published Language) mà các downstream contexts có thể dùng để integrate.
 
@@ -149,7 +147,7 @@ Context upstream định nghĩa một **protocol** (Open Host Service) và một
 
 Tactical design cung cấp các **implementation patterns** để xây dựng models trong một Bounded Context.
 
-#### 4.1. Entity vs Value Object
+#### Entity vs Value Object
 
 | Khía cạnh | Entity | Value Object |
 |-----------|--------|-------------|
@@ -218,7 +216,7 @@ public class Money {
 }
 ```
 
-#### 4.2. Aggregate
+#### Aggregate
 
 **Aggregate** là một cluster các entities và value objects liên quan với một **Aggregate Root** duy nhất — đây là đối tượng duy nhất accessible từ bên ngoài.
 
@@ -292,7 +290,7 @@ public class OrderService {
 }
 ```
 
-#### 4.3. Repository Pattern
+#### Repository Pattern
 
 **Repository** cung cấp access tới Aggregates. Nó abstract persistence layer, cho domain một collection-like interface.
 
@@ -328,7 +326,7 @@ public class JpaOrderRepository implements OrderRepository {
 
 > **Nguyên tắc quan trọng**: Repository interfaces sống trong **domain layer**, nhưng implementations sống trong **infrastructure layer**. Domain không bao giờ phụ thuộc infrastructure.
 
-#### 4.4. Domain Events
+#### Domain Events
 
 **Domain Events** biểu diễn điều gì đó quan trọng đã xảy ra trong domain. Chúng là các records bất biến của một sự kiện trong quá khứ.
 
@@ -369,7 +367,7 @@ public class OrderEventHandler {
 }
 ```
 
-#### 4.5. Domain Services vs Application Services vs Infrastructure Services
+#### Domain Services vs Application Services vs Infrastructure Services
 
 | Loại Service | Trách nhiệm | Location | Dependencies |
 |---|---|---|---|
@@ -423,7 +421,7 @@ public class EmailNotificationService implements NotificationService {
 }
 ```
 
-#### 4.6. Factory Pattern in DDD
+#### Factory Pattern in DDD
 
 **Factory** pattern encapsulate complex object creation, đặc biệt cho Aggregates với complex creation rules.
 
@@ -459,14 +457,14 @@ public class OrderFactory {
 
 ### 5. Khi nào nên dùng DDD
 
-#### 5.1. Phù hợp với DDD
+#### Phù hợp với DDD
 
 - **Complex business domains** với rich rules và logic (ngân hàng, bảo hiểm, y tế, thương mại điện tử)
 - **Large teams** nơi shared understanding của domain là critical
 - **Long-lived systems** nơi domain model evolution quan trọng
 - **Strategic importance** — domain là lợi thế cạnh tranh cốt lõi
 
-#### 5.2. DDD có thể overkill khi
+#### DDD có thể overkill khi
 
 - **Simple CRUD applications** với minimal business logic
 - **Data-centric systems** nơi mục tiêu chính là storage và retrieval

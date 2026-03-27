@@ -1,12 +1,12 @@
-# Proxy Server - Tổng quan về máy chủ ủy quyền
+# Proxy Server
 
-## 1. Tổng quan
+## Tổng quan
 
 **Proxy Server** (máy chủ ủy quyền) là một máy chủ trung gian hoạt động giữa **client** và **server**, thực hiện vai trò chuyển tiếp yêu cầu (request) và phản hồi (response). Proxy che giấu danh tính của một trong hai phía, đồng thời có thể thực hiện các chức năng bổ sung như caching, filtering, load balancing và bảo mật.
 
 ---
 
-## 2. Phân loại Proxy Server
+## Phân loại Proxy Server
 
 | Loại | Vị trí | Mục đích chính | Che giấu |
 |------|--------|---------------|----------|
@@ -15,9 +15,9 @@
 
 ---
 
-## 3. Forward Proxy
+## Forward Proxy
 
-### 3.1. Khái niệm
+### Khái niệm
 
 **Forward Proxy** đứng giữa **user (client)** và **Internet**, thay mặt user gửi request đến server đích. Server đích chỉ biết IP của proxy, không biết IP thực của user.
 
@@ -26,15 +26,15 @@ flowchart LR
     CA["Client A"]
     CB["Client B"]
     CC["Client C"]
-    FP["Forward Proxy (VPN, Squid)"]
-    FB["Internet Server (Facebook, etc.)"]
+    FP["Forward Proxy<br>(VPN, Squid)"]
+    FB["Internet Server<br>(Facebook, etc.)"]
     CA --> FP
     CB --> FP
     CC --> FP
     FP --> FB
 ```
 
-### 3.2. Tính năng chính
+### Tính năng chính
 
 | Tính năng | Mô tả |
 |-----------|-------|
@@ -44,7 +44,7 @@ flowchart LR
 | **Bypass Restrictions** | Vượt qua geo-restriction, firewall |
 | **Logging/Monitoring** | Ghi lại hoạt động của user |
 
-### 3.3. Use Cases
+### Use Cases
 
 | Use case | Ví dụ |
 |----------|-------|
@@ -53,7 +53,7 @@ flowchart LR
 | **Bypass geo-blocking** | Truy cập nội dung giới hạn theo vùng |
 | **Bandwidth saving** | Cache images, CSS, JS cho nhiều user |
 
-### 3.4. Công cụ phổ biến
+### Công cụ phổ biến
 
 | Tool | Type | Notes |
 |------|------|-------|
@@ -64,9 +64,9 @@ flowchart LR
 
 ---
 
-## 4. Reverse Proxy
+## Reverse Proxy
 
-### 4.1. Khái niệm
+### Khái niệm
 
 **Reverse Proxy** đứng trước **một hoặc nhiều server backend**, thay mặt server nhận request từ client. Client không biết IP thực của server backend.
 
@@ -83,7 +83,7 @@ flowchart LR
     RP --> SC
 ```
 
-### 4.2. Tính năng chính
+### Tính năng chính
 
 | Tính năng | Mô tả |
 |-----------|-------|
@@ -95,7 +95,7 @@ flowchart LR
 | **A/B Testing** | Route traffic đến các phiên bản backend khác nhau |
 | **Canary Deployment** | Chuyển traffic từ từ sang phiên bản mới |
 
-### 4.3. Load Balancing Algorithms
+### Load Balancing Algorithms
 
 | Thuật toán | Mô tả | Khi nào dùng |
 |-----------|-------|-------------|
@@ -105,7 +105,7 @@ flowchart LR
 | **Weighted Round Robin** | Phân phối theo capacity | Server có năng lực khác nhau |
 | **Least Response Time** | Gửi đến server có response time thấp nhất | Real-time monitoring |
 
-### 4.4. SSL Termination
+### SSL Termination
 
 ```mermaid
 flowchart LR
@@ -130,7 +130,7 @@ server {
 }
 ```
 
-### 4.5. Công cụ phổ biến
+### Công cụ phổ biến
 
 | Tool | Type | Notes |
 |------|------|-------|
@@ -142,7 +142,7 @@ server {
 
 ---
 
-## 5. So sánh Forward vs Reverse Proxy
+## So sánh Forward vs Reverse Proxy
 
 | Tiêu chí | Forward Proxy | Reverse Proxy |
 |----------|--------------|--------------|
@@ -158,7 +158,7 @@ server {
 
 ---
 
-## 6. CDN như Reverse Proxy
+## CDN như Reverse Proxy
 
 **CDN (Content Delivery Network)** hoạt động như **reverse proxy** phân tán toàn cầu:
 
@@ -183,9 +183,9 @@ server {
 
 ---
 
-## 7. Security Benefits
+## Security Benefits
 
-### 7.1. Reverse Proxy Security
+### Reverse Proxy Security
 
 | Lợi ích | Mô tả |
 |--------|-------|
@@ -219,9 +219,9 @@ server {
 
 ---
 
-## 8. Khi nào dùng loại nào?
+## Khi nào dùng loại nào?
 
-### 8.1. Dùng Forward Proxy khi
+### Dùng Forward Proxy khi
 
 | Scenario | Ví dụ |
 |----------|-------|
@@ -230,7 +230,7 @@ server {
 | Bypass geo-restriction | Xem nội dung từ region khác |
 | Cache web content cho nhiều user | Tiết kiệm bandwidth công ty |
 
-### 8.2. Dùng Reverse Proxy khi
+### Dùng Reverse Proxy khi
 
 | Scenario | Ví dụ |
 |----------|-------|
@@ -243,7 +243,7 @@ server {
 
 ---
 
-## 9. Tóm tắt
+## Tóm tắt
 
 | Đặc điểm | Forward Proxy | Reverse Proxy |
 |----------|--------------|--------------|

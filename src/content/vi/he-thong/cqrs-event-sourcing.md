@@ -1,6 +1,4 @@
-# Kiến trúc phần mềm
-
-## CQRS & Event Sourcing
+# CQRS & Event Sourcing
 
 ### 1. Tổng quan
 
@@ -29,7 +27,7 @@ flowchart TD
 
 ### 2. CQRS (Command Query Responsibility Segregation)
 
-#### 2.1. Vấn đề với Traditional Architecture
+#### Vấn đề với Traditional Architecture
 
 Trong một traditional CRUD architecture, cùng một model xử lý cả reads và writes:
 
@@ -48,7 +46,7 @@ Trong một traditional CRUD architecture, cùng một model xử lý cả reads
 └─────────────────────────────────────────────────────────────┘
 ```
 
-#### 2.2. CQRS Solution
+#### CQRS Solution
 
 CQRS tách riêng read và write sides thành distinct models, tối ưu cho mục đích tương ứng.
 
@@ -78,7 +76,7 @@ CQRS tách riêng read và write sides thành distinct models, tối ưu cho m�
 └─────────────────────────────────────────────────────────────┘
 ```
 
-#### 2.3. Lợi ích của CQRS
+#### Lợi ích của CQRS
 
 | Lợi ích | Mô tả |
 |---------|--------|
@@ -89,7 +87,7 @@ CQRS tách riêng read và write sides thành distinct models, tối ưu cho m�
 | **Flexibility** | Thay đổi read model mà không ảnh hưởng write model |
 | **Performance** | Tối ưu queries mà không impact domain model |
 
-#### 2.4. CQRS Implementation
+#### CQRS Implementation
 
 ```java
 // ========== COMMAND SIDE (Write) ==========
@@ -191,7 +189,7 @@ public class OrderQueryHandler {
 
 ### 3. Event Sourcing
 
-#### 3.1. Vấn đề với State-Based Storage
+#### Vấn đề với State-Based Storage
 
 Traditional systems lưu trữ **current state** của entities:
 
@@ -207,7 +205,7 @@ Vấn đề: Chúng ta mất toàn bộ lịch sử. Không thể trả lời:
 - "Order đã phát triển như thế nào theo thời gian?"
 - "State tại 3 PM hôm qua là gì?"
 
-#### 3.2. Event Sourcing Solution
+#### Event Sourcing Solution
 
 Event Sourcing lưu trữ **events**, không phải state. Mỗi thay đổi được ghi lại như một immutable event.
 
@@ -240,7 +238,7 @@ Event: ItemRemoved (product=phone)
 Event: OrderConfirmed
 ```
 
-#### 3.3. Event Sourcing Implementation
+#### Event Sourcing Implementation
 
 ```java
 // ========== EVENTS ==========
@@ -351,7 +349,7 @@ public class JpaEventStore implements EventStore {
 }
 ```
 
-#### 3.4. Lợi ích của Event Sourcing
+#### Lợi ích của Event Sourcing
 
 | Lợi ích | Mô tả |
 |---------|--------|
@@ -362,7 +360,7 @@ public class JpaEventStore implements EventStore {
 | **Debugging** | Replay events để hiểu chính xác điều gì đã xảy ra |
 | **Time Travel** | Quay về bất kỳ thời điểm nào và xem system state |
 
-#### 3.5. Thách thức
+#### Thách thức
 
 | Thách thức | Giải pháp |
 |-----------|-----------|

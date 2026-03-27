@@ -8,5 +8,26 @@ export const aiRobotics: Category = {
     en: "Artificial Intelligence and Robotics",
   },
   icon: "🤖",
-  topics: [],
+  topics: [
+    {
+      id: "machine-learning",
+      name: { vi: "Machine Learning", en: "Machine Learning" },
+    },
+    {
+      id: "deep-learning",
+      name: { vi: "Deep Learning", en: "Deep Learning" },
+    },
+    {
+      id: "computer-vision",
+      name: { vi: "Computer Vision", en: "Computer Vision" },
+    },
+    {
+      id: "nlp",
+      name: { vi: "NLP & Transformers", en: "NLP & Transformers" },
+    },
+    {
+      id: "mlops",
+      name: { vi: "MLOps", en: "MLOps" },
+    },
+  ],
 };

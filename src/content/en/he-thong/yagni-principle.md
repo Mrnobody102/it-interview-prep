@@ -1,23 +1,23 @@
-# Design Principles
+# YAGNI Principle
 
-## 5. YAGNI — You Aren't Gonna Need It
+## 
 
-### 5.1. Core Concept
+### Core Concept
 
 > Do not implement features, abstractions, or flexibility that you do not need right now.
 
 YAGNI is an extreme programming (XP) principle that advises against speculative design. Only build what is required by the current requirements, not what you anticipate might be needed in the future.
 
-### 5.2. Purpose
+### Purpose
 
 - **Avoid wasted effort:** Do not spend time coding features that will never be used
 - **Smaller, cleaner codebase:** Less code means fewer bugs and easier maintenance
 - **Faster delivery:** Ship value to users sooner
 - **Reduced complexity:** No unnecessary abstractions cluttering the design
 
-### 5.3. YAGNI in Practice
+### YAGNI in Practice
 
-#### 5.3.1. What NOT to Do
+#### What NOT to Do
 
 ```typescript
 // Bad: Adding "flexibility" for imagined future needs
@@ -35,7 +35,7 @@ class User {
 }
 ```
 
-#### 5.3.2. What TO Do Instead
+#### What TO Do Instead
 
 ```typescript
 // Good: Simple and direct — solves the current problem
@@ -51,7 +51,7 @@ class UserRepository {
 }
 ```
 
-### 5.4. YAGNI vs. SOLID Principles
+### YAGNI vs. SOLID Principles
 
 YAGNI does not mean writing messy, non-extensible code. It means:
 
@@ -63,7 +63,7 @@ YAGNI does not mean writing messy, non-extensible code. It means:
 
 > **Tip:** The key is **timing**. SOLID principles help when you need to extend existing code. YAGNI says: wait until you actually need to extend it. Premature abstraction is just as harmful as premature optimization.
 
-### 5.5. Recognizing YAGNI Violations
+### Recognizing YAGNI Violations
 
 Watch out for these red flags:
 
@@ -73,13 +73,13 @@ Watch out for these red flags:
 - **Feature flags for undecided features:** Over-configured systems
 - **Excessive interfaces:** One interface per class, even for small internal services
 
-### 5.6. When YAGNI Might Be Over-Applied
+### When YAGNI Might Be Over-Applied
 
 - When it leads to **duplicated code** that is clearly meant to be shared
 - When the codebase becomes **hard to test** due to tight coupling
 - When **obvious architectural needs** (e.g., database layer) are ignored
 
-### 5.7. Practical Rule of Thumb
+### Practical Rule of Thumb
 
 | Question | YAGNI Verdict |
 |---|---|

@@ -1,8 +1,6 @@
-# System Design
+# Computer Architecture Overview
 
-## 7. Kiến trúc máy tính
-
-### 7.1. Memory Hierarchy
+## Memory Hierarchy
 
 Hiểu memory hierarchy là nền tảng để thiết kế các hệ thống high-performance.
 
@@ -19,41 +17,41 @@ Hiểu memory hierarchy là nền tảng để thiết kế các hệ thống hi
 
 > **Khái niệm quan trọng:** CPU luôn check caches trước. **Cache hit** có nghĩa là data được tìm thấy trong cache (nhanh). **Cache miss** có nghĩa là phải fetch từ tầng thấp hơn.
 
-### 7.2. So sánh tốc độ
+### So sánh tốc độ
 
 ```
 Register (0.5 ns)  >>>  L1 Cache (1 ns)  >>>  L2 (5 ns)  >>>  L3 (10 ns)
 >>>  RAM (100 ns)  >>>  SSD (100 μs)  >>>  HDD (10 ms)  >>>  Network (100 ms)
 ```
 
-### 7.3. CPU Cache Basics
+### CPU Cache Basics
 
-#### 7.3.1. Cache Lines
+#### Cache Lines
 
 Data được transfer giữa memory và cache theo các blocks cố định gọi là **cache lines**, thường là 64 bytes.
 
-#### 7.3.2. Temporal vs. Spatial Locality
+#### Temporal vs. Spatial Locality
 
 - **Temporal Locality:** Data được truy cập gần đây có khả năng được truy cập lại. Được cache bằng cách giữ data trong L1/L2/L3.
 - **Spatial Locality:** Các items gần data được truy cập gần đây có khả năng được truy cập tiếp. Khai thác bằng cách load toàn bộ cache lines.
 
-### 7.4. CPU Architecture
+### CPU Architecture
 
-#### 7.4.1. Von Neumann vs. Harvard
+#### Von Neumann vs. Harvard
 
 | Model | Mô tả | Use Case |
 |---|---|---|
 | **Von Neumann** | Shared memory cho code và data | Hầu hết general-purpose CPUs |
 | **Harvard** | Separate memory cho code và data | Embedded, DSP, microcontrollers |
 
-#### 7.4.2. Single-Core vs. Multi-Core
+#### Single-Core vs. Multi-Core
 
 - **Single-core:** Một processing unit, một execution thread
 - **Multi-core:** Nhiều independent cores trên một chip
 - **Hyper-Threading:** Mỗi physical core xuất hiện như 2 logical cores (Intel)
 - **SIMD (SSE/AVX):** Single instruction, multiple data — vector processing
 
-### 7.5. Thuật ngữ quan trọng
+### Thuật ngữ quan trọng
 
 | Thuật ngữ | Định nghĩa |
 |---|---|
@@ -65,7 +63,7 @@ Data được transfer giữa memory và cache theo các blocks cố định g�
 | **TLB (Translation Lookaside Buffer)** | Cache cho virtual-to-physical address translations |
 | **Prefetching** | CPU dự đoán future memory access và load data trước |
 
-### 7.6. Implications thực tế cho System Design
+### Implications thực tế cho System Design
 
 - **Database indexing:** Giảm thiểu disk I/O (chậm) bằng cách giữ data trong RAM
 - **Caching:** Redis/Memcached giữ hot data trong RAM, nhanh hơn disk rất nhiều

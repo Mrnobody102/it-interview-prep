@@ -1,10 +1,10 @@
-# Modular Monolith - Kiến trúc Monolith mô-đun
+# Modular Monolith
 
 ## 1. Tổng quan
 
 **Modular Monolith** là kiến trúc **monolithic** nhưng được **chia thành các module độc lập** về mặt logic. Mỗi module có **boundary rõ ràng**, có thể phát triển độc lập bởi các team khác nhau. Đây được coi là "điểm khởi đầu tốt nhất" — đủ đơn giản để bắt đầu, đủ cấu trúc để mở rộng.
 
-### 1.1. Định nghĩa đơn giản
+### Định nghĩa đơn giản
 
 ```
 Monolith thuần     →  Tất cả code trong một "nồi" (highly coupled)
@@ -16,7 +16,7 @@ Microservices      →  Tách thành nhiều "nồi" nhỏ riêng biệt
 
 ## 2. Đặc điểm chính
 
-### 2.1. Giống Monolith truyền thống
+### Giống Monolith truyền thống
 
 | Đặc điểm | Mô tả |
 |---------|-------|
@@ -26,7 +26,7 @@ Microservices      →  Tách thành nhiều "nồi" nhỏ riêng biệt
 | **Deployment đơn giản** | Chỉ cần deploy một artifact |
 | **Debug đơn giản** | Một process, không cần distributed tracing phức tạp |
 
-### 2.2. Giống Microservices
+### Giống Microservices
 
 | Đặc điểm | Mô tả |
 |---------|-------|
@@ -36,7 +36,7 @@ Microservices      →  Tách thành nhiều "nồi" nhỏ riêng biệt
 | **Team ownership** | Mỗi team sở hữu một hoặc nhiều module |
 | **Tách biệt data** | Dùng chung DB nhưng schema/table được phân chia theo module |
 
-### 2.3. Sơ đồ kiến trúc
+### Sơ đồ kiến trúc
 
 ```mermaid
 flowchart TB
@@ -83,7 +83,7 @@ flowchart TB
 
 ## 4. Ví dụ cấu trúc project
 
-### 4.1. Package Structure
+### Package Structure
 
 ```
 src/main/java/com/example/app/
@@ -149,7 +149,7 @@ src/main/java/com/example/app/
         └── DateUtils.java
 ```
 
-### 4.2. Nguyên tắc module
+### Nguyên tắc module
 
 ```java
 // ✅ Module chỉ giao tiếp qua interface/internal API
@@ -185,7 +185,7 @@ public class OrderService {
 // GOOD: orderRepository.findItemsByOrderId(orderId)
 ```
 
-### 4.3. Database schema per module
+### Database schema per module
 
 ```sql
 -- Schema chia theo module (prefix table names)
@@ -208,7 +208,7 @@ CREATE TABLE payment_methods (...);
 
 ## 5. Giao tiếp giữa các module
 
-### 5.1. Synchronous (Direct Call)
+### Synchronous (Direct Call)
 
 ```java
 // Giao tiếp synchronous qua interface
@@ -234,7 +234,7 @@ public class OrderService {
 }
 ```
 
-### 5.2. Asynchronous (Event-Driven)
+### Asynchronous (Event-Driven)
 
 ```java
 // Giao tiếp asynchronous qua events
@@ -273,7 +273,7 @@ public class PaymentEventHandler {
 
 ## 6. Khi nào nên dùng Modular Monolith?
 
-### 6.1. Lý do chọn Modular Monolith
+### Lý do chọn Modular Monolith
 
 | Lý do | Mô tả |
 |-------|-------|
@@ -284,7 +284,7 @@ public class PaymentEventHandler {
 | **Rapid prototyping** | Cần validate ý tưởng nhanh |
 | **Legacy system migration** | Điểm trung gian tốt trước khi tách hoàn toàn |
 
-### 6.2. Dấu hiệu nên chuyển sang Microservices
+### Dấu hiệu nên chuyển sang Microservices
 
 | Dấu hiệu | Mô tả |
 |---------|-------|
@@ -313,7 +313,7 @@ public class PaymentEventHandler {
 
 > **Lưu ý**: Modular Monolith là **điểm khởi đầu tốt**. Khi hệ thống mở rộng, có thể extract từng module thành microservice riêng biệt một cách **có kế hoạch** — lúc này boundary đã rõ ràng từ trước, việc tách ra sẽ dễ dàng hơn nhiều so với monolith truyền thống.
 
-### 8.1. Sai lầm phổ biến
+### Sai lầm phổ biến
 
 | Sai lầm | Hậu quả |
 |---------|--------|
@@ -322,7 +322,7 @@ public class PaymentEventHandler {
 | Violate module boundary | Truy cập internal class của module khác |
 | Over-engineering quá sớm | Tạo abstraction cho module có 1 class |
 
-### 8.2. Best Practices
+### Best Practices
 
 1. **Mỗi module một package gốc** — đặt tên rõ ràng, không dùng chung package
 2. **Chỉ giao tiếp qua interface** — giống như giao tiếp service trong microservices

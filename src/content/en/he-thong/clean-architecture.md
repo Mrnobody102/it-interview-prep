@@ -63,7 +63,7 @@ flowchart TD
     AL -.->|"depends on interfaces only"| INTP
 ```
 
-#### 2.1. Layer Details
+#### Layer Details
 
 | Layer | Responsibility | Dependencies | Examples |
 |-------|---------------|--------------|---------|
@@ -72,7 +72,7 @@ flowchart TD
 | **Interface Adapters** | Convert data between formats | Use Cases, External | `OrderController`, `OrderPresenter` |
 | **Frameworks & Drivers** | External tools, DB, UI, web | Everything | `Spring MVC`, `JPA`, `REST API` |
 
-#### 2.2. Dependency Rule
+#### Dependency Rule
 
 > **The Dependency Rule**: Source code dependencies can only point inward. Outer layers can depend on inner layers, but inner layers never depend on outer layers.
 
@@ -91,7 +91,7 @@ This means:
 - Use Cases know only about Entities and interfaces (not implementations)
 - Infrastructure implements interfaces defined by inner layers
 
-#### 2.3. Code Example
+#### Code Example
 
 ```java
 // ========== DOMAIN LAYER (Core) ==========
@@ -291,7 +291,7 @@ flowchart TD
     end
 ```
 
-#### 3.1. Ports
+#### Ports
 
 **Ports** are interfaces defined by the application core. They come in two types:
 
@@ -323,7 +323,7 @@ public interface NotificationPort {
 }
 ```
 
-#### 3.2. Adapters
+#### Adapters
 
 **Adapters** are implementations that connect ports to the outside world.
 

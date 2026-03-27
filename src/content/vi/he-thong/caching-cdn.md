@@ -1,27 +1,25 @@
-# System Design
+# Caching & CDN
 
-## 11. Caching & CDN
+### Caching
 
-### 11.1. Caching
-
-#### 11.1.1. Tổng quan
+#### Tổng quan
 
 Caching tạm thời lưu trữ dữ liệu ở các tầng gần người dùng để phục vụ các request nhanh. Mục tiêu là giảm tải database, giảm latency, và cải thiện overall system throughput.
 
-#### 11.1.2. Caching trong System Stack
+#### Caching trong System Stack
 
 ```mermaid
 flowchart TD
-    B["Browser Cache ← Tầng gần người dùng nhất"]
+    B["Browser Cache<br>Tầng gần người dùng nhất"]
     CDN["CDN Edge Cache"]
-    RP["Reverse Proxy Cache (Nginx, Varnish)"]
-    AC["Application Cache (Redis, Memcached)"]
-    DB_C["Database Cache (Query cache, buffer pool)"]
-    DB["Database ← Tầng xa nhất (chậm nhất)"]
+    RP["Reverse Proxy Cache<br>(Nginx, Varnish)"]
+    AC["Application Cache<br>(Redis, Memcached)"]
+    DB_C["Database Cache<br>(Query cache, buffer pool)"]
+    DB["Database<br>Tầng xa nhất (chậm nhất)"]
     B --> CDN --> RP --> AC --> DB_C --> DB
 ```
 
-#### 11.1.3. Cache Strategies
+#### Cache Strategies
 
 | Chiến lược | Mô tả | Use Case |
 |---|---|---|
@@ -55,7 +53,7 @@ async function getUser(userId: string): Promise<User> {
 
 ---
 
-### 11.2. Cache Invalidation
+### Cache Invalidation
 
 > **Hai bài toán khó nhất trong khoa học máy tính:** cache invalidation, đặt tên, và lỗi off-by-one.
 
@@ -68,7 +66,7 @@ async function getUser(userId: string): Promise<User> {
 
 ---
 
-### 11.3. Eviction Policies
+### Eviction Policies
 
 | Policy | Mô tả | Phù hợp cho |
 |---|---|---|
@@ -80,13 +78,13 @@ async function getUser(userId: string): Promise<User> {
 
 ---
 
-### 11.4. CDN (Content Delivery Network)
+### CDN (Content Delivery Network)
 
-#### 11.4.1. Tổng quan
+#### Tổng quan
 
 CDN là một mạng lưới server phân bố toàn cầu cache và phục vụ static content (HTML, CSS, JS, images, videos) từ các edge locations gần người dùng nhất.
 
-#### 11.4.2. CDN Providers
+#### CDN Providers
 
 | Provider | Đặc điểm nổi bật |
 |---|---|
@@ -96,7 +94,7 @@ CDN là một mạng lưới server phân bố toàn cầu cache và phục vụ
 | **Akamai** | Mạng lưới lớn nhất, enterprise-grade |
 | **Google Cloud CDN** | Tích hợp GCP, global load balancing |
 
-#### 11.4.3. Cache-Control Headers
+#### Cache-Control Headers
 
 ```bash
 # Các directive phổ biến
@@ -110,7 +108,7 @@ Cache-Control: immutable              # Content không bao giờ thay đổi
 
 ---
 
-### 11.5. Redis as a Cache
+### Redis as a Cache
 
 | Command | Mô tả | Time Complexity |
 |---|---|---|
@@ -124,7 +122,7 @@ Cache-Control: immutable              # Content không bao giờ thay đổi
 
 ---
 
-### 11.6. Anti-Patterns
+### Caching Anti-Patterns
 
 | Anti-pattern | Vấn đề | Giải pháp |
 |---|---|---|

@@ -1,12 +1,10 @@
-# System Design
+# Message Queue
 
-## 15. Message Queue
-
-### 15.1. Tổng quan
+### Tổng quan
 
 **Message queue** là một thành phần trung gian cho phép giao tiếp bất đồng bộ giữa các hệ thống qua messages. Nó decouples producers (senders) khỏi consumers (receivers), cho phép họ hoạt động độc lập.
 
-### 15.2. Core Concepts
+### Core Concepts
 
 | Khái niệm | Mô tả |
 |---|---|
@@ -20,7 +18,7 @@
 
 ---
 
-### 15.3. Point-to-Point vs. Pub/Sub
+### Point-to-Point vs. Pub/Sub
 
 | Pattern | Mô tả | Ví dụ |
 |---|---|---|
@@ -29,7 +27,7 @@
 
 ---
 
-### 15.4. Message Queue Solutions
+### Message Queue Solutions
 
 | Queue | Loại | Throughput | Persistence | Phù hợp cho |
 |---|---|---|---|---|
@@ -43,7 +41,7 @@
 
 ---
 
-### 15.5. Kafka vs. RabbitMQ
+### Kafka vs. RabbitMQ
 
 | Khía cạnh | Apache Kafka | RabbitMQ |
 |---|---|---|
@@ -58,7 +56,7 @@
 
 ---
 
-### 15.6. Common Use Cases
+### Common Use Cases
 
 | Use Case | Queue phù hợp |
 |---|---|
@@ -72,13 +70,13 @@
 
 ---
 
-### 15.7. Patterns và Best Practices
+### Patterns và Best Practices
 
-#### 15.7.1. Dead Letter Queue (DLQ)
+#### Dead Letter Queue (DLQ)
 
 Messages thất bại được gửi đến DLQ để phân tích và xử lý lại sau.
 
-#### 15.7.2. Idempotency
+#### Idempotency
 
 Vì messages có thể delivered nhiều lần, làm operations idempotent:
 
@@ -103,7 +101,7 @@ async function processOrder(order: Order): Promise<void> {
 }
 ```
 
-#### 15.7.3. Delivery Guarantees
+#### Delivery Guarantees
 
 | Delivery Guarantee | Mô tả |
 |---|---|
@@ -113,7 +111,7 @@ async function processOrder(order: Order): Promise<void> {
 
 ---
 
-### 15.8. Retry Pattern với Exponential Backoff
+### Retry Pattern với Exponential Backoff
 
 ```typescript
 async function processWithRetry(

@@ -7,10 +7,10 @@
 ```mermaid
 flowchart TD
     subgraph CDN_EDGE["CDN / Edge"]
-        CDN["CDN (Static assets, cache)"]
+        CDN["CDN<br>(Static assets, cache)"]
     end
     subgraph LB["Load Balancer"]
-        LBR["Load Balancer (Health check, routing)"]
+        LBR["Load Balancer<br>(Health check, routing)"]
     end
     subgraph API_SERVERS["API Servers"]
         API1["API Server (Pod/VM)"]

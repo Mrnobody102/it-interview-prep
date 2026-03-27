@@ -8,11 +8,11 @@ Structural patterns tập trung vào cách **kết hợp các class và object**
 
 ## 1. Adapter Pattern
 
-### 1.1. Mục đích
+### Mục đích
 
 Chuyển đổi **interface của một class** thành interface mà client mong muốn. Cho phép các class có interface không tương thích làm việc cùng nhau.
 
-### 1.2. Cấu trúc
+### Cấu trúc
 
 ```
 ┌─────────────┐      ┌─────────────┐      ┌─────────────┐
@@ -22,7 +22,7 @@ Chuyển đổi **interface của một class** thành interface mà client mong
 └─────────────┘      └─────────────┘      └─────────────┘
 ```
 
-### 1.3. Ví dụ Java
+### Ví dụ Java
 
 ```java
 // Adaptee — class có dữ liệu nhưng interface không tương thích
@@ -53,7 +53,7 @@ public class XMLToJSONAdapter implements JsonParser {
 }
 ```
 
-### 1.4. Khi nào dùng
+### Khi nào dùng
 
 - Khi cần tích hợp class có interface không tương thích
 - Khi muốn sử dụng lại class hiện có mà không thay đổi source code
@@ -63,11 +63,11 @@ public class XMLToJSONAdapter implements JsonParser {
 
 ## 2. Bridge Pattern
 
-### 2.1. Mục đích
+### Mục đích
 
 **Tách rời abstraction khỏi implementation** để cả hai có thể thay đổi độc lập. Tránh việc class hierarchy phình to ra theo hai chiều.
 
-### 2.2. Ví dụ Java
+### Ví dụ Java
 
 ```java
 // Implementor
@@ -114,11 +114,11 @@ public class AdvancedRemote extends RemoteControl {
 
 ## 3. Composite Pattern
 
-### 3.1. Mục đích
+### Mục đích
 
 Compose objects thành **cấu trúc cây (tree structure)** để thể hiện part-whole hierarchy. Composite cho phép client xử lý **đơn lẻ và nhóm object** theo cùng một cách.
 
-### 3.2. Ví dụ Java
+### Ví dụ Java
 
 ```java
 public interface FileComponent {
@@ -163,11 +163,11 @@ public class Folder implements FileComponent {
 
 ## 4. Decorator Pattern
 
-### 4.1. Mục đích
+### Mục đích
 
 **Thêm chức năng cho object một cách linh hoạt** mà không thay đổi cấu trúc class gốc. Các decorators có thể được xếp chồng (stack) để tổ hợp nhiều behaviors.
 
-### 4.2. Ví dụ Java
+### Ví dụ Java
 
 ```java
 // Component
@@ -224,11 +224,11 @@ decorated.write("Secret data");
 
 ## 5. Facade Pattern
 
-### 5.1. Mục đích
+### Mục đích
 
 Cung cấp một **interface đơn giản, thống nhất** cho một subsystem phức tạp. Che giấu sự phức tạp bên trong.
 
-### 5.2. Ví dụ Java
+### Ví dụ Java
 
 ```java
 // Complex subsystem
@@ -273,11 +273,11 @@ new ComputerFacade().start();
 
 ## 6. Flyweight Pattern
 
-### 6.1. Mục đích
+### Mục đích
 
 **Chia sẻ các object nhỏ, thường gặp (intrinsic)** để tiết kiệm memory khi có nhiều instances cùng loại.
 
-### 6.2. Ví dụ Java
+### Ví dụ Java
 
 ```java
 // Flyweight — intrinsic state (shared, immutable)
@@ -327,11 +327,11 @@ for (int i = 0; i < 1_000_000; i++) {
 
 ## 7. Proxy Pattern
 
-### 7.1. Mục đích
+### Mục đích
 
 Cung cấp một **surrogate hoặc placeholder** để kiểm soát truy cập, thêm chức năng trước/sau khi object thực sự được gọi.
 
-### 7.2. Các loại Proxy
+### Các loại Proxy
 
 | Loại | Mục đích |
 |---|---|
@@ -340,7 +340,7 @@ Cung cấp một **surrogate hoặc placeholder** để kiểm soát truy cập,
 | **Remote Proxy** | Đại diện cho object ở địa chỉ khác |
 | **Smart Reference** | Thêm logic khi object được truy cập |
 
-### 7.3. Ví dụ Java
+### Ví dụ Java
 
 ```java
 public interface Image { void display(); }

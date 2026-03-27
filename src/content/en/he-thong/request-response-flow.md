@@ -2,11 +2,11 @@
 
 ## 16. Request-Response Flow
 
-### 16.1. Full Request-Response Flow
+### Full Request-Response Flow
 
 Understanding the complete journey of a request through a production system is fundamental to system design.
 
-### 16.2. Step-by-Step Flow
+### Step-by-Step Flow
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
@@ -84,7 +84,7 @@ Understanding the complete journey of a request through a production system is f
 └─────────────────────────────────────────────────────────────────────────┘
 ```
 
-### 16.3. Typical Latency Breakdown
+### Typical Latency Breakdown
 
 | Step | Latency | Notes |
 |---|---|---|
@@ -100,7 +100,7 @@ Understanding the complete journey of a request through a production system is f
 
 > **Total typical round-trip (optimized system):** 20–100 ms
 
-### 16.4. Critical Path vs. Non-Critical Path
+### Critical Path vs. Non-Critical Path
 
 | Path | Description | Optimization Priority |
 |---|---|---|
@@ -108,7 +108,7 @@ Understanding the complete journey of a request through a production system is f
 | **Background jobs** | Async processing (emails, reports) | Medium — can tolerate delays |
 | **Event-driven** | Kafka messages, webhooks | Low — eventually consistent |
 
-### 16.5. Async Flow Example
+### Async Flow Example
 
 For long-running operations, the request-response flow splits:
 
@@ -124,7 +124,7 @@ API → Message Queue → Worker Service → Database
 Client ← ← ← ← ← ← ← ← ← ← ← ← ← ← ← (Webhook / SSE / WebSocket)
 ```
 
-### 16.6. End-to-End Request Flow Example
+### End-to-End Request Flow Example
 
 ```
 Browser: GET https://api.example.com/api/v1/products?category=electronics&page=1
@@ -163,7 +163,7 @@ Browser: GET https://api.example.com/api/v1/products?category=electronics&page=1
   └─→ [~60ms] Total RTT (optimized, same region)
 ```
 
-### 16.7. Where Bottlenecks Occur
+### Where Bottlenecks Occur
 
 | Bottleneck | Symptom | Solution |
 |---|---|---|

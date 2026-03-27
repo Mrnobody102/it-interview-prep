@@ -1,8 +1,6 @@
-# System Design
+# API Design
 
-## 12. API Design
-
-### 12.1. API Styles Comparison
+### API Styles Comparison
 
 | Aspect | REST | GraphQL | gRPC |
 |---|---|---|---|
@@ -16,9 +14,9 @@
 | **Performance** | Good | Good | Excellent |
 | **Use Case** | Web APIs, public APIs | Mobile, complex frontends | Internal microservices |
 
-### 12.2. REST API Design
+### REST API Design
 
-#### 12.2.1. REST Constraints
+#### REST Constraints
 
 1. **Client-Server:** Separation of concerns
 2. **Stateless:** Each request contains all necessary context
@@ -26,7 +24,7 @@
 4. **Uniform Interface:** Resources identified by URIs
 5. **Layered System:** Client does not know if connected directly
 
-#### 12.2.2. REST URL Naming Conventions
+#### REST URL Naming Conventions
 
 ```
 Good patterns:
@@ -46,7 +44,7 @@ Bad patterns:
   GET    /api/v1/getUserData → Inconsistent with resources
 ```
 
-#### 12.2.3. REST Response Codes
+#### REST Response Codes
 
 | Code | Meaning | When to Use |
 |---|---|---|
@@ -62,15 +60,15 @@ Bad patterns:
 | **429** | Too Many Requests | Rate limit exceeded |
 | **500** | Internal Server Error | Unexpected server error |
 
-### 12.3. GraphQL
+### GraphQL
 
-#### 12.3.1. Key Concepts
+#### Key Concepts
 
 - **Query:** Read data (like GET)
 - **Mutation:** Write data (like POST/PUT/DELETE)
 - **Subscription:** Real-time updates via WebSocket
 
-#### 12.3.2. GraphQL Example
+#### GraphQL Example
 
 ```graphql
 # Schema definition
@@ -126,9 +124,9 @@ query GetUserWithOrders($userId: ID!) {
 }
 ```
 
-### 12.4. gRPC
+### gRPC
 
-#### 12.4.1. Protocol Buffers Schema
+#### Protocol Buffers Schema
 
 ```protobuf
 // user.proto
@@ -176,9 +174,9 @@ message DeleteUserRequest {
 message Empty {}
 ```
 
-### 12.5. API Best Practices
+### API Best Practices
 
-#### 12.5.1. Versioning
+#### Versioning
 
 ```bash
 # URL path versioning (most common)
@@ -193,7 +191,7 @@ GET /api/users
 Accept: application/vnd.api.v2+json
 ```
 
-#### 12.5.2. Pagination
+#### Pagination
 
 ```bash
 # Offset-based pagination
@@ -214,7 +212,7 @@ GET /api/v1/users?cursor=eyJpZCI6MTB9&limit=20
 }
 ```
 
-#### 12.5.3. Error Handling
+#### Error Handling
 
 ```json
 {
@@ -236,7 +234,7 @@ GET /api/v1/users?cursor=eyJpZCI6MTB9&limit=20
 }
 ```
 
-#### 12.5.4. Security Best Practices
+#### Security Best Practices
 
 | Practice | Description |
 |---|---|
@@ -247,7 +245,7 @@ GET /api/v1/users?cursor=eyJpZCI6MTB9&limit=20
 | **CORS** | Restrict cross-origin requests |
 | **API Documentation** | OpenAPI/Swagger specification |
 
-### 12.6. When to Use Each Style
+### When to Use Each Style
 
 | Scenario | Recommended Style |
 |---|---|

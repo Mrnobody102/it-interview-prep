@@ -1,10 +1,10 @@
-# System Design
+# Production Application Architecture
 
-## 8. Production Application Architecture
+## 
 
 A typical production web application consists of multiple layers, each with specific responsibilities.
 
-### 8.1. Architecture Overview
+### Architecture Overview
 
 ```mermaid
 flowchart TD
@@ -13,7 +13,7 @@ flowchart TD
     end
     C -->|HTTPS| CDN_EDGE
     subgraph CDN["CDN / EDGE LAYER"]
-        CDN_EDGE["Cloudflare / CloudFront / Fastly"]
+        CDN_EDGE["Cloudflare / CloudFront<br>/ Fastly"]
     end
     CDN_EDGE --> LB
     subgraph LB_LAYER["LOAD BALANCER LAYER"]
@@ -21,11 +21,11 @@ flowchart TD
     end
     LB --> AG1
     LB --> AG2
-    AG1["API Gateway (Auth, Rate Limit)"]
-    AG2["API Gateway (Backup)"]
+    AG1["API Gateway<br>(Auth, Rate Limit)"]
+    AG2["API Gateway<br>(Backup)"]
     AG1 --> SM
     AG2 --> SM
-    subgraph SM["SERVICE MESH / KUBERNETES"]
+    subgraph SM["SERVICE MESH /<br>KUBERNETES"]
         A["Service A (Auth)"]
         B["Service B (Users)"]
         C2["Service C (Orders)"]
@@ -36,18 +36,18 @@ flowchart TD
     C2 --> MQ
     D --> MQ
     subgraph MQ_LAYER["MESSAGE QUEUE LAYER"]
-        MQ["Kafka / RabbitMQ"]
+        MQ["Kafka /<br>RabbitMQ"]
     end
     MQ --> DL
     subgraph DL["DATA LAYER"]
-        PG["PostgreSQL (Primary)"]
-        MG["MongoDB (Documents)"]
-        RD["Redis (Cache)"]
-        S3["S3 (Storage)"]
+        PG["PostgreSQL<br>(Primary)"]
+        MG["MongoDB<br>(Documents)"]
+        RD["Redis<br>(Cache)"]
+        S3["S3<br>(Storage)"]
     end
 ```
 
-### 8.2. Frontend Layer
+### Frontend Layer
 
 | Concern | Technology |
 |---|---|
@@ -56,7 +56,7 @@ flowchart TD
 | **Performance** | Lazy loading, code splitting, image optimization |
 | **State Management** | Redux, Zustand, React Query |
 
-### 8.3. Backend Layer
+### Backend Layer
 
 | Component | Description |
 |---|---|
@@ -92,7 +92,7 @@ server {
 }
 ```
 
-### 8.4. Database Layer
+### Database Layer
 
 | Type | Examples | Use Case |
 |---|---|---|
@@ -103,14 +103,14 @@ server {
 | **Graph** | Neo4j | Relationships, social networks |
 | **Search** | Elasticsearch | Full-text search, log analysis |
 
-#### 8.4.1. Database Best Practices
+#### Database Best Practices
 
 - **Replication:** Primary-replica setup for read scaling and failover
 - **Sharding:** Horizontal partitioning for very large datasets
 - **Backup:** Regular automated backups with point-in-time recovery
 - **Access Control:** Principle of least privilege for application accounts
 
-### 8.5. Caching Layer
+### Caching Layer
 
 | Technology | Use Case |
 |---|---|
@@ -118,7 +118,7 @@ server {
 | **Memcached** | Simple key-value caching (e.g., cached API responses) |
 | **Varnish** | HTTP caching proxy |
 
-### 8.6. Message Queue Layer
+### Message Queue Layer
 
 | Technology | Characteristics |
 |---|---|
@@ -127,7 +127,7 @@ server {
 | **AWS SQS** | Fully managed, simple queue service |
 | **ActiveMQ** | Java ecosystem integration |
 
-### 8.7. File Storage
+### File Storage
 
 | Service | Description |
 |---|---|
@@ -136,7 +136,7 @@ server {
 | **Azure Blob** | Microsoft Azure blob storage |
 | **MinIO** | Self-hosted S3-compatible storage |
 
-### 8.8. DevOps & CI/CD
+### DevOps & CI/CD
 
 | Category | Tools |
 |---|---|
@@ -146,7 +146,7 @@ server {
 | **Infrastructure as Code** | Terraform, Pulumi, AWS CDK |
 | **Configuration Management** | Helm charts, Kustomize |
 
-### 8.9. Monitoring & Logging
+### Monitoring & Logging
 
 | Category | Tools |
 |---|---|
@@ -156,7 +156,7 @@ server {
 | **Distributed Tracing** | Jaeger, Zipkin, OpenTelemetry |
 | **Uptime Monitoring** | PagerDuty, UptimeRobot |
 
-### 8.10. Security Layer
+### Security Layer
 
 | Concern | Solution |
 |---|---|
@@ -167,7 +167,7 @@ server {
 | **API Security** | API keys, rate limiting, input validation |
 | **DDoS Protection** | Cloudflare, AWS Shield, Akamai |
 
-### 8.11. High Availability & Scalability
+### High Availability & Scalability
 
 | Strategy | Description |
 |---|---|

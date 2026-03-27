@@ -1,8 +1,6 @@
-# System Design
+# Load Balancer
 
-## 13. Load Balancer
-
-### 13.1. Tổng quan
+### Tổng quan
 
 **Load balancer** phân phối lưu lượng request đến các backend server một cách đều nhau. Nó hoạt động như điểm vào duy nhất cho clients và đảm bảo không server nào phải chịu quá nhiều tải.
 
@@ -11,8 +9,8 @@ flowchart LR
     Clients["Clients"]
     subgraph LB["LOAD BALANCER"]
         H["Health Check"]
-        Algo["Load Balancing Algorithm"]
-        SSL["SSL Termination (optional)"]
+        Algo["Load Balancing<br>Algorithm"]
+        SSL["SSL Termination<br>(optional)"]
     end
     Clients --> LB
     LB --> S1["Server A"]
@@ -22,14 +20,14 @@ flowchart LR
 
 ---
 
-### 13.2. Các loại Load Balancer
+### Các loại Load Balancer
 
 | Loại | OSI Layer | Mô tả |
 |---|---|---|
 | **Layer 4 (Transport)** | L4 | Phân phối theo IP và port (TCP, UDP). Nhanh hơn, ít aware về content. |
 | **Layer 7 (Application)** | L7 | Phân phối theo HTTP/HTTPS content (URL, cookies, headers). Thông minh hơn nhưng overhead cao hơn. |
 
-#### 13.2.1. So sánh L4 vs L7
+#### So sánh L4 vs L7
 
 | Khía cạnh | L4 Load Balancer | L7 Load Balancer |
 |---|---|---|
@@ -42,7 +40,7 @@ flowchart LR
 
 ---
 
-### 13.3. Load Balancing Algorithms
+### Load Balancing Algorithms
 
 | Thuật toán | Mô tả | Phù hợp cho |
 |---|---|---|
@@ -56,7 +54,7 @@ flowchart LR
 
 ---
 
-### 13.4. Health Checks
+### Health Checks
 
 | Loại | Mô tả | Ví dụ |
 |---|---|---|
@@ -77,7 +75,7 @@ upstream backend {
 
 ---
 
-### 13.5. Session Persistence (Sticky Sessions)
+### Session Persistence (Sticky Sessions)
 
 | Phương pháp | Mô tả | Ưu điểm | Nhược điểm |
 |---|---|---|---|
@@ -89,7 +87,7 @@ upstream backend {
 
 ---
 
-### 13.6. Load Balancer Solutions
+### Load Balancer Solutions
 
 | Sản phẩm | Loại | Ghi chú |
 |---|---|---|
@@ -102,7 +100,7 @@ upstream backend {
 
 ---
 
-### 13.7. DNS-Based Load Balancing
+### DNS-Based Load Balancing
 
 | Phương pháp | Mô tả |
 |---|---|
@@ -112,7 +110,7 @@ upstream backend {
 
 ---
 
-### 13.8. Ví dụ cấu hình Nginx
+### Ví dụ cấu hình Nginx
 
 ```nginx
 upstream api_backend {

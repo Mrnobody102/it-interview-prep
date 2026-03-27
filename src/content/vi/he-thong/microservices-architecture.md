@@ -1,12 +1,10 @@
-# Kiến trúc phần mềm
+# Microservices Architecture
 
-## 2. Kiến trúc Microservices
-
-### 2.1. Tổng quan
+## Tổng quan
 
 Mỗi chức năng được tách ra thành các **service nhỏ, độc lập** giao tiếp qua API (REST, gRPC, GraphQL). Mỗi service quản lý dữ liệu riêng và có thể được phát triển, deploy, scale độc lập.
 
-### 2.2. Đặc điểm chính
+### Đặc điểm chính
 
 - **Single Responsibility:** Mỗi service làm một việc tốt
 - **Deployment độc lập:** Có thể deploy mà không cần phối hợp với service khác
@@ -14,7 +12,7 @@ Mỗi chức năng được tách ra thành các **service nhỏ, độc lập**
 - **Đa dạng công nghệ:** Service có thể dùng ngôn ngữ, framework, database khác nhau
 - **Khả năng phục hồi:** Lỗi một service không lan sang service khác
 
-### 2.3. Các mô hình giao tiếp
+### Các mô hình giao tiếp
 
 | Mô hình | Mô tả | Use Case |
 |---|---|---|
@@ -22,7 +20,7 @@ Mỗi chức năng được tách ra thành các **service nhỏ, độc lập**
 | **Bất đồng bộ (Message Queue)** | Fire-and-forget qua Kafka, RabbitMQ | Event-driven, background jobs |
 | **GraphQL** | Client linh hoạt truy vấn | Nhu cầu dữ liệu phức tạp |
 
-### 2.4. Ưu điểm
+### Ưu điểm
 
 - **Scale độc lập:** Scale từng service theo nhu cầu (ví dụ: scale service recommendation mà không cần scale toàn bộ app)
 - **Deployment độc lập:** Deploy fix và feature mà không ảnh hưởng service khác
@@ -30,7 +28,7 @@ Mỗi chức năng được tách ra thành các **service nhỏ, độc lập**
 - **Linh hoạt công nghệ:** Dùng tool tốt nhất cho từng job (Go cho high-performance, Python cho ML, v.v.)
 - **Tự chủ team:** Team có thể sở hữu service từ đầu đến cuối
 
-### 2.5. Nhược điểm
+### Nhược điểm
 
 - **Độ phức tạp vận hành:** Yêu cầu DevOps mạnh — CI/CD pipelines, container orchestration (Kubernetes), service mesh, monitoring
 - **Network Latency:** Giao tiếp inter-service qua network thêm latency
@@ -38,7 +36,7 @@ Mỗi chức năng được tách ra thành các **service nhỏ, độc lập**
 - **Bảo mật mạng:** Nhiều surface tấn công hơn; cần service-to-service authentication (mTLS, JWT)
 - **Độ phức tạp test:** Integration test giữa các service khó hơn test monolith
 
-### 2.6. Các thành phần hỗ trợ thiết yếu
+### Các thành phần hỗ trợ thiết yếu
 
 - **API Gateway:** Điểm vào cho tất cả request từ client. Xử lý routing, authentication, rate limiting
 - **Service Discovery:** Consul, Kubernetes built-in DNS để các service tìm nhau
@@ -46,14 +44,14 @@ Mỗi chức năng được tách ra thành các **service nhỏ, độc lập**
 - **Distributed Tracing:** Jaeger hoặc Zipkin để trace request qua các service
 - **Container Orchestration:** Kubernetes cho deployment, scaling, và quản lý
 
-### 2.7. Khi nào chọn Microservices
+### Khi nào chọn Microservices
 
 - Team lớn (10+ developers) làm việc trên các feature khác nhau
 - Ứng dụng có các domain chức năng riêng biệt cần scale độc lập
 - Cần polyglot persistence (data store khác nhau cho nhu cầu khác nhau)
 - Yêu cầu deployment thường xuyên, độc lập
 
-### 2.8. So sánh tổng quan
+### So sánh tổng quan
 
 | Tiêu chí | Monolith | Microservices |
 |---|---|---|

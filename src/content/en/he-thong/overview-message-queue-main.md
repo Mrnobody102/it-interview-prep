@@ -1,12 +1,10 @@
-# System Design
+# Message Queue
 
-## 15. Message Queue
-
-### 15.1. Overview
+### Overview
 
 A **message queue** is an intermediate component that enables asynchronous communication between systems via messages. It decouples producers (senders) from consumers (receivers), allowing them to operate independently.
 
-### 15.2. Core Concepts
+### Core Concepts
 
 | Concept | Description |
 |---|---|
@@ -18,14 +16,14 @@ A **message queue** is an intermediate component that enables asynchronous commu
 | **Topic** | A category/stream for messages (pub/sub) |
 | **Partition** | Ordered, immutable log segment (Kafka) |
 
-### 15.3. Point-to-Point vs. Pub/Sub
+### Point-to-Point vs. Pub/Sub
 
 | Pattern | Description | Example |
 |---|---|---|
 | **Point-to-Point** | One producer sends to one consumer. Message consumed once. | Task queue, order processing |
 | **Pub/Sub** | One producer publishes to topic; multiple subscribers receive | Notifications, event streaming |
 
-### 15.4. Message Queue Solutions
+### Message Queue Solutions
 
 | Queue | Type | Throughput | Persistence | Best For |
 |---|---|---|---|---|
@@ -37,7 +35,7 @@ A **message queue** is an intermediate component that enables asynchronous commu
 | **Redis (Streams)** | In-memory + persistence | Very high | Optional | Low-latency, simple needs |
 | **NATS** | Lightweight pub/sub | Very high | Optional | Microservices, IoT |
 
-### 15.5. Kafka vs. RabbitMQ
+### Kafka vs. RabbitMQ
 
 | Aspect | Apache Kafka | RabbitMQ |
 |---|---|---|
@@ -50,7 +48,7 @@ A **message queue** is an intermediate component that enables asynchronous commu
 | **Routing** | Topic/partition-based | Flexible exchange bindings |
 | **Message model** | Streaming (log-based) | Queue (broker-based) |
 
-#### 15.5.1. Kafka Example
+#### Kafka Example
 
 ```javascript
 // Producer
@@ -99,7 +97,7 @@ await consumer.run({
 });
 ```
 
-#### 15.5.2. RabbitMQ Example
+#### RabbitMQ Example
 
 ```javascript
 // Connection and channel
@@ -135,9 +133,9 @@ channel.consume('order-processing', async (msg) => {
 });
 ```
 
-### 15.6. Patterns and Best Practices
+### Patterns and Best Practices
 
-#### 15.6.1. Dead Letter Queue (DLQ)
+#### Dead Letter Queue (DLQ)
 
 Messages that fail processing are sent to a DLQ for later analysis and reprocessing.
 
@@ -157,7 +155,7 @@ await channel.sendBatch({
 });
 ```
 
-#### 15.6.2. Idempotency
+#### Idempotency
 
 Since messages may be delivered more than once, make operations idempotent:
 
@@ -184,7 +182,7 @@ async function processOrder(order: Order): Promise<void> {
 }
 ```
 
-#### 15.6.3. Exactly-Once Semantics
+#### Exactly-Once Semantics
 
 | Delivery Guarantee | Description |
 |---|---|
@@ -194,7 +192,7 @@ async function processOrder(order: Order): Promise<void> {
 
 Kafka achieves exactly-once via **transactions** with idempotent producers and consumers.
 
-### 15.7. Common Use Cases
+### Common Use Cases
 
 | Use Case | Recommended Queue |
 |---|---|

@@ -1,0 +1,2819 @@
+[0] System Design
+[1] Overview
+[2] Computer Architecture (disk, storage, RAM, Cache, CPU)
+[3] Khi khởi động chương trình: Dữ liệu và mã lệnh được tải từ Storage lên RAM.
+[4] CPU xử lý: Kiểm tra Cache trước, nếu cache hit thì lấy ngay, nếu cache miss thì lấy từ RAM, nếu không có trong RAM, nạp từ storage (SSD/HDD)
+[5] Kết quả xử lý: Có thể ghi vào RAM (tạm thời), sau đó lưu lại vào Storage nếu cần lâu dài.
+[7] Production App Architecture
+[8] Kiến trúc hệ thống hiện đại gồm:
+[9] Frontend
+[10] Triển khai trên CDN để tăng tốc độ tải và giảm tải cho backend (React.js, Next.js build thành static file).
+[11] Sử dụng HTTPS, CSP (Content Security Policy - chống XSS, clickjacking, data injection) để bảo vệ người dùng.
+[12] Backend
+[13] Xây dựng dạng microservices (Spring Boot, Node.js), mỗi service đảm nhận một chức năng riêng biệt.
+[14] API Gateway: định tuyến, xác thực (authentication), giới hạn rate (rate limiting).
+[15] Database
+[16] Sử dụng RDBMS (PostgreSQL, MySQL) hoặc NoSQL (MongoDB, Redis) tùy trường hợp.
+[17] Cấu hình replication, backup và restore thường xuyên.
+[18] Đảm bảo phân quyền truy cập, mã hóa dữ liệu nhạy cảm.
+[19] Caching Layer
+[20] Redis/Memcached để giảm tải cho database, tăng tốc độ đáp ứng cho các truy vấn phổ biến.
+[21] Message Queue/Event Streaming
+[22] Kafka, RabbitMQ để xử lý các tác vụ nền (background jobs), truyền tải sự kiện giữa các service.
+[23] File Storage & Static Assets
+[24] Sử dụng dịch vụ cloud storage (AWS S3, Google Cloud Storage) cho ảnh, video, file lớn.
+[25] DevOps & CI/CD
+[26] Docker container hóa ứng dụng, Kubernetes orchestration.
+[27] CI/CD pipeline (Jenkins, GitHub Actions) tự động build/test/deploy.
+[28] Infrastructure as Code (Terraform, Ansible).
+[29] Monitoring & Logging
+[30] Sử dụng các tool như Prometheus, Grafana, ELK Stack để giám sát, cảnh báo, phân tích lỗi.
+[31] Security
+[32] HTTPS, JWT/OAuth2 cho authentication/authorization.
+[33] Quản lý secret (AWS Secret Manager, Githubs Secret Repo).
+[34] Thường xuyên kiểm tra OWASP Top 10.
+[35] High Availability & Scalability
+[36] Load balancer (Nginx, HAProxy), auto-scaling group.
+[37] Multi-region deployment (nếu cần).
+[39] Design Requirements
+[40] Xác định yêu cầu của khách hàng thế nào?
+[41] Xác định rõ yêu cầu chức năng và phi chức năng
+[42] Scalability: Có thể mở rộng để phục vụ nhiều user.
+[43] Performance: Đáp ứng nhanh, latency thấp.
+[44] Availability: Đảm bảo uptime cao, ít downtime.
+[45] Security: Bảo mật dữ liệu, xác thực, phân quyền.
+[46] Maintainability: Dễ sửa, dễ nâng cấp.
+[47] Reliability: Hoạt động ổn định, ít lỗi.
+[48] Cost: Giới hạn chi phí triển khai/vận hành.
+[49] Compliance: Tuân thủ quy định pháp luật
+[50] Xác định các ràng buộc quan trọng về nghiệp vụ - business (giảm chi phí, tăng số lượng user...), ràng buộc kĩ thuật (dùng công nghệ nào) và ràng buộc về tích hợp với các hệ thống khác.
+[51] Đề xuất giải pháp, hướng tiếp cận dựa trên yêu cầu đó.
+[52] Nguyên lý CAP
+[53] Là nguyên lý quan trọng trong thiết kế hệ thống phân tán.
+[54] CAP stands for:
+[55] + Consistency tức là mọi node trong hệ thống đều nhất quán về dữ liệu tại một thời điểm
+[56] + Availability là hệ thống luôn sẵn sàng đáp ứng mọi request
+[57] + Partition Tolerance là khả năng chịu phân mảnh mạng, tức là hệ thống vẫn hoạt động (không bị sập toàn bộ) khi có sự cố các node không liên lạc được với nhau do chia cắt mạng
+[58] Một hệ thống phân tán chỉ có thể đảm bảo 2 trong 3 yếu tố trên cùng một lúc. Trong thực tế luôn phải đảm bảo Partition Tolerance do sự cố mạng là không thể tránh khỏi. Còn việc ưu tiên CP hay AP tùy thuộc vào tính chất của hệ thống phân tán, ví dụ ngân hàng ưu tiên tính nhất quán chọn CP, mạng xã hội ưu tiên tính sẵn sàng (dữ liệu cập nhật chậm một chút cũng không sao) chọn AP.
+[60] Networking
+[61] Các khái niệm cần nhớ
+[62] Firewall: kiểm soát, cho phép hoặc chặn luồng dữ liệu vào ra hệ thống / thiết bị
+[63] NAT – network address translation: kĩ thuật chuyển đổi các địa chỉ IP trong mạng private sang IP công cộng (có thể dùng chung cho các thiết bị trong mạng nội bộ giúp tiết kiệm địa chỉ IP) và ngược lại
+[64] CORS: Cross-Origin Resource Sharing là một cơ chế của trình duyệt web chặn truy cập tài nguyên từ một domain khác với domain hiện tại.
+[65] Ví dụ frontend và backend API triển khai ở 2 domain khác nhau, backend cần cho phép CORS để frontend có thể gọi API và lấy dữ liệu.
+[66] Giao thức mạng theo tầng
+[67] Có 7 tầng OSI nhưng thực tế developer chủ yếu quan tâm các tầng: Application, Transport, Network
+[68] Application Layer: xử lý logic, giao tiếp user và app/service.
+[69] Giao thức:
+[70] + HTTP/HTTPS: giao thức nền tảng cho web và API, dùng để truyền dữ liệu giữa client và server
+[71] Cơ chế: request/response - client gửi request, server trả về dữ liệu json, file...
+[72] Các phương thức: GET - lấy dữ liệu, POST - tạo mới dữ liệu, PUT/PATCH - sửa dữ liệu, DELETE - xóa dữ liệu.
+[73] Các HTTP status code chia thành các nhóm:
+[74] 2xx: thành công, thường gặp nhất là 200 OK
+[75] 3xx: chuyển hướng - redirection
+[76] 4xx: lỗi từ client, thường gặp là
+[77] 400 Bad Request: Request sai cú pháp, dữ liệu đầu vào không hợp lệ.
+[78] 401 Unauthorized: Chưa xác thực hoặc token không hợp lệ.
+[79] 403 Forbidden: Không có quyền truy cập resource này.
+[80] 404 Not Found: Không tìm thấy resource hoặc endpoint.
+[81] 5xx: lỗi từ server, thường gặp là
+[82] 500 Internal Server Error: Lỗi server, không xác định rõ nguyên nhân
+[83] 502 Bad Gateway: Gateway hoặc proxy nhận được phản hồi không hợp lệ từ server phía sau.
+[84] 503 Service Unavailable: Dịch vụ tạm thời không hoạt động (quá tải, bảo trì).
+[85] 504 Gateway Timeout: Gateway hoặc proxy không nhận được phản hồi từ server phía sau đúng thời gian.
+[86] HTTPS là HTTP kết hợp phương thức mã hóa SSL/TLS, đảm bảo bảo mật, tránh bị nghe lén, hầu hết các dịch vụ production hiện nay đều yêu cầu HTTPS.
+[87] + FTP (truyền file)
+[88] + SSH (truy cập server qua command)
+[89] + SMTP (giao thức gửi email)
+[90] + WebSocket (kết nối 2 chiều real-time giữa client và server sau khi handshake)
+[91] + RPC (dùng trong microservices giao tiếp giữa các dịch vụ do latency thấp)
+[92] Transport Layer: đảm bảo truyền dữ liệu từ nơi gửi đến nơi nhận.
+[93] Giao thức: TCP (kết nối tin cậy, thường dùng cho web, API), UDP (kết nối nhanh nhưng không tin cậy, dùng cho streaming, game).
+[94] Network Layer: định tuyến dữ liệu qua các mạng khác nhau.
+[95] Giao thức: IP (định danh địa chỉ thiết bị), ICMP (ping, kiểm tra kết nối), ARP (tìm MAC của IP).
+[97] API Design
+[98] Một thiết kế API tốt đảm bảo:
+[99] Đơn giản và nhất quán
+[100] Tất cả các endpoint đều có cấu trúc rõ ràng, đặt tên nhất quán, ví dụ như /users/{id}/orders để dễ dàng hiểu được chức năng và resource mà API cung cấp.
+[101] Tuân thủ chuẩn giao tiếp như RESTful, GraphQL, gRPC...
+[102] Ví dụ đối với RESTful API:
+[103] + Sử dụng đúng các phương thức HTTP (GET, POST, PUT, DELETE…).
+[104] + Trả về đúng mã trạng thái HTTP (200, 201, 400, 404, 500…).
+[105] Dễ mở rộng, bảo trì
+[106] Versioning để dễ quản lý các phiên bản API: /v1/users, /v2/users
+[107] Tài liệu rõ ràng
+[108] Sử dụng Swagger/OpenAPI để tự động hóa và cập nhật tài liệu, giúp dev và đối tác dễ tích hợp, test API.
+[109] Bảo mật
+[110] Sử dụng HTTPS, xác thực qua JWT hoặc OAuth2, và kiểm soát quyền truy cập, hạn chế rate limit để bảo vệ API khỏi tấn công.
+[111] Các mô hình API
+[112] REST
+[113] Stateless (không lưu trạng thái giữa các request, mỗi request là độc lập).
+[114] Sử dụng các HTTP method chuẩn như GET, POST, PUT, DELETE.
+[115] Dễ bị over-fetching (lấy dư dữ liệu) hoặc under-fetching (lấy thiếu dữ liệu).
+[116] Trao đổi dữ liệu chủ yếu bằng JSON, dễ đọc cho con người.
+[117] GraphQL
+[118] Tránh được vấn đề over-fetching và under-fetching (client chỉ lấy đúng dữ liệu cần), tuy nhiên khó trong caching.
+[119] Query dựa trên schema xác định kiểu dữ liệu rõ ràng.
+[120] Query phức tạp có thể ảnh hưởng hiệu năng server.
+[121] Chỉ dùng phương thức POST.
+[122] Luôn trả về HTTP 200, nếu có lỗi sẽ nằm trong payload gửi về kèm.
+[123] gRPC
+[124] Xây dựng trên HTTP/2, hỗ trợ multiplexing và server push.
+[125] Dùng Protocol Buffers để truyền dữ liệu, rất hiệu quả và tiết kiệm băng thông.
+[126] Hiệu năng cao, phù hợp cho hệ thống lớn hoặc microservices.
+[127] Dữ liệu ít thân thiện với con người, khó đọc trực tiếp.
+[128] Yêu cầu môi trường/phần mềm hỗ trợ HTTP/2.
+[130] Caching & CNDs
+[131] Caching
+[132] Là việc lưu trữ tạm thời dữ liệu ở các tầng gần với người dùng hơn như trình duyệt, proxy hoặc server (redis) để phục vụ nhanh các request hay sử dụng.
+[133] Giảm truy vấn tới backend và db, tiết kiệm tài nguyên và tăng hiệu năng.
+[134] Áp dụng tốt cho REST vì dữ liệu thường ít thay đổi (không phù hợp GraphQL).
+[135] CDN
+[136] Là mạng lưới phân phối các máy chủ đặt ở nhiều nơi trên thế giới. Lưu các file tính như HTML, CSS, JS, ảnh để người dùng tải nhanh từ server gần nhất. Giúp tăng tính high availability, tăng độ trễ khi yêu cầu tài nguyên và tăng bảo mật.
+[138] Proxy Server
+[139] Là thành phần trung gian giữa client và server, có vai trò chuyển tiếp request và response.
+[140] Chức năng chính:
+[141] + Ẩn IP thực của client hoặc server, tăng bảo mật
+[142] + Lọc, kiểm soát, ghi log các truy cập
+[143] + Cache dữ liệu tăng tốc truy cập cho client
+[144] Hai loại chính:
+[145] + Forward proxy:
+[146] Đứng trước client (giữa client và internet).
+[147] Giúp ẩn IP của client khỏi các server ngoài, server chỉ thấy IP của proxy.
+[148] Thường dùng để kiểm soát truy cập web (chặn Facebook, Youtube) trong nội bộ công ty.
+[149] + Reverse proxy:
+[150] Đứng trước server (giữa server và internet)
+[151] Ẩn IP của server backend, client chỉ thấy IP của proxy.
+[152] Thường dùng để load balancing - phân phối đều request cho các server phía sau, xử lý mã hóa SSL giảm tải cho backend, caching hoặc nén dữ liệu trả về.
+[153] Các load balancer như Nginx, AWS ELB hay CDN như Cloudflare, AWS CloudFront cũng được coi là reverse proxy.
+[155] Load Balancer
+[156] Là thành phần trung gian giúp phân phối đều lưu lược request từ client đến nhiều server backend phía sau. Ví dụ AWS Elastic Load Balancer, Nginx...
+[157] Mục tiêu là tối ưu hiệu năng, tăng tính chịu tải và đảm bảo hệ thống hoạt động ổn định.
+[158] Các loại LB:
+[159] + Layer 4 (Transport): Phân phối dựa trên địa chỉ IP, port (ví dụ: TCP, UDP). Nhanh hơn, phù hợp các dịch vụ không cần xử lý sâu về nội dung như cân bằng tải cho database, các ứng dụng TCP.
+[160] + Layer 7 (Application): Phân phối dựa trên nội dung HTTP/HTTPS, URL, cookie… (ví dụ: Nginx, HAProxy). Phù hợp cho web và API.
+[161] Các thuật toán LB chính:
+[162] Round Robin: Chia đều theo lượt từng server.
+[163] Least Connection: Ưu tiên server rảnh nhất (ít kết nối nhất).
+[164] IP Hash: Dựa vào IP client, giữ session đảm bảo client luôn được chuyển đến 1 server cố định.
+[165] Weighted (Weighted Round Robin / Weighted Least Connection): Chia theo sức mạnh từng server (gán trọng số cho từng server).
+[166] Sticky session: Đối với hệ thống có cân bằng tải, nếu không dùng thuật toán IP hash nhưng vẫn muốn gắn 1 client với 1 server (ví dụ như lưu giỏ hàng, ứng dụng chat hoặc trạng thái đăng nhập trên các hệ thống cũ) thì dùng sticky session (được hỗ trợ trong hầu hết các LB như Nginx, HAProxy, AWS ELB)
+[167] Nếu backend stateless, không lưu session trên backend mà lưu ở client hoặc lưu tập trung tại Redis/Memcached thì không cần dùng sticky session. Ví dụ như hiện nay các ứng dụng web đều dùng JWT, session được xác nhận thông qua token (lưu phía client), server không cần nhớ trạng thái của user, hay hệ thống microservices, session lưu trên Redis, mọi server đều truy cập được.
+[169] Message Queue (Kafka, RabbitMQ, ActiveMQ)
+[170] Là thành phần trung gian giúp các hệ thống hoặc microservices giao tiếp bất đồng bộ với nhau, thông qua việc gửi và nhận thông điệp (message)
+[171] Giao tiếp bất đồng bộ: Ví dụ khi người dùng đăng ký xong, hệ thống trả về thông báo thành công ngay. Việc gửi email xác nhận được gửi như một message vào MQ (Kafka, RabbitMQ...). Service chuyên gửi mail sẽ nhận message này và xử lý sau. Do vậy người dùng không cần chờ email gửi xong mới được đăng ký thành công.
+[172] Kafka
+[173] Có thể xử lý dữ liệu với thông lượng (throughput) lớn, tốc độ cao, lưu trữ message lâu dài (có thể đọc lại nhiều lần, replay lại message), được thiết kế để scale tốt phù hợp với hệ thống phân tán
+[174] Phù hợp cho hệ thống cần nhiều sự kiện liên tục, như streaming log, phân tích dữ liệu realtime, hoặc nhận dữ liệu từ hàng ngàn thiết bị IoT
+[175] RabbitMQ
+[176] Dễ dùng, triển khai nhanh, hỗ trợ nhiều giao thức, mạnh về hàng đợi nghiệp vụ. Message không được lưu trữ lâu dài như Kafka
+[177] Phù hợp cho các ứng dụng cần xử lý bất đồng bộ như e-commerce, gửi email, thanh toán, nhập đơn hàng...
+[178] ActiveMQ
+[179] Tích hợp với hệ sinh thái Java
+[180] Hỗ trợ nhiều kiểu giao tiếp như point-to-point, pub-sub
+[182] Scenario
+[183] Một hệ thống hàng triệu người dùng thiết kế thế nào? Những điểm quan trọng để tối ưu hệ thống đó.
+[184] Scale Horizontally
+[185] Triển khai nhiều instance backend (EC2, container, server vật lý) phía sau LB
+[186] Stateless server: không lưu trạng thái trên server (JWT), session lưu ở cache ngoài (Redis)
+[187] Load Balancer
+[188] AWS ALB, Nginx, HAProxy
+[189] Sử dụng health check để tự động loại instance lỗi khỏi hệ thống
+[190] Database Scalability
+[191] Read Replica: ghi vào master/primary, đọc dữ liệu từ slave/replica database
+[192] Sharding/Partitioning: chia dữ liệu thành nhiều phần nhỏ theo user, khu vực... tránh quá tải trên một node
+[193] Connection Pooling: Hạn chế số lượng kết nối (tránh quá tải), tái sử dụng được kết nối nên tăng hiệu năng, tiết kiệm tài nguyên
+[194] Caching
+[195] Cache tầng ứng dụng: Dùng Redis
+[196] Cache tầng CDN (AWS CloudFront)
+[197] Xử lý bất đồng bộ (Asynchronous Processing)
+[198] Queue/ Massage Broker: Kafka, RabitMQ, SQS, ActiveMQ
+[199] Worker pool: tăng số thread để xử lý song song
+[200] High Availability & Fault Tolerance
+[201] Triển khai đa vùng (multi-zone, multi-region): nếu 1 vùng gặp sự cố, các vùng khác vẫn hoạt động
+[202] Auto-Scaling: Tự động tăng giảm số lượng instance dựa vào tải thực tế
+[203] Replica, backup: Đảm bảo dữ liệu không mất khi server/db có sự cố
+[204] Connection Management
+[205] Hạn chế timeout, tối ưu giữ kết nối lâu (keep-alive), dùng connection pool, áp dụng cho cả backend và database
+[206] Rate limiting: hạn chế số request của mỗi user/IP trên một đơn vị thời gian để bảo vệ hệ thống
+[207] Monitoring, Logging, Alerting
+[208] Realtime monitoring: Theo dõi chỉ số CPU, RAM, IOPS (số lượng thao tác đọc ghi IO trên giây), số lượng request, response time...
+[209] Alerting: cảnh báo khi có dấu hiệu quá tải, lỗi dịch vụ
+[210] Log tập trung: thu thập log để phân tích và xử lý sự cố nhanh
+[211] Một luồng request-response client đi qua các thành phần của một hệ thống web application hiện đại thế nào (ví dụ triển khai với React.js, Spring Boot, AWS)?
+[212] Lưu ý (với sơ đồ dưới):
+[213] CloudFront vừa có thể dùng làm CDN cho file tĩnh (React app) vừa có thể làm reverse proxy, bảo vệ và tăng tốc API.
+[214] AWS WAF có thể áp dụng ở cả CloudFront, ALB, hoặc API Gateway để bảo vệ hệ thống khỏi các tấn công web phổ biến.
+[215] API Gateway thường dùng với các backend serverless (Lambda), nhưng cũng có thể forward đến ECS, EC2...
+[218] Liên hệ với hệ thống / dự án đã làm
+[219] Dùng ActiveMQ làm message broker cho hệ thống IDP và SC
+[220] SDP được thiết kế theo mô hình modular monolith, SDP core làm gốc
+[222] Database
+[223] Overview
+[224] DB types
+[225] Relational DB (SQL): Là loại database tổ chức data thành các bảng với các hàng và các cột, có cấu trúc rõ ràng. Đảm bảo tính nhất quán, toàn vẹn dữ liệu.
+[226] Ví dụ như PostgreSQL, MySQL, Oracle.
+[227] Use cases:
+[228] + Hệ thống cần dữ liệu quan hệ phức tạp
+[229] + Dữ liệu ổn định, ít thay đổi cấu trúc
+[230] + Muốn đảm bảo tính nhất quán và toàn vẹn dữ liệu (ACID)
+[231] + Cần truy vấn phức tạp JOIN, transaction đảm bảo.
+[232] Hệ thống ngân hàng, quản lý đơn hàng...
+[233] NoSQL (non-relational database): Là loại database tổ chức dữ liệu linh hoạt (ví dụ MongoDB – document, Redis – key value, Cassandra -  column based, Neo4j – graph), không yêu cầu schema cố định, dễ mở rộng ngang (horizotal scalability), tối ưu cho lưu trữ lớn, tốc độ cao
+[234] Use cases:
+[235] + Dữ liệu phi cấu trúc, hoặc thay đổi thường xuyên (user profile, log, session).
+[236] + Hệ thống cần scale lớn, real-time (social network, IoT, gaming).
+[237] + Không cần JOIN phức tạp, chủ yếu lấy/gửi dữ liệu đơn giản.
+[239] Schema design
+[240] Data Normalization (Chuẩn hóa)
+[241] Là quá trình tổ chức dữ liệu trong database nhằm giảm thiểu sự dư thùa (redundancy) và đảm bảo tính nhất quán (consistancy) của dữ liệu.
+[242] 1NF: mỗi cột chỉ chứa một giá trị duy nhất
+[243] 2NF: 1NF + tất cả các thuộc tính không khóa phải phụ thuộc hoàn toàn vào khóa chính (không phải một phần)
+[244] Ví dụ vi phạm:
+[246] StudentName chỉ phụ thuộc vào StudentID, không phụ thuộc CourseID.
+[247] 3NF: 2NF  + không có thuộc tính không khóa nào phụ thuộc bắc cầu (phụ thuộc bắc cầu là: A → B, B → C thì A → C).
+[248] Ví dụ vi phạm:
+[251] Denormalization
+[252] Gộp các bảng nhỏ thành bảng lớn nhằm tăng tốc độ truy vấn (giảm thiểu JOIN), dù có thể tăng sự dư thừa dữ liệu.
+[254] DB Indexing, Query Optimization
+[255] Indexing
+[256] Index giống như mục lục của cuốn sách, giúp tìm nhanh tới trang cần tìm thay vì lật từng trang.
+[257] Cách hoạt động:
+[258] + Khi tạo index trên một hoặc nhiều cột, CSDL sẽ tạo ra một cấu trúc dữ liệu riêng như B-Tree hoặc Hash Table.
+[259] + Khi truy vấn dựa trên các cột được lập index, CSDL sẽ tra chỉ mục đó thay vì quét toàn bộ bảng (full table scan)
+[260] Các loại phổ biến:
+[261] + Index 1 cột
+[262] + Composite index (nhiều cột)
+[263] + Unique index (đảm bảo giá trị không trùng lặp)
+[264] + Fulltext index: hỗ trợ cho văn bản với LIKE, tìm kiếm có % ở phía trước.
+[265] Ví dụ tìm tất cả khách hàng có tên kết thúc bằng chữ “an”. Với index thông thường là B-Tree index, nó sẽ chỉ tìm từ đầu chuỗi, vì thế việc tìm từ khóa match ở cuối chuỗi buộc CSDL phải full table scan. Giải pháp lúc này là dùng fulltext index, nó được thiết kế để tìm kiếm các từ khóa ở bất cứ chỗ nào trong chuỗi.
+[266] Các cột nên đánh index:
+[267] + Các cột thường xuất hiện trong điều kiện WHERE (phải tìm kiếm nhiều)
+[268] + Cột dùng trong JOIN như các cột khóa chính hoặc khóa ngoại, thường khi tạo bảng thì khóa chính đã được đánh sẵn index (MySQL, PostgreSQL, Oracle,…)
+[269] + Cột dùng ORDER BY, GROUP BY
+[270] + Những cột có quá ít giá trị phân biệt (như giới tính chỉ có Nam/Nữ, trạng thái...), và những cột thường xuyên bị cập nhật hoặc ghi xóa thì không nên đánh index (index sẽ làm chậm thao tác cập nhật hoặc xóa)
+[271] Giả sử bạn có bảng DonHang với các trường:
+[272] + ID (khóa chính)
+[273] + MaKhachHang
+[274] + NgayDatHang
+[275] + TrangThai
+[276] + TongTien
+[277] Bạn có thể:
+[278] + Index trên MaKhachHang (tìm đơn theo khách)
+[279] + Index trên NgayDatHang (thống kê theo ngày/tháng)
+[280] + Composite index trên (MaKhachHang, TrangThai) (tìm đơn theo khách và trạng thái)
+[281] Query optimization
+[282] Khi bạn gửi một truy vấn SQL, hệ quản trị cơ sở dữ liệu sẽ phân tích, chọn phương án thực hiện tối ưu (query plan).
+[283] Query optimizer sẽ cân nhắc nhiều cách truy xuất dữ liệu khác nhau (dùng chỉ mục nào, JOIN kiểu gì,…).
+[284] Các cách tối ưu hóa truy vấn thường dùng:
+[285] Tạo index phù hợp trên cột dùng trong WHERE, JOIN, ORDER BY
+[286] Tránh SELECT *
+[287] Tránh dùng subquery khi có thể, các truy vấn lồng khiến CSDL phải thực hiện nhiều truy vấn lặp lại.
+[288] -- Truy vấn lồng không cần thiết
+[289] SELECT * FROM DonHang
+[290] WHERE MaKhachHang IN
+[291] (SELECT MaKhachHang FROM KhachHang WHERE TinhTrang = 'Active');
+[293] -- Tối ưu hơn (dùng JOIN)
+[294] SELECT d.* FROM DonHang d
+[295] JOIN KhachHang k ON d.MaKhachHang = k.MaKhachHang
+[296] WHERE k.TinhTrang = 'Active';
+[298] Sử dụng EXISTS thay vì IN với truy vấn con lớn
+[299] Sử dụng IN với subquery sẽ lấy toàn bộ kết quả subquery rồi mới so sánh từng giá trị, nếu subquery trả về nhiều dòng sẽ rất tốn bộ nhớ.
+[300] EXISTS chỉ cần biết có tồn tại dòng nào thỏa mãn điều kiện là trả về ngay, thường nhanh hơn khi subquery lớn.
+[301] -- Không tối ưu với subquery lớn
+[302] SELECT * FROM DonHang
+[303] WHERE MaKhachHang IN
+[304] (SELECT MaKhachHang FROM KhachHang WHERE TinhTrang = 'Active');
+[306] -- Tối ưu hơn
+[307] SELECT * FROM DonHang d
+[308] WHERE EXISTS (
+[309] SELECT 1 FROM KhachHang k
+[310] WHERE k.MaKhachHang = d.MaKhachHang AND k.TinhTrang = 'Active'
+[311] );
+[313] Phân tích truy vấn bằng EXPLAIN
+[314] EXPLAIN là lệnh cho biết kế hoạch thực thi của truy vấn, liệu có sử dụng index hay không, kiểu JOIN, số lượng bản ghi dự kiến quét,...
+[315] + Ví dụ có index:
+[317] Kết quả mẫu:
+[320] Index Scan using tb_sys_translation_pkey: PostgreSQL sử dụng đúng index bạn đã tạo trên customer_id.
+[321] Index Cond: Điều kiện tìm kiếm trên index.
+[322] cost=0.29..8.30: Ước lượng chi phí thực thi (chi phí để lấy kết quả đầu .. chi phí lấy toàn bộ kết quả)
+[323] cost là đơn vị tương đối, chỉ để so sánh với các kết quả khác (càng thấp càng tốt), không phải thời gian chạy
+[324] rows=1: Số dòng dự kiến trả về.
+[326] + Ví dụ không có index:
+[328] Kết quả:
+[330] Seq Scan on tb_sys_translation: PostgreSQL phải quét toàn bộ bảng (sequential scan), không dùng index.
+[331] Filter: Điều kiện lọc.
+[332] + EXPLAIN ANALYZE – Phân tích thực tế
+[333] EXPLAIN chỉ cho bạn kế hoạch dự kiến. Để xem thực tế truy vấn chạy như thế nào, dùng:
+[338] actual time: Thời gian thực truy vấn chạy thực tế.
+[339] Rows Removed by Filter: 9803 - Có 9803 dòng trong bảng không thỏa mãn điều kiện filter và đã bị loại bỏ.
+[340] Execution Time: Tổng thời gian thực thi.
+[341] + Explain analyze với truy vấn có JOIN
+[343] Hash Join giữa hai bảng. Seq Scan trên cả hai bảng:
+[344] tb_sys_translation (gần 10.000 dòng)
+[345] tb_sys_common_code (gần 1.000 dòng, filter: use_yn)
+[346] Không sử dụng chỉ mục (index) cho các cột tham gia JOIN (common_code, translation_key) và cột filter (use_yn).
+[347] Transaction, Isolation Levels, Locking
+[348] Transaction
+[349] Là một tập hợp các thao tác (câu lệnh) với cơ sở dữ liệu, được thực hiện như một đơn vị duy nhất. Sau khi kết thúc transaction, mọi thay đổi đều được xác nhận (commit) hoặc hủy bỏ (rollback).
+[350] ACID:
+[351] A - Atomicity (Tính nguyên tử):
+[352] Giao dịch hoặc là thực hiện toàn bộ, hoặc không thực hiện gì cả.
+[353] C - Consistency (Tính nhất quán):
+Sau mỗi transaction, hệ thống luôn ở trạng thái hợp lệ, không vi phạm các ràng buộc (ví dụ: không âm tiền, không trùng khóa, dữ liệu đúng logic nghiệp vụ).
+[354] I - Isolation (Tính cô lập):
+Các transaction đồng thời không gây ảnh hưởng lẫn nhau.
+[355] Các thay đổi của transaction này không bị transaction khác nhìn thấy cho đến khi hoàn tất (commit). Giao dịch chạy như thể chúng thực hiện tuần tự.
+[356] Ví dụ: A chuyển 1$ cho C, B cũng chuyển 1$ cho C cùng lúc. Nhờ isolation, C sẽ nhận đủ 2$ chứ không phải 1$.
+[357] D - Durability (Tính bền vững):
+Khi transaction được xác nhận (commit), thay đổi sẽ được lưu vĩnh viễn, không bị mất kể cả khi hệ thống bị sự cố (mất điện, crash server)
+[358] Isolation Levels
+[359] Isolation level là mức độ “cô lập” giữa các transaction.
+[360] Read Uncommitted:
+Transaction có thể đọc dữ liệu chưa xác nhận của transaction khác (dễ gây “dirty read” – đọc dữ liệu ảo, không thực tế).
+[361] Read Committed:
+Chỉ đọc được dữ liệu đã xác nhận (commit). Tránh dirty read, nhưng vẫn có thể gặp “non-repeatable read” (giá trị thay đổi giữa các lần đọc trong cùng transaction).
+[362] Repeatable Read:
+Trong suốt transaction, dữ liệu đã đọc sẽ không thay đổi, dù transaction khác có update. Tránh non-repeatable read, nhưng vẫn có thể bị “phantom read” (xuất hiện hoặc mất dòng khi insert/delete).
+[363] Serializable:
+Mức cao nhất, các transaction chạy tuần tự tuyệt đối. Đảm bảo an toàn nhưng hiệu năng thấp, dễ bị “wait” khi nhiều người cùng thao tác.
+[365] Isolation level của các hệ quản trị CSDL:
+[366] PostgreSQL: mặc định là Read Committed.
+[367] MySQL InnoDB: mặc định là Repeatable Read.
+[368] SQL Server: mặc định là Read Committed.
+[369] Oracle: mặc định là Read Committed.
+[371] Để setup isolation level, ví dụ trong Spring Boot với PostgreSQL:
+[372] Spring Boot hỗ trợ annotation @Transactional với tham số isolation.
+[374] Có thể cấu hình trong application.properties/application.yml (Spring Data JPA).
+[375] spring.datasource.hikari.transaction-isolation=TRANSACTION_READ_COMMITTED
+[377] Đặt isolation level trong truy vấn SQL thuần
+[379] Ví dụ tổng hợp về ACID và Isolation
+[380] Giả sử bạn chuyển 1$ từ tài khoản A sang tài khoản B:
+[381] Bước 1: Trừ 1$ ở tài khoản A
+[382] (Bước 1.5)
+[383] Bước 2: Cộng 1$ vào tài khoản B
+[384] Bước 3: Thực hiện commit giao dịch
+[385] Tính nguyên tử (Atomicity): Nếu sau bước 1 (hoặc bước 1.5), hệ thống bị sự cố (crash), toàn bộ giao dịch sẽ bị hủy bỏ, không có thay đổi nào được lưu lại.
+Thực tế: Sử dụng annotation @Transactional trong Spring Boot để đảm bảo tính nguyên tử.
+[386] Tính nhất quán (Consistency): Sau bước 3 (commit), tổng số tiền trong hệ thống vẫn đúng, không tài khoản nào bị sai quy tắc (ví dụ: số dư âm).
+Thực tế: Đảm bảo bằng các ràng buộc trong cơ sở dữ liệu như: khóa chính (PK), khóa ngoại (FK), unique, not null, check (điều kiện), default (giá trị mặc định).
+[387] Tính cô lập (Isolation): Trong bước 1.5, các tài khoản khác không thể nhìn thấy việc A đã bị trừ 1$ mà B chưa được cộng 1$ (mức Read Commited trở lên).
+Các mức độ isolation:
+[388] + Read Uncommitted: Trong bước 1.5, tài khoản khác CÓ THỂ thấy A bị trừ 1$ nhưng b chưa được công 1$, là mức thấp nhất, không an toàn (gọi là “dirty read”).
+[389] + Read Committed: Tài khoản khác chỉ nhìn thấy B được cộng 1$ sau khi commit (bước 3). Tránh được “dirty read” nhưng vẫn có thể bị “non-repeatable read” nếu kiểm tra nhiều lần trong một transaction.
+[390] + Repeatable Read: Nếu một tài khoản khác kiểm tra số dư của B nhiều lần trong transaction (trong bước 1.5), số dư của B vẫn giữ nguyên (chưa được cộng 1$) suốt transaction đó.
+[391] + Serializable: Chỉ một người có thể chuyển tiền vào B tại một thời điểm, người khác phải đợi cho đến khi giao dịch kết thúc. Đây là mức độ an toàn tuyệt đối, nhưng chậm hơn.
+[392] Tính bền vững (Durability): Một khi hệ thống thông báo “chuyển tiền thành công”, kể cả khi mất điện hay có sự cố hệ thống, dữ liệu về giao dịch vẫn được lưu lại. Hoặc giả sử mất điện trước commit, transaction chưa commit sẽ bị rollback khi hệ thống khởi động lại. Dữ liệu trả về trạng thái cũ, giao dịch không có hiệu lực.
+[394] Locking & Deadlock
+[395] Locking (Khóa):
+Là cơ chế đảm bảo dữ liệu không bị thay đổi đồng thời gây lỗi hoặc không nhất quán.
+[396] + Pessimistic Locking (Khóa bi quan):
+Đọc hoặc ghi dữ liệu đều đặt lock. Đọc thì dùng Shared Lock (nhiều người có thể đọc), ghi thì dùng Exclusive Lock (chỉ một người được ghi, người khác phải đợi). Đảm bảo an toàn nhưng dễ gây deadlock (kẹt nhau chờ lock) và giảm hiệu năng.
+[397] + Optimistic Locking (Khóa lạc quan):
+Không đặt lock khi đọc, chỉ kiểm tra khi ghi. Khi ghi, nếu dữ liệu đã bị ai đó thay đổi, thì sẽ báo lỗi hoặc rollback. Phù hợp hệ thống ít xung đột, dùng với @Version trong Spring Boot.
+[398] Deadlock (Bế tắc):
+Là trạng thái hai hoặc nhiều transaction cùng chờ nhau giải phóng lock, không transaction nào tiếp tục được.
+[399] Ví dụ thực tế:
+[400] Giả sử hệ thống có hai bảng:
+[401] tb_sys_common_code
+[402] tb_sys_translation
+[403] Hai transaction đồng thời thực hiện:
+[404] Transaction 1:
+[405] Lock bản ghi A ở bảng tb_sys_common_code
+[406] Đợi lock bản ghi B ở bảng tb_sys_translation
+[407] Transaction 2:
+[408] Lock bản ghi B ở bảng tb_sys_translation
+[409] Đợi lock bản ghi A ở bảng tb_sys_common_code
+[410] Cả hai transaction đều giữ lock mà bên kia cần, dẫn đến deadlock.
+[411] Xử lý deadlock:
+[412] Hệ quản trị như PostgreSQL, MySQL sẽ tự động phát hiện deadlock.
+[413] Khi phát hiện deadlock, hệ thống sẽ rollback một trong các transaction liên quan và trả về lỗi để giải phóng các lock bị kẹt.
+[414] Trong ứng dụng, developer cần bắt lỗi deadlock (ví dụ với Spring là DeadlockLoserDataAccessException) và xử lý retry transaction nếu cần.
+[416] Tránh deadlock:
+[417] Thiết kế thứ tự truy cập tài nguyên: Luôn truy cập các bảng/tài nguyên theo thứ tự cố định trong tất cả transaction.
+[418] Giới hạn phạm vi lock: Chỉ lock những bản ghi thực sự cần thiết, tránh lock diện rộng.
+[419] Đặt timeout cho các transaction: Nếu không lấy được lock sau một thời gian, transaction sẽ tự động rollback.
+[420] Bắt và retry khi gặp deadlock: Ứng dụng nên xử lý retry transaction nếu gặp lỗi deadlock.
+[421] Chọn isolation level phù hợp: Nếu hệ thống ít xung đột, sử dụng isolation level thấp hơn để giảm khả năng deadlock.
+[423] Partitioning & Sharding, Replication & High Availability, Data Migration
+[424] Partitioning & Sharding
+[425] Partitioning là chia một bảng to thành nhiều “miếng nhỏ” theo tiêu chí nào đó (ví dụ chia theo năm, theo vùng miền, theo loại dữ liệu).
+[426] Ví dụ partition bảng theo năm, khi cần lấy dữ liệu năm 2023, database chỉ đọc đúng phần đó thay vì cả bảng → truy vấn chạy nhanh hơn nhiều.
+[427] Sharding thì giống chia thành nhiều “database con” ở các server khác nhau, mỗi nơi lưu một phần dữ liệu.
+[428] Ví dụ shard theo vùng miền, user ở miền Bắc chỉ đọc database miền Bắc, user miền Nam đọc database miền Nam → tải chia đều, hệ thống không quá tải.
+[429] Replication & High Availability
+[430] Replication là việc sao chép dữ liệu từ một máy chính sang một hoặc nhiều máy phụ. Máy phụ chỉ để đọc, máy chính vừa đọc vừa ghi.
+[431] High Availability là thiết kế hệ thống để luôn hoạt động liên tục, giảm tối đa nguy cơ bị downtime, kể cả khi có sự cố hoặc máy chủ bị hỏng.
+[432] + Failover là cơ chế tự động chuyển sang hệ thống dự phòng nếu hệ thống (node) chính bị lỗi.
+[433] + Load Balancing là việc phân phối các request tới nhiều server để tăng hiệu năng và tránh quá tải.
+[434] Ví dụ Khi có hàng nghìn truy vấn SELECT, hệ thống sẽ chia đều các truy vấn này tới nhiều database replica để xử lý song song, giúp hệ thống chạy nhanh và ổn định.
+[435] CAP theorem: nguyên lý quan trọng trong hệ thống phân tán (tham khảo A.I.3b)
+[436] NoSQL (đa số được thiết kế phân tán ngay từ đầu) thường ưu tiên AP - Availability và Partition Tolerance để đáp ứng truy vấn nhanh, chịu được chia mạng do phân tán.
+[437] SQL truyền thống (chạy trên một node hoặc cluster nhỏ) thường ưu tiên CA -  Consistency và Availability. Trong trường hợp SQL phân tán, vẫn phải ưu tiên Partition Tolerance trước.
+[438] Data Migration
+[439] Data migration là chuyển dữ liệu từ nơi này sang nơi khác – ví dụ từ database cũ sang database mới, hoặc thay đổi cấu trúc bảng.
+[440] Flyway hoặc Liqibase là các tool quản lý migration, versioning cho CSDL.
+[442] Caching
+[443] Các loại cache với database:
+[444] Query cache: Query cache lưu kết quả của các câu truy vấn SQL thường dùng.
+[445] Lưu ý: Một số hệ quản trị SQL như MySQL từng hỗ trợ query cache, nhưng hiện nay thường dùng cache ở tầng ứng dụng hoặc proxy vì cache trong DB có nhiều hạn chế khi dữ liệu thay đổi.
+[446] Result cache: lưu kết quả trả về của các hàm hoặc thủ tục (function/procedure).
+[447] Application-level cache: cache ở tầng ứng dụng, thường dùng các công cụ như Redis, Memcached để lưu dữ liệu truy cập thường xuyên.
+[449] Backup & Recovery
+[450] Point-in-Time Recovery: có thể restore database về 1 thời điểm cụ thể
+[451] Ví dụ nếu 10h05 xảy ra lỗi, có thể khôi phục lại dữ liệu đúng như lúc 10h.
+[452] Với PostgreSQL, có thể dùng lệnh pg_dump để backup từng database, hoặc pg_basebackup để backup toàn bộ cluster.
+[453] Khi hệ thống gặp sự cố (server crash, lỗi ổ cứng), chỉ cần dùng file backup để restore lại database, đảm bảo không mất dữ liệu quan trọng.
+[455] Performance Tuning (tổng hợp)
+[456] Quy trình kiểm tra và tối ưu query:
+[457] Kiểm tra execution plan bằng EXPLAIN ANALYZE
+[458] Chạy EXPLAIN ANALYZE để xem chi tiết cách DB thực thi.
+[459] Xem các bước: có dùng Seq Scan (quét toàn bảng), Hash Join, Rows Removed by Filter, thời gian thực thi từng bước.
+[460] Xác định nguyên nhân chậm
+[461] Seq Scan là dấu hiệu chưa có index, khiến DB phải đọc toàn bộ bảng.
+[462] Rows Removed by Filter số lượng lớn nghĩa là truy vấn phải duyệt qua nhiều dòng không cần thiết.
+[463] JOIN không tối ưu nếu hai bảng đều lớn mà không có index.
+[464] Execution Time cao, cost lớn → cần tối ưu.
+[465] Các bước tối ưu
+[466] Xem xét index của bảng, tạo index cho các cột cần thiết. Sau khi tạo index, chạy lại EXPLAIN để kiểm tra đã chuyển sang Index Scan chưa.
+[467] Xem xét có thẻ viết lại truy vấn không:
+[468] Chỉ SELECT các cột cần thiết, tránh SELECT *.
+[469] Đơn giản hóa điều kiện WHERE, tránh lồng ghép phức tạp.
+[470] Nếu JOIN không cần thiết, có thể tách thành nhiều truy vấn nhỏ.
+[471] Tránh OFFSET lớn vì hiệu suất kém khi truy vấn deep paging.
+[472] Xem xét tối ưu cấu trúc bảng
+[473] Nếu bảng quá lớn, xem xét partition theo thời gian hoặc loại dữ liệu.
+[474] Chuẩn hóa hoặc tách bảng quá rộng thành nhiều bảng nhỏ hơn.
+[475] Kiểm tra cấu hình DBMS
+[476] + Buffer là phần RAM mà DB dùng để lưu tạm dữ liệu lấy ra từ ổ cứng.
+[477] Nếu buffer nhỏ, DB phải đọc/ghi nhiều lần từ ổ cứng (rất chậm).
+[478] + Connection pool là số lượng kết nối DB có thể mở cùng lúc.
+[479] Nếu quá ít, request sẽ bị chờ. Nếu quá nhiều, server quá tải.
+[480] Nên:
+[481] Tăng buffer/cache nếu RAM cho phép.
+[482] Điều chỉnh connection pool phù hợp với tải.
+[483] Sử dụng phân tích slow query log
+[484] Slow query log là nhật ký của các truy vấn bị chậm, giúp bạn phát hiện chính xác truy vấn nào cần tối ưu. Cấu hình DBMS để ghi lại các truy vấn có thời gian thực thi lớn hơn ngưỡng nào đó (ví dụ > 1 giây).
+[485] Dùng cache tầng ứng dụng, thậm chí cache ở client nếu cần
+[486] Nếu dữ liệu truy vấn lặp lại nhiều, lưu vào Redis/Memcached để giảm tải DB.
+[488] Database framework/tools
+[489] ORM framework:
+[490] ORM – object relational mapping: kỹ thuật giúp lập trình viên làm việc với cơ sở dữ liệu bằng các đối tượng trong ngôn ngữ lập trình.
+[491] Spring Data JPA, Hibernate (Java): Tự động ánh xạ object sang bảng, hỗ trợ transaction, cache, pagination…
+[492] MyBatis: ORM framework dành cho Java, giúp kết nối, truy vấn, và ánh xạ dữ liệu từ database về các object Java.
+[493] Quy trình dùng MyBatis:
+[494] + Tạo DTO (hoặc Entity) Java tương ứng với kết quả SELECT
+[495] + Viết SQL trong file XML mapper của MyBatis (gần như giữ nguyên truy vấn gốc)
+[496] + Định nghĩa interface mapper
+[497] + Inject và gọi mapper từ Service/Controller
+[498] + MyBatis sẽ tự động thực hiện truy vấn JOIN và trả kết quả về dưới dạng object
+[499] Sequelize (NodeJS), SQLAlchemy (Python), Django ORM…
+[500] Flyway: database migration tool (công cụ quản lý version và thay đổi cấu trúc database) đơn giản, dễ dùng.
+[501] Lưu các script SQL (tạo bảng, sửa bảng, thêm dữ liệu mẫu...) trong dự án theo thứ tự version (V1, V2, V3...).
+[502] Khi chạy Flyway, tool sẽ tự động kiểm tra, cập nhật database theo các script, đảm bảo mọi môi trường đều có cấu trúc DB giống nhau.
+[503] Liqibase cũng tương tự nhưng Phức tạp hơn, nhiều tính năng mở rộng, cho phép mô tả migration bằng nhiều định dạng, phù hợp dự án lớn.
+[505] Scenario
+[506] Dùng JPA khác gì dùng Native Query?
+[507] Ngôn ngữ truy vấn
+[508] JPA (JPQL/Criteria): Dùng truy vấn dựa trên entity, không phụ thuộc vào cấu trúc bảng thật.
+[509] Native Query: Dùng SQL thuần của database, phụ thuộc vào từng loại DB.
+[510] Tính di động
+[511] JPA: Dễ chuyển đổi giữa các DBMS khác nhau.
+[512] Native Query: Có thể lỗi khi đổi DBMS do khác cú pháp SQL.
+[513] Tính an toàn & kiểm tra lỗi
+[514] JPA: Kiểm tra cú pháp khi biên dịch, thuận tiện refactor.
+[515] Native Query: Chỉ kiểm tra ở runtime, dễ sai tên trường/cột.
+[516] Tính năng nâng cao
+[517] JPA: Hỗ trợ ORM, lazy loading, cache, mapping,...
+[518] Native Query: Không hỗ trợ ORM trực tiếp, cần tự ánh xạ kết quả.
+[519] Hiệu năng & tối ưu
+[520] JPA: Phù hợp truy vấn thông thường.
+[521] Native Query: Tối ưu mạnh cho truy vấn phức tạp, đặc thù DB.
+[522] Nên dùng Native Query khi:
+[523] Cần các tính năng SQL mà JPQL không hỗ trợ.
+[524] Truy vấn lớn, report phức tạp, hoặc stored procedure.
+[526] Một số tình huống tối ưu DB trong thực tế
+[527] Tình huống: Truy vấn tìm kiếm chậm do thiếu index
+[528] Mô tả: Bảng orders có hàng triệu bản ghi. Khi truy vấn lọc theo trường customer_id, tốc độ rất chậm.
+[529] Giải pháp:
+[530] Tạo index cho trường customer_id:
+[531] CREATE INDEX idx_customer_id ON orders(customer_id);
+[532] Sau khi có index, truy vấn như SELECT * FROM orders WHERE customer_id = ? sẽ nhanh hơn nhiều.
+[533] Tình huống: Gặp vấn đề N+1 Query khi lấy danh sách User cùng danh sách Address của họ.
+[534] Mô tả: Sử dụng JPA, khi lấy danh sách User và địa chỉ (OneToMany), mỗi User lại sinh thêm 1 query để lấy Address → tổng số query = N+1, rất kém hiệu năng.
+[535] Giải pháp:
+[536] Sử dụng fetch join trong JPQL:
+[537] @Query("SELECT u FROM User u LEFT JOIN FETCH u.addresses")
+List<User> findAllWithAddresses();
+[538] Như vậy chỉ cần 1 query để lấy toàn bộ User cùng Address.
+[539] Ngoài ra còn cách dùng @EntityGrapth:
+[540] public interface UserRepository extends JpaRepository<User, Long> {
+[541] @EntityGraph(attributePaths = "addresses")
+[542] @Query("SELECT u FROM User u")
+[543] List<User> findAllWithAddresses();
+[544] }
+[545] Entity Graph sẽ chỉ dẫn JPA/Hibernate lấy cả addresses khi truy vấn danh sách user, do đó chỉ sinh ra 1 hoặc 2 query, tránh N+1.
+[546] Dùng @BatchSize:
+[547] @Entity public class User {
+[548] @Id
+[549] private Long id;
+[550] private String name;
+[552] @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+[553] @BatchSize(size = 10)
+[554] private List<Address> addresses;
+[555] }
+[556] hoặc
+[557] spring.jpa.properties.hibernate.default_batch_fetch_size=20
+[558] Với batch size, khi truy cập getAddresses() của nhiều user, Hibernate sẽ gom các truy vấn lại và lấy dữ liệu theo batch, giảm số lượng query so với từng user một.
+[559] Giảm N+1 truy vấn xuống còn 1 + ceil(N / batch_size)
+[561] Tình huống: Truy vấn report tổng hợp, tính toán chậm
+[562] Mô tả: Cần tính tổng số lượng bán ra theo từng sản phẩm trong tháng, dữ liệu lớn, join nhiều bảng.
+[563] Giải pháp:
+[564] Viết native query với các hàm tổng hợp, tận dụng index, hoặc tạo view/stored procedure trong DB:
+[565] SELECT product_id, SUM(quantity) as total_sold
+FROM order_details
+WHERE order_date BETWEEN ? AND ?
+GROUP BY product_id;
+[566] Tạo view nếu report thường xuyên dùng:
+[567] CREATE VIEW product_sales_monthly AS
+SELECT product_id, EXTRACT(YEAR_MONTH FROM order_date) as ym, SUM(quantity) as total_sold
+FROM order_details
+GROUP BY product_id, ym;
+[569] Tình huống: Insert/Update hàng loạt gây chậm
+[570] Mô tả: Cần insert/update hàng nghìn bản ghi, mỗi bản ghi lại thực hiện 1 lần insert/update riêng.
+[571] Giải pháp:
+[572] Sử dụng batch insert/update:
+[573] for (int i = 0; i < list.size(); i++) {
+    entityManager.persist(list.get(i));
+    if (i % batchSize == 0) {
+        entityManager.flush();
+        entityManager.clear();
+    }
+}
+[574] Kết hợp cấu hình batch_size trong application.properties khi dùng Hibernate:
+[575] spring.jpa.properties.hibernate.jdbc.batch_size=50
+[577] Tình huống: Truy vấn phân trang (paging) không hiệu quả khi OFFSET quá lớn.
+[578] Mô tả: Khi phân trang dữ liệu lớn, OFFSET càng lớn thì truy vấn càng chậm (ví dụ OFFSET 100000). Ví dụ không nên truy vấn như sau:
+[579] SELECT id, order_date FROM orders ORDER BY id LIMIT 100 OFFSET 100000;
+[580] Giải pháp:
+[581] Sử dụng keyset pagination (dựa trên giá trị field như id):
+[582] SELECT id, order_date FROM orders WHERE id > ? ORDER BY id LIMIT 100;
+[583] Tránh dùng OFFSET trực tiếp khi dữ liệu lớn.
+[584] Tình huống: Dữ liệu truy vấn lặp đi lặp lại nhiều lần (hot data)
+[585] Mô tả: Một số truy vấn đọc dữ liệu giống nhau liên tục, gây áp lực lên DB.
+[586] Giải pháp: Sử dụng cache (Redis, Memcached, hoặc cache của Hibernate):
+[587] Cache kết quả truy vấn ở tầng ứng dụng.
+[588] Dùng Hibernate 2nd Level Cache nếu phù hợp.
+[590] Java Core
+[591] Overview
+[592] OOP
+[593] Overview
+[594] Mô hình lập trình dựa trên object và class, mỗi object là một thực thể gồm các thuộc tính và hành vi.
+[595] Encapsulation: Che giấu dữ liệu, dùng getter/setter
+[596] Inheritance: Tái sử dụng code từ class cha
+[597] Polymophism: Hành động giống nhau nhưng cách thực hiện khác nhau (overloading, overiding)
+[598] Abstraction: Ẩn chi tiết cài đặt, chỉ cho biết interface/abstract method
+[599] Sự khác nhau Abstract Class và Interface?
+[600] Abstract Class:
+[601] Có thể có những method có thân hàm
+[602] Có constructor, biến instance
+[603] Đơn kế thừa, một class chỉ extends được một class cha
+[604] Interface:
+[605] Không có method có thân hàm (từ Java 8 có default&static method cho phép khai báo thân hàm)
+[606] Không có constructor
+[607] Đa kế thừa, một interface cho phép implement nhiều interface
+[608] Trường hợp sử dụng:
+[609] AC sử dụng khi muốn chia sẻ logic code chung. Ví dụ Dog, Cat extend từ lớp abstract Animal, có thể có những đặc điểm chung như tên hoặc method eat(), nhưng ngoài ra cũng có những method abstract như makeSound() để có thể cài đặt riêng.
+[610] Interface sử dụng khi cần định nghĩa một bản hợp đồng hành vi. Đó là khi ta muốn các class khác nhau nhưng vẫn phải có chung một hành vi, chức năng
+[611] Overloading và overiding
+[612] Overloading:
+[613] Xảy ra trong cùng class hoặc class con kế thừa
+[614] Khác signature (cùng tên, khác tham số)
+[615] Đa hình compile-time
+[616] Overiding
+[617] Xảy ra giữa class cha và class con, subclass định nghĩa lại method superclass
+[618] Signature giống y hệt class cha
+[619] Đa hình runtime
+[620] Composition vs Inheritance – khi nào nên dùng
+[621] Inheritance (IS-A): Cat extends Animal
+[622] Composition (HAS-A): Car has Engine
+[623] Nên ưu tiên Composition vì:
+[624] Linh hoạt hơn - có thể nhiều thành phần, giải quyết phần nào vấn đề đa kế thừa của inheritance, dễ kiểm thử unit test
+[625] Giảm coupling - không bị ràng buộc bởi mối quan hệ cha con
+[626] Multiple Inheritance qua Interface & Diamond Problem trong Java
+[627] Java không hỗ trợ multiple inheritance qua class
+[628] Nhưng hỗ trợ qua interface
+[629] Nếu 2 interface có default method trùng nhau, class implements phải override để giải quyết xung đột. Ví dụ class implement 2 interface A, B cùng default defaultMethod() mà dùng của interface A thì A.super.defaultMethod()
+[630] Overiding và Hiding
+[631] Overriding là khi lớp con thay đổi hành vi của một phương thức instance đã có ở lớp cha, và quyết định phương thức nào được gọi dựa vào đối tượng thực tế tại thời điểm chạy (runtime).
+[632] Hiding là khi lớp con che khuất một phương thức static hoặc biến đã có ở lớp cha, và quyết định phương thức hoặc biến nào được sử dụng dựa vào kiểu khai báo tại thời điểm biên dịch (compile time).
+[634] Dynamic Dispatch & Virtual Method Table (VMT)
+[635] Dynamic Dispatch: cơ chế giúp JVM chọn method gọi tại runtime dựa trên object thực tế.
+[636] VMT:
+[637] JVM lưu bảng ánh xạ method override
+[638] Khi gọi obj.method(), JVM tra cứu vtable để xác định method đúng
+[639] Đây là cách Java thực hiện runtime polymorphism
+[641] Collections
+[642] Overview
+[643] Collection Framework là tập hợp các class và interface hỗ trợ thao tác với tập dữ liệu ĐỘNG (List, Set, Map, Queue), nó khác với Arrays (có kích thước cố định) và cung cấp nhiều thuật toán như sort, search, shuffle
+[644] Collection là INTERFACE, Collections là CLASS tiện ích
+[645] Iterator: dùng để duyệt 1 CHIỀU các phần tử của Collection, chỉ có next(), hasNext(), remove()
+[646] ListIterator: nâng cấp của Iterator, chỉ dùng cho List, duyệt 2 chiều, có cả next và previous, hỗ trợ thêm sửa xóa phần tử trong khi duyệt
+[647] Tại sao Collection là interface gốc thay vì Class?
+[648] Để cho phép nhiều cấu trúc dữ liệu khác nhau (ArrayList, HashSet, LinkedList) implement linh hoạt.
+[649] fail-fast iterator: ném ConcurrentModificationException nếu collection bị thay đổi cấu trúc khi đang duyệt
+[650] Ví dụ ArrayList, HashMap
+[651] fail-safe iterator: cho phép duyệt mà không lỗi, nhưng có thể không thấy cập nhật mới
+[652] Ví dụ ConcurrentHashMap, CopyOnWriteArrayList
+[653] Collection (lưu trữ theo phần tử rời rạc)
+[654] List: có thứ tự, cho phép phần tử trùng lặp (cả kể null)
+[655] + ArrayList: truy cập theo chỉ số, thêm và xóa cuối nhanh O(1), xóa index O(n), thích hợp cho đọc nhiều (truy cập theo chỉ số, O(1))
+[656] + LinkedList: linked list trong Java là double-linked list (2 chiều)
+[657] Thao tác thêm/xóa ở đầu/cuối nhanh, truy cập ngẫu nhiên chậm (do phải duyệt từ đầu hoặc cuối O(n)), thích hợp lưu dữ liệu thao tác thêm/xóa nhiều
+[658] Đa năng, có thể dùng như List, Queue, Deque, Stack
+[659] + Vector/Stack: cũ, ít dùng; Vector thread-safe, Stack LIFO
+[660] Set: không cho phép phần tử trùng lặp, thường không thứ tự (LinkHashSet, TreeSet có thể có thứ tự)
+[661] + HashSet: không thứ tự, không trùng lặp, thao tác nhanh
+[662] Dựa trên HashMap - chỉ lưu key, value là dummy object
+[663] Check 2 phần tử bằng nhau: so sánh hashCode() trước, sau đó equals()
+[664] + LinkedHashSet: giữ thứ tự thêm, không trùng lặp
+[665] + TreeSet: sắp xếp tự nhiên hoặc theo Comparator/Comparable, thích hợp khi cần duyệt có thứ tự, không cho phép null (vì không so sánh được)
+[666] Queue/Deque (Double end queue): Lưu trữ theo hàng đợi, FIFO hoặc LIFO, cho phép trùng lặp
+[667] + PriorityQueue: hàng đợi ưu tiên theo Comparator/Comparable, không cho phép null, nếu 2 phần tử cùng độ ưu tiên thì không đảm bảo thứ tự ổn định
+[668] + ArrayDeque: hàng đợi 2 đầu, không giới hạn kích thước, thao tác đầu cuối đều nhanh O(1), không cho phép null
+[669] Có thể dùng như queue FIFO hoặc stack LIFO
+[670] Map (nhóm ánh xạ key-value, không thuộc Collection Interface)
+[671] Key-value, key không trùng lặp (1 null duy nhất), value trùng được.
+[672] HashMap: lưu trữ key-value dựa trên mảng bucket, mỗi bucket chứa linked list hoặc red-black tree của các key-value
+[674] HashMap trong Java 8+ dùng red-black tree thay cho linked list để giảm độ phức tạp O(n) xuống O(logn) khi nhiều hash key vào cùng 1 bucket
+[675] Hiệu năng truy xuất O(1)
+[676] LinkedHashMap: duy trì thứ tự thêm vào, nhanh ~HashMap, truy xuất O(1)
+[677] TreeMap: sắp xếp tự nhiên theo Comparator/Comparable, không cho phép null, hiệu năng truy xuất O(logn)
+[678] ConcurrentHashMap: dùng cho đa luồng, hiệu năng cao, không cho key hoặc value null
+[679] Concurency
+[680] Thread và process
+[681] Process là một chương trình đang chạy, có bộ nhớ, tài nguyên riêng.
+[682] Thread là luồng thực thi nhỏ hơn trong một process, các thread cùng chia sẻ bộ nhớ. Ví dụ bật chrome (1 process), mỗi tab có thể là 1 thread
+[683] Runable và Thread
+[684] Runable: một interface chỉ có phương thức run(), dùng để ĐỊNH NGHĨA task
+[685] Thread: class có phương thức run(), start()
+[686] Cả 2 đều không trả về giá trị
+[687] Nếu extends Thread thì không extend được class khác
+[688] Dùng Runable linh hoạt hơn, implement được nhiều interface, tách riêng logic chạy và quản lý thread
+[689] Chu kì của Thread
+[690] New: thread được tạo ra nhưng chưa chạy do chưa gọi start()
+[691] Runable: đã gọi start(), sẵn sàng được CPU thực thi
+[692] Running: CPU thực sự thực thi code
+[693] Blocked / Waiting / Timed Waiting (Chờ hoặc bị chặn): thread tạm dừng, chờ 1 sự kiện, chờ vào lock, chờ kết thúc thread khác, chờ do sleep()
+[694] Terminated: Kết thúc, thoát khỏi phương thức run()
+[695] synchronized và volatile
+[696] synchronized: khóa đối tượng hoặc method, đảm bảo chỉ có 1 thread truy cập được vào vùng code đó tại một thời điểm.
+[697] synchronized method khóa toàn bộ method, sychronized block chỉ khóa một đoạn code nhỏ nên hiệu năng tốt hơn
+[698] volatile: dùng cho biến, đảm bảo khi 1 thread thay đổi giá trị của biến đó, các thread sẽ ngay lập tức nhìn thấy giá trị mới đó
+[699] volatile chỉ đảm bảo visibility, synchronized đảm bảo cả visibility và mutual exclusion (không có race condition) / cả khối code đó là atomicity
+[700] Tức, đối với thao tác nguyên tử, chỉ có 1 bước duy nhất (như thay đổi status từ true thành false) chỉ cần dùng volatile để đảm bảo thêm visibility.
+[701] Đối với thao tác gồm nhiều bước (một luồng khác có thể chen vào trong khi đang thực thi), ví dụ counter++ (gồm 3 bước đọc, tăng, ghi). Nếu chỉ dùng volatile, 2 thread có thể cùng đọc giá trị cũ, dẫn đến race condition. Khi đó dùng synchronized, đảm bảo cả tính atomicity của chuỗi thao tác trên.
+[702] volatile phù hợp với biến có thao tác nguyên tử - boolean, flag, status...
+[703] synchronize dùng với các thao tác phức tạp hơn như tăng biến số nguyên
+[704] wait(), notify(), notifyAll()
+[705] Phải gọi trong khối synchronized (thread phải giữ lock của object đó)
+[706] wait() làm thread hiện tại dừng lại để chờ 1 thread khác gọi notify() hoặc notifyAll()
+[707] notify() đánh thức một thread khác trên cùng 1 object, nếu có nhiều thread, đánh thức MỘT thread bất kì
+[708] notifyAll(): đánh thức tất cả thread đang wait() trên cùng 1 object
+[709] 3 method trên giải quết vấn đề phối hợp giữ nhiều thread khi truy cập hoặc thao tác trên các tài nguyên dùng chung
+[710] Ví dụ: Trong một chương trình phát nhạc, thread chuyên phát nhạc phải wait thread chuyên tải dữ liệu tải xong, khi xong sẽ notify đến thread phát nhạc
+[711] Thread Pools và Executor Framwork
+[712] Thread Pool là một bể chứa các thread được tạo sẵn để sẵn sàng thực thi task, giúp tái sử dụng thread không cần tạo mới mỗi lần cần xử lý
+[713] Executor Framework cung cấp bộ API quản lý và sử dụng thread pool
+[714] ExecutorService thường dùng trong các dự án thực tế. Cung cấp các phương thức như submit() để nộp task, có thể là Runnable hoặc Callable.
+[715] Nó quản lý việc tạo, tái sử dụng và hủy thread (với phương thức shutDown()), giúp tối ưu tài nguyên hệ thống.
+[716] Callable và Future
+[717] Callable: Giống Runable, dùng để định nghĩa task nhưng có kết quả trả về sau khi task chạy xong, có thể ném checked exception (Runable không)
+[718] Future: Một interface đại diện cho kết quả của một task sẽ hoàn thành trong tương lai.
+[719] Có thể dùng nó để kiểm tra task đã xong chưa, lấy kết quả hoặc hủy task.
+[721] Concurrent Collections
+[722] ConcurrentHashMap: map an toàn cho nhiều thread đọc/ghi đồng thời mà không cần tự đồng bộ hóa (synchronized)
+[723] Hiệu năng cao hơn Hashtable, synchronizedMap. Thay vì khóa toàn bộ Map để cho 1 luồng truy cập như 2 thằng trên thì nó chia nhỏ lock, cho phép nhiều thread truy cập đồng thời.
+[724] CopyOnWriteArrayList: list tối ưu cho trường hợp đọc nhiều, ghi ít vì mỗi lần ghi sẽ copy ra một mảng mới.
+[725] ConcurrentLinkedQueue: queue an toàn, không khóa cho các thao tác đồng thời
+[726] BlockingQueue (ví dụ ArrayBlockingQueue, LinkedBlockingQueue):
+[727] Hàng đợi hỗ trợ cơ chế chờ (wait) và đánh thức (notify) khi thêm, lấy phần tử
+[728] Hữu ích cho các bài toán producer-consumer
+[729] Atomic Variables
+[730] Là các biến đặc biệt được thiết kế hỗ trợ các thao tác đọc, ghi, tăng, giảm, cập nhật... một cách an toàn trong môi trường đa luồng mà không cần dùng synchronize. Nó biến các thao tác trên với biến trở nên duy nhất (atomicity), do đó tránh được race-condition.
+[731] AtomicInteger, AtomicLong, AtomicBoolean...
+[732] Hiệu năng cao hơn synchronized do dùng cơ chế CAS – compare and swap (một câu lệnh gốc CPU nên nhanh)
+[733] Ví dụ khi thực hiện thao tác tăng trên một biến đang có giá trị 10, nếu dùng synchronized, phải khóa biến đó lại, cho luồng chính (được phép truy cập) tăng lên 11 rồi mới nhả khóa cho các luồng khác chạy tiếp, rất mất thời gian.
+[734] Nếu dùng atomic variable, nó sẽ lưu lại giá trị ban đầu là 10. Giả sử trong lúc luồng chính đang tăng biến lên 11 mà có 1 luồng khác đã tăng nó lên 11 trước. CPU sẽ so sánh giá trị hiện tại (11) với giá trị ban đầu đã lưu (10). Do khác nhau nên nó sẽ cập nhật giá trị ban đầu thành 11 và tiếp tục quy trình trên.
+[735] Synchronizers
+[736] CountDownLatch: cho phép 1 hoặc nhiều thread chờ cho đến khi một số tác vụ hoàn thành (mới tiếp tục).
+[738] CyclicBarrier: cho phép 1 nhóm thread chờ nhau tại một “điểm barrier” và cùng tiếp tục khi tất cả đã đến.
+[740] Fork/Join Framework
+[741] ForkJoinPool: dùng cho lập trình parallelism.
+[742] Chia task lớn thành các task nhỏ (fork), sau đó ghép lại (join).
+[743] Tối ưu trên CPU đa nhân. Khi khởi tạo ForkJoinPool, Java sẽ tự động tạo số luồng bằng số core CPU và xử lý tác vụ trên tất cả các core.
+[744] Deadlock & Livelock
+[745] Deadlock: là hiện tượng xảy ra khi 2 hoặc nhiều luồng chờ lẫn nhau giải phóng tài nguyên dẫn đến tất cả bị treo vô thời hạn.
+[746] Ví dụ có 2 object lock A và B. Luồng 1 lock A trước rồi cố lock B. Luồng 2 lock B trước rồi cố lock A. Cả 2 bị treo vì không chịu nhả tải nguyên.
+[747] Cách phòng tránh:
+[748] + Đảm bảo lock tài nguyên đúng thứ tự, ví dụ luôn lấy A rồi mới lấy B.
+[749] + Dùng tryLock() của lớp ReentranLock thay vì lock với synchronized.
+[750] tryLock(): luồng không bị chặn, thay vì chờ khóa mãi như synchronized, tryLock() chỉ thử lấy khóa, nếu không lấy được, giải phóng các tài nguyên đã giữ và thử lại hoặc xử lý logic khác.
+[751] + Sử dụng tryLock(long timeout, TimeUnit unit) set timeout để đặt thời gian giữ lock của một luồng, tránh bị lock vô thời hạn.
+[752] + Hạn chế lock nhiều tài nguyên đồng thời
+[753] Livelock: các thread vẫn chạy và thay đổi trạng thái, nhưng công việc không tiến triển. Hiếm gặp hơn deadlock.
+[754] Ví dụ mình và ny mình cùng ăn tối nhưng chỉ có 1 chiếc thìa. Mình cầm thìa chuẩn bị ăn nhưng mình biết ny mình đói nên nhường thìa cho ẻm, ẻm cầm thìa xong lại nghĩ mình đói nên lại nhường thìa cho mình. Cuối cùng cả hai cùng đói mà không thực hiện được việc ăn.
+[755] Giải pháp:
+[756] + Quy định rõ ai được ăn trước
+[757] + Giới hạn số lần nhường
+[758] + Thêm thời gian chờ ngẫu hiên khi nhường, tăng khả năng 1 người ăn trước
+[759] Note and best practices
+[760] Trong các dự án Web Application dùng Spring Boot, thường không cần quản lý đa luồng vì SB đã tự quản lý đa luồng ở tầng server, chỉ khi cần xử lý song song hoặc một số tác vụ bất đồng bộ đặt biệt như xử lý nền (gửi notification, email mà người dùng không cần đợi), gọi nhiều API cùng lúc, xử lý dữ liệu lớn theo batch, phân nhỏ ra nhiều luồng
+[761] Nên dùng Thread Pool thay vì tự tạo Thread: Thay vì tạo mới từng thread, mình dùng ExecutorService để quản lý và tái sử dụng thread
+[762] Để tránh race condition khi nhiều luồng cùng truy cập, thay đổi một dữ liệu, dùng synchronized hoặc các class thread-safe như ConcurrentHashMap
+[763] Nên thiết kế các object bất biến immutable khi có thể, như dùng final, trạng thái không thay đổi sau khi khởi tạo nên không lo lắng về đồng bộ trong đa luồng
+[764] Luôn bắt và xử lý exception trong từng luồng, hoặc dùng UncaughtExceptionHandler, đảm bảo lỗi không bị bỏ qua và dễ kiểm soát sự cố
+[765] Sau khi luồng sử dụng tài nguyên như file, kết nối, socket thì phải đóng tại, tốt nhất là dùng try-with-resources hoặc đóng trong khối finally
+[766] Nên đặt tên cho các thread (dùng AtomicInteger) và ghi log đầy đủ
+[767] Lambdas, Functional interfaces, Stream API (Java 8+)
+[768] Lambdas
+[769] Cách viết ngắn gọn cho các implementation của functional interface, giúp code dễ đọc và giảm boilerplate
+[770] // không sử dụng từ khóa return
+[771] Addable ad1 = (a, b) -> (a + b);
+[772] System.out.println(ad1.add(10, 20));
+[775] // sử dụng từ khóa return
+[776] Addable ad2 = (int a, int b) -> {
+[777] return (a + b);
+[778] };
+[780] // ví dụ Thread sử dụng biểu thức lambda
+[781] Runnable r2 = () -> {
+[782] System.out.println("Thread2 is running...");
+[783] };
+[784] Thread t2 = new Thread(r2);
+[785] t2.start();
+[788] Sử dụng khi cần truyền function như một đối số cho method
+[789] Ví dụ thường thấy nhất là dùng với stream API
+[791] ở đây filter nhận vào một function (lambda) để xác định điều kiện lọc toán tử
+[792] Ngắn gọn hơn, không cần tạo class mới như anonymous class
+[793] Functional Interface
+[794] Là gì? một interface chỉ có một abstract method duy nhất (có thể có default/static method nữa), được đánh dấu @FunctionalInterface
+[795] Vì sao functional interface chỉ có một abstract method? Cú pháp lambda chính là các viết ngắn gọn cho implement của method duy nhất đó, nếu có trên 2 method trừu tượng trong FI, biểu thức lambda sẽ bế tắc vì nó không biết cấp thân hàm cho phương thức nào
+[796] Functional Interfaces Toolbox: tập hợp các functional interface có sẵn trong java - 4 main categories:
+[797] + Supplier<T>: T get() - không nhận vào tham số nhưng trả về một đối tượng (không ăn cơm mẹ nấu, đi làm và đem tiền về cho mẹ)
+[798] + Comsumer<T>: void accept(T t) - nhận tham số là một đối tượng nhưng không trả về gì (ăn cơm mẹ nấu, đi làm nhưng không đem tiền về cho mẹ)
+[799] + Function<T,R>: R apply (T t) - nhận tham số là đối tượng, trả về đối tượng (ăn cơm mẹ nấu, đi làm và đem tiền về cho mẹ)
+[800] + Predictable<T>: boolean test(T t) - nhận tham số là một đối tượng và trả về một dự đoán boolean (một trường hợp cụ thể của function)
+[801] + Để nối tiếp các functional interface và trả về một FI mới, sử dụng andThen
+[803] Method references là cú pháp ngắn gọn hơn của lambda expression(::)
+[804] Stream API
+[805] Là chuỗi các phần tử tử được hỗ trợ thao tác xử lí như một dòng chảy
+[806] Stream khác với Collection:
+[807] + Collection lưu dữ liệu
+[808] + Stream KHÔNG lưu dữ liệu, chỉ xử lí luồng dữ liệu
+[809] Tính chất của Stream API:
+[810] + Không thay đổi dữ liệu gốc - các thao tác trên Stream không thay đổi Collection ban đầu
+[811] + Không lưu dữ liệu - chỉ xử lý khi cần
+[812] + Lazy Execution - các thao tác trung gian chỉ chạy khi có terminal operation
+[813] + Hỗ trợ xử lý song song với parallelStream()
+[814] Các thao tác chính với Stream:
+[815] + Tạo Stream:
+[816] Từ Collection: list.stream() hoặc list.parallelStream()
+[817] Từ array: Arrays.stream(array)
+[818] Từ giá trị: Stream.of(1,2,3)
+[819] + Intermediate Operations (thao tác trung gian): trả về một Stream mới, không thực thi ngay (lazy execution)
+[820] filter(Predicate) — Lọc theo điều kiện
+[821] map(Function) — Biến đổi từng phần tử
+[822] sorted() — Sắp xếp
+[823] distinct() — Loại bỏ trùng
+[824] limit(n), skip(n) — Giới hạn, bỏ qua
+[825] + Terminal Operation: thực thi pipeline, trả về kết quả
+[826] forEach(Consumer) — Xử lý từng phần tử
+[827] collect(Collector) — Thu thập thành List, Set, Map,...
+[828] reduce(BinaryOperator) — Tổng hợp thành một giá trị
+[829] count(), min(), max(), anyMatch(), allMatch(), v.v.
+[830] Notes and best practice
+[831] Chỉ sử dụng hoặc tự tạo FI khi cần thiết, tận dụng các FI chuẩn của Java.
+[832] Không nên dùng Stream cho thao tác đơn giản, loop nhỏ — for-each sẽ nhanh hơn
+[834] Không nên thay đổi (modify) phần tử bên trong Stream, không làm thay đổi giá trị gốc của collection.
+[835] KHÔNG nên:
+[837] Nên:
+[839] Cẩn thận khi dùng song song với dữ liệu không thread-safe
+[840] Ví dụ NGUY HIỂM:
+[842] Giải quyết:
+[843] + Dùng collect(): tốt nhất
+[845] + Thay List thành Collections.synchronizedList hoặc CopyOnWriteArrayList
+[847] Generics
+[848] Mục đích? Cho phép khai báo lớp, interface, method với kiểu dữ liệu tổng quát
+[849] Cách sử dụng:
+[850] + Với class và interface:
+[851] + Với method:
+[852] + Với collection:
+[853] Lợi ích:
+[854] + Code tường minh hơn, phát hiện lỗi kiểu dữ liệu ngay khi biên dịch
+[855] + Giảm ép kiểu thủ công, code rõ ràng, dễ đọc hơn
+[856] Nếu không dùng Generics : ít tường minh hơn so với khai báo có generics, báo lỗi nếu dữ liệu đưa vào List không phải String. Và phải ép kiểu thủ công:
+[858] Dùng generics thì không cần:
+[860] + Tái sử dụng code: ví dụ class Box<T> có thể thay thế IntBox hoặc StringBox, tùy trường hợp sử dụng
+[861] Wildcard: ? (chấp nhận mọi kiểu), ? extends T (chấp nhận T hoặc kiểu con của nó), ? super T (chấp nhận T hoặc lớp cha của nó).
+[862] Hỗ trợ truyền kiểu linh hoạt hơn.
+[864] Bound: T extends Number để giới hạn kiểu (chấp nhận kiểu đó hoặc kiểu con của nó)
+[866] Java I/O
+[867] Java cung cấp các APU để đọc dữ liệu từ nguồn và ghi dữ liệu ra đích
+[868] Nguồn và đích có thể là: console (bàn phím, màn hình), file, mạng, bộ nhớ...
+[869] Có 2 gói IO chính:
+[870] java.io: hỗ trợ IO dựa trên stream (luồng byte và ký tự)
+[871] java.nio (New IO): hỗ trợ Non-blocking IO, tối ưu xử lý dữ liệu lớn và ứng dụng mạng.
+[872] Non-blocking IO là kỹ thuật giúp chương trình không bị dừng lại khi thao tác I/O.
+[873] Các lớp chính:
+[874] + Byte Streams: đọc ghi dữ liệu dạng nhị phân
+[875] + Character Streams: đọc ghi dữ liệu dạng ký tự (Unicode)
+[876] + Buffer Streams: tăng hiệu suất đọc ghi cho dữ liệu dạng nhị phân hoặc ký tự
+[877] + Data Streams: đọc ghi dữ liệu nguyên thủy (int, double, boolean...)
+[878] + Object Streams: đọc ghi đối tượng (serialization)
+[879] Serialization và Deserialization:
+[880] + Serialization là quá trình biến một đối tượng Java thành dãy byte để có thể lưu vào file, truyền qua mạng hoặc ghi vào db
+[881] + Deserialization là quá trình ngược lại, biến dãy byte thành object
+[882] + Java hỗ trợ serialization qua các lớp: ObjectOutputStream (ghi), ObjectInputStream (đọc)
+[883] + Đối tượng muốn được serialize phải implements interface Serializable.
+[884] serialVersionUID: Nên định nghĩa để tránh lỗi khi thay đổi class.
+[885] Không serialize các trường không cần thiết: Dùng từ khóa transient.
+[886] + Trường hợp sử dụng: chủ yếu là dùng trong ứng dụng game,
+[887] try-with-resources: tự động đóng tài nguyên như file, stream, socket, kết nối database... mà không cần tự tay gọi close() trong finally.
+[888] Các resource này phải implements interface AutoCloseable.
+[890] JVM Turning, Garbage Collection
+[891] Heap & Stack
+[892] Heap:
+[893] Là vùng nhớ lớn trong JVM để lưu trữ các instance của object được tạo ra trong quá trình chạy chương trình (share giữa tất cả các thread).
+[894] Được Garbage Collector (GC) tự động quản lý: thu hồi bộ nhớ các object không còn sử dụng.
+[895] Nếu heap đầy, có thể gặp lỗi OutOfMemoryError.
+[896] Stack:
+[897] Mỗi thread có một stack riêng.
+[898] Lưu các biến cục bộ, tham số của hàm, thông tin hàm đang thực thi (call stack).
+[899] Khi hàm gọi lồng nhau quá sâu hoặc đệ quy vô hạn, sẽ gặp StackOverflowError.
+[900] Vậy những dữ liệu như thông tin class, hằng số, biến static... lưu ở đâu? Metaspace (Java 8+), sử dụng trực tiếp bộ nhớ của OS (native memory)
+[901] Các tham số JVM hay dùng (chỉnh command hoặc setup trên IDE ngay lúc run)
+[902] -Xms và -Xmx: Đặt dung lượng heap ban đầu (-Xms) và tối đa (-Xmx).
+[903] -XX:+UseG1GC: Chọn loại GC (nên dùng G1GC cho app hiện đại).
+[904] -Xss: Đặt dung lượng stack mỗi thread.
+[905] Các tham số log GC: -Xlog:gc* (Java 9+).
+[907] Các loại GC phổ biến
+[908] G1 GC (Java 9+, mặc định ở Java 17, 21): Cân bằng tốt giữa throughput và độ trễ (latency), phù hợp đa số app web, hệ thống microservices hiện nay.
+[909] Parallel GC (mặc định ở Java 8): Ưu tiên throughput, dùng cho batch processing.
+[910] ZGC (Java 11+): Heap lớn (hàng trăm GB), latency rất thấp, cho hệ thống lớn.
+[911] Cách phát hiện và xử lý vấn đề về bộ nhớ
+[912] OutOfMemoryError: Do heap đầy, Metaspace đầy, hoặc memory leak quá lâu.
+[913] Memory leak: hiện tượng các đối tượng trong heap không còn được sử dụng nhưng vẫn còn tham chiếu nên GC không thể thu hồi.
+[914] StackOverflowError: Đệ quy vô hạn, stack quá sâu.
+[915] Dùng GC log và các công cụ như VisualVM/JMC để theo dõi heap và GC.
+[916] Các thao tác thực tế hay làm
+[917] Điều chỉnh heap (-Xms, -Xmx) khi app thiếu/tốn nhiều bộ nhớ.
+[918] Đổi loại GC khi app lag, pause lâu, hoặc throughput thấp.
+[919] Theo dõi log GC để phát hiện full GC, pause time cao, memory leak.
+[920] Tạo heap dump khi cần phân tích kỹ memory leak.
+[921] Notes
+[922] Đừng để heap quá lớn mà không kiểm soát (full GC sẽ lâu).
+[923] Ưu tiên G1GC cho đa số ứng dụng web/server hiện đại.
+[924] Theo dõi GC pause time: Nếu pause lâu, thử tối ưu heap, đổi GC, hoặc phân tích code gây leak.
+[925] Hạn chế gọi System.gc() trong code thực tế.
+[926] Điểm mới chính trong các phiên bản Java
+[927] Java 8
+[928] Lambda Expression
+[929] Functional Interface
+[930] Method Reference
+[931] Stream API
+[932] Default & Static Method trong Interface
+[933] Optional: xử lý các giá trị có thể null, tránh NullPointerException, giúp
+[934] Date & Time API mới: Các lớp trong package java.time (LocalDate, LocalTime, LocalDateTime, ...), thay thế cho java.util.Date cũ.
+[935] ...
+[936] Java 17
+[937] LTS (Long-term support), ổn định cho doanh nghiệp
+[938] Sealed Classes: Giới hạn class con có thể kế thừa, giúp kiểm soát tốt hơn cấu trúc kế thừa.
+[939] Pattern Matching for instanceof: Kiểm tra kiểu và ép kiểu gọn hơn.
+[940] Records (ra mắt từ Java 16, ổn định ở 17): Khai báo class immutable ngắn gọn cho data.
+[941] Text Blocks: Viết chuỗi nhiều dòng dễ dàng hơn với dấu “””
+[942] ...
+[943] Java 21
+[944] LTS mới nhất, tập trung hỗ trợ lập trình hàm hiện đại
+[945] Pattern Matching for switch: Switch-case thông minh hơn, hỗ trợ kiểm tra kiểu, phân tích cấu trúc.
+[946] Record Patterns: Hỗ trợ decompose dữ liệu từ record ngay trong pattern matching.
+[947] ...
+[949] Scenario - Liên hệ với hệ thống đã làm
+[950] Dùng ConcurrentHashMap
+[951] Dùng queue để put() request từ IDP vào hàng đợi và take() cho SC xử lý, đảm bảo an toàn và kiểm soát luồng dữ liệu
+[952] Dùng AtomicInteger để làm biến đếm cho request ID
+[953] Tránh race condition và deadlock bằng cách dùng ReentranLock để khóa một đối tượng user khi đang add hoặc update thông tin trong vòng 20 giây
+[954] Sử dụng Completable (và DefferedResult) để xử lý bất đồng bộ trong REST API
+[956] Sử dụng Generic trong task MultiLanguage
+[960] Khi muốn tạo custom List, Map, Set, Exception... trong ứng dụng, tức extends các lớp như ArrayList, LinkedList, HashSet, HashMap, Exception, IOException..., các lớp này đều implements Serializable nên khi khai báo cần thêm serialVersionUID
+[964] Spring/Spring Boot
+[965] Overview
+[966] Spring Core
+[967] Inversion of Control (IoC)
+[968] Đảo ngược quyền điều khiển là thay vì lập trình viên chịu trách nhiệm quả lý vòng đời và sự phụ thuộc của các đối tượng, framework sẽ làm việc đó. Cụ thể trong Spring, IoC container sẽ xử lý khởi tạo, liên kết các đối tượng (chứ không do chính các class đó tự thực hiện)
+[969] Dependency Injection (DI)
+[970] Là một cách cụ thể để thực hiện IoC. DI nghĩa là các phụ thuộc của một object sẽ được tiêm (inject) nhờ Ioc Container, thay vì object phải tự tạo ra chúng bằng từ khóa new.
+[971] Lợi ích: giúp code dễ kiểm thử, dễ bảo trì, giảm sự phụ thuộc chặt chẽ giữa các module.
+[972] Bean Lifecycle, Bean Scope
+[973] Vòng đời của bean:
+[974] + Khởi tạp: Spring tạo instance của bean
+[975] + Spring inject các dependency vào bean (bằng constructor – best practice)
+[976] + Có thể có các phương thức can thiệp trước và sau khi bean được khởi tạo
+[977] + Bean được sử dụng
+[978] + Khi container shutdown, gọi phương thức hủy (destroy)
+[979] Bean scope: Xác định phạm vi tồn tại và số lượng instance của bean
+[980] + Singleton: chỉ có một instance duy nhất được tạo ra trong toàn bộ ứng dụng
+[981] + Prototype: mỗi lần bean được yêu cầu, Spring sẽ tạo ra một instance mới
+[982] + Request (chỉ dùng trong web): mỗi HTTP request, một instance bean riêng được tạo
+[983] + Session: mỗi HTTP session, một instance bean riêng được tạo
+[984] + Application: một instance bean cho toàn bộ web application (ServerContext) - chỉ dụng cho ứng dụng web
+[985] + Web socket: một instance cho mỗi WebSocket
+[986] ApplicationContext vs BeanFactory
+[987] BeanFactory:
+[988] + Là interface gốc (cơ bản) nhất của Spring Container
+[989] + Chỉ cung cấp các chức năng cơ bản về quản lý bean, như khởi tạo, cung cấp bean, tiêm phụ thuộc
+[990] + Chỉ khởi tạo bean khi bean được yêu cầu (lazy loading)
+[991] + Ít tính năng, nhẹ, chủ yếu dùng cho ứng dụng đơn giản, tài nguyên hạn chế
+[992] ApplicationContext:
+[993] + Là interface mở rộng của Spring Container
+[994] + Cung cấp đầy đủ các tính năng nâng cao cho enterprise application như:
+[995] Hỗ trợ internationalization (i18n), AOP, tích hợp với các framework khác như JDBC, ORM...
+[996] + Khởi tạo tất cả singleton bean ngay khi context khởi động (eager loading)
+[997] + Trong Spring Boot, ApplicationContext luôn là mặc định
+[998] AOP – Aspect Oriented Programming
+[999] AOP là kĩ thuật lập trình hướng khía cạnh, giúp tách các phần logic phụ trợ ra khỏi code chính, giúp các method tập trung vào business logic. Các logic phụ trợ thường gặp là logging, quản lý transaction, kiểm tra quyền (lúc truy cập vào method)...
+[1000] AOP không thay thế OOP mà nó bổ trợ cho OOP. Ví dụ OOP đáng lẽ nên tập trung vào logic nghiệp vụ chính thì lại có những đoạn logic không liên quan như ghi log, kiểm tra quyền..., và điều này khiến code lặp lại ở nhiều nơi. AOP giúp tách biệt hoàn toàn các logic này ra khỏi các class business chính.
+[1001] Các thành trong AOP:
+[1002] + Aspect: nơi chứa logic phụ trợ (ví dụ logging logic)
+[1003] + Advice (Lời khuyên/hành động): Đoạn code sẽ thực thi ở một điểm cụ thể (trước, sau, quanh method)
+[1004] Ví dụ trước khi bất cứ hàm nào trong service chạy, hãy in: ‘Bắt đầu method!’
+→ Đoạn code System.out.println(“Bắt đầu method!”); là advice.
+[1005] + Join Point (Điểm kết nối): Là điểm cụ thể trong quá trình thực thi chương trình, nơi advice có thể được áp dụng (thường là khi gọi method).
+[1006] Ví dụ khi bạn gọi userService.login() hoặc orderService.createOrder(), mỗi lần gọi method này là một join point.
+[1007] + Pointcut (Điểm cắt): Điều kiện/biểu thức xác định những join point nào sẽ áp dụng advice (chọn những method nào để “gắn” advice).
+[1008] Bạn muốn ghi log cho mọi method trong package service:
+→ Pointcut là: execution(* com.example.service.*.*(..))
+[1009] + Weaving (Kết hợp): Quá trình “gắn” aspect vào đúng chỗ trong code (các join point) khi ứng dụng chạy, biên dịch hoặc load class.
+[1010] Khi bạn chạy app, Spring hoặc AspectJ sẽ tự động “chèn” code log của bạn vào đúng các method đã định nghĩa trong pointcut.
+[1011] Cách sử dụng:
+[1012] + Thêm dependency spring-boot-starter-aop hoặc aspectjweaver (nếu dùng AspectJ)
+[1013] + Sử dụng @Aspect để định nghĩa class chứa logic phụ trợ
+[1015] + Một số annotation thường gặp trong AOP:
+[1017] Spring Boot
+[1018] Overview
+[1019] Spring Boot là framework được xây dựng dựa trên nền tảng Spring Framewrok, giúp tạo ứng dụng Spring nhanh nhất, đơn giản, tự động hóa cấu hình, giảm thiểu tối đa code cấu hình. Ví dụ trước đây phải cấu hình thủ công từng bean trong XML thì Spring Boot hỗ trợ cấu hình ngay trong code với các annotation.
+[1020] Khác biệt chính với Spring:
+[1021] + Spring Boot tự động cấu hình nhiều thành phần dựa trên các dependency đã thêm vào, giúp tiết kiệm thời gian và giảm lỗi cấu hình so với Spring thường
+[1022] + Spring thường phải tự cấu hình server như Tomcat, Spring Boot thì có sẵn embedded server để chạy
+[1023] + Hỗ trợ cấu hình ứng dụng qua file properties, YAML, biến môi trường, command line,... giúp linh động khi chuyển đổi môi trường (dev, test, prod).
+[1024] Cơ chế autoconfiguration
+[1025] Spring Boot tự động cấu hình ứng dụng dựa trên các dependency đã thêm vào project.
+[1026] Không cần cấu hình thủ công các bean, datasource, security, MVC... nữa.
+[1027] Ví dụ:
+Nếu bạn thêm dependency spring-boot-starter-web, Spring Boot tự động cấu hình Tomcat, DispatcherServlet, các bean web, v.v.
+Nếu thêm spring-boot-starter-data-jpa, Spring Boot tự động cấu hình JPA, DataSource...
+[1028] Starter dependencies
+[1029] Starter là các gói dependency được đóng gói sẵn, giúp bạn thêm tất cả thư viện cần thiết cho một tính năng chỉ với 1 dòng khai báo.
+[1031] Cho phép cấu hình hóa bên ngoài (Externalized Configuration)
+[1032] Chính là các file application.properties hoặc application.yml, cho phép cài đặt cấu hình các ứng dụng bên ngoài như database, AWS, Kafka... ngoài ra còn có thể cài đặt cấu hình thông qua biến môi trường và tham số dòng lệnh.
+[1033] Ví dụ với tham số dòng lệnh:
+[1034] Ngoài ra SB còn hỗ trợ cấu hình riêng biệt cho từng môi trường dev, test, prod:
+[1037] Spring MVC
+[1038] Là module của Spring Framework hỗ trợ phát triển ứng dụng web theo mô hình MVC (Model-View-Controller).
+[1039] Giúp tách rõ Controller (xử lý request), Service (xử lý logic), Repository (database), View (giao diện).
+[1040] Thực tế hiện nay khi phát triển REST API, thường không dùng View, phần view chỉ dùng cho ứng dụng web truyền thống (JSP, Thymeleaf...)
+[1041] Để sử dụng Spring MVC, thêm dependency spring-boot-starter-web (nếu dùng Spring Boot) hoặc spring-webmvc (nếu dùng Spring thuần)
+[1042] REST API development
+[1043] Dùng annotation như @RestController, @RequestMapping (cho class), @GetMapping, @PostMapping (cho method)...
+[1044] Trả về dữ liệu JSON/XML thay vì trang HTML
+[1046] Content negotiation (JSON/XML)
+[1047] Tự động chọn định dạng trả về dựa trên header Accept trong HTTP request
+[1048] Nếu client gửi header Accept:
+[1049] application/json → trả JSON, Accept: application/xml → trả XML.
+[1050] Spring Boot hỗ trợ sẵn trả về định dạng JSON, nếu muốn hỗ trợ XML chỉ cần thêm dependency jackson-dataformat-xml
+[1051] Exception Handling
+[1052] Để xử lý lỗi tập trung, trả về thông tin lỗi rõ ràng, chuẩn REST (ví dụ: HTTP 400, 404, 500...)
+[1053] Dùng annotation:
+[1054] + @RestControllerAdvice (cho dự án REST API) @ControllerAdvice cho class
+[1055] + @ExceptionHandler cho method handle exception
+[1057] Validation
+[1058] Đảm bảo dữ liệu gửi lên API hợp lệ trước khi xử lý. Ví dụ không thiếu trường, đúng định dạng email, số điện thoại...
+[1059] Dùng annotation validation như @NotNull, @Email, @Size,... trên DTO.
+[1060] Kết hợp @Valid trong method controller. Annotation này sẽ tự động kiểm tra các ràng buộc đã khai báo trên các trường của DTO.
+[1061] Spring sẽ tự động trả về lỗi (bad request 400) hoặc chuyển thông tin lỗi vào đối tượng BindingResult để xử lý.
+[1063] Spring Data JPA
+[1064] Giúp lập trình viên làm việc với cơ sở dữ liệu (database) dễ dàng hơn bằng cách tự động hóa và đơn giản hóa các thao tác truy xuất dữ liệu với JPA (Java Persistence API).
+[1065] Repository
+[1067] Các interface chính:
+[1068] CrudRepository: Cung cấp các thao tác CRUD cơ bản
+[1069] save(S entity)
+[1070] findById(ID id)
+[1071] findAll()
+[1072] deleteById(ID id)
+[1073] count()
+[1074] PagingAndSortingRepository: Kế thừa CrudRepository, bổ sung thêm tính năng phân trang (paging) và sắp xếp (sorting).
+[1075] findAll(Pageable pageable)
+[1076] findAll(Sort sort)
+[1077] JpaRepository: Kế thừa PagingAndSortingRepository, bổ sung thêm nhiều phương thức hữu ích cho JPA như batch, xóa theo danh sách, v.v.
+[1078] Các dự án thực tế thường dùng JpaRepository.
+[1079] findAll()
+[1080] findAllById(Iterable<ID> ids)
+[1081] saveAll(Iterable<S> entities)
+[1082] flush()
+[1083] deleteInBatch(Iterable<T>entities)
+[1085] Cách đặt tên method để Spring tự tạo query (Query Method Naming):
+[1086] Query theo thuộc tính
+[1087] findByUsername(String username)
+[1088] Trả về 1 User theo username.
+[1089] findByEmailAndStatus(String email, String status)
+[1090] Trả về User có email và status tương ứng.
+[1091] Query nâng cao
+[1092] findByAgeGreaterThan(int age)
+[1093] Lấy danh sách User có tuổi lớn hơn giá trị truyền vào.
+[1094] findByCreatedDateBetween(Date start, Date end)
+[1095] Lấy danh sách User tạo trong khoảng thời gian.
+[1096] Một số từ khóa thường dùng
+[1098] List<User> findTop5ByStatusOrderByCreatedDateDesc(String status); List<User> findByEmailContainingIgnoreCase(String keyword); Optional<User> findByUsernameAndActive(String username, boolean active);
+[1100] Custom Query
+[1101] Sử dụng @Query với JPQL
+[1102] @Query("SELECT u FROM User u WHERE u.email = :email") User findByEmail(@Param("email") String email);
+[1103] @Query: Dùng để viết JPQL hoặc Native Query.
+[1104] :email: Tên tham số.
+[1105] @Param("email"): Gắn biến Java vào tham số trong query.
+[1106] Sử dụng @Query với Native Query
+[1107] @Query(value = "SELECT * FROM users WHERE status = :status", nativeQuery = true) List<User> findByStatusNative(@Param("status") String status);
+[1108] Thêm nativeQuery = true để dùng SQL thuần.
+[1109] @Modifying cho Update/Delete Query
+[1110] Khi thực hiện các thao tác update, delete hoặc insert (không phải select), bạn cần dùng thêm annotation @Modifying:
+[1111] @Modifying
+[1112] @Query("UPDATE User u SET u.status = :status WHERE u.id = :id")
+[1113] int updateUserStatus(@Param("id") Long id, @Param("status") String status);
+[1114] Trả về số dòng bị ảnh hưởng.
+[1115] Lưu ý: Phải kết hợp với @Transactional tại service hoặc repository để đảm bảo transaction.
+[1116] Truyền tham số vào query
+[1117] Dùng @Param("tênThamSố") để map biến Java với tham số trong query.
+[1118] @Query
+[1119] ("SELECT u FROM User u WHERE u.name LIKE %:keyword% AND u.active = :status")
+[1120] List<User> search(@Param("keyword") String kw, @Param("status") boolean status);
+[1122] Paging & Sorting
+[1123] Spring Data JPA hỗ trợ phân trang và sắp xếp rất linh hoạt thông qua hai đối tượng là Pageable và Sort.
+[1124] Khi khai báo method trong repository, nếu thêm tham số kiểu Pageable hoặc Sort, Spring sẽ tự động tạo truy vấn phân trang hoặc sắp xếp tương ứng.
+[1125] Ví dụ phân trang:
+[1126] Page<User> findByStatus(String status, Pageable pageable);
+[1127] Khi gọi method, tôi truyền vào một instance của PageRequest:
+[1128] Pageable pageable = PageRequest.of(0, 10, Sort.by("createdDate").descending());
+Page<User> page = userRepository.findByStatus("ACTIVE", pageable);
+[1129] Spring Data JPA hỗ trợ 3 kiểu trả về cho phân trang và sắp xếp:
+[1130] Page<T>: đầy đủ thông tin về dữ liệu, số trang, tổng số phần tử...
+[1131] Slice<T>: chỉ biết có trang tiếp theo không, không có tổng số phần tử (tối ưu hơn chút).
+[1132] List<T>: chỉ trả về danh sách kết quả, không hỗ trợ thông tin phân trang.
+[1133] Tuỳ yêu cầu mà tôi sẽ chọn kiểu trả về phù hợp. Nếu cần hiển thị tổng số trang, số bản ghi thì sẽ chọn Page<T>;. Nếu chỉ cần biết có trang tiếp theo hay không thì dùng Slice<T>;. Nếu không cần phân trang thì chỉ trả về List<T>.
+[1134] DTO Projection
+[1135] DTO projection là kỹ thuật truy vấn dữ liệu từ database và trả về một lớp trung gian gọi là DTO (Data Transfer Object) thay vì trả về trực tiếp entity (đối tượng ánh xạ với bảng trong DB).
+[1136] Giúp tối ưu hiệu năng, bảo mật, tách biệt logic và tránh lỗi LazyInitialization Exception.
+[1137] Constructor Expression (SELECT new ...)
+[1138] Dùng JPQL với HQL với cú pháp SELECT new.
+[1139] Ví dụ có entity User với nhiều trường, nhưng chỉ cần trả về id và name.
+[1141] Dùng khi cần DTO có logic, nhiều trường phức tạp.
+[1142] Interface-based Projection
+[1143] Chỉ cần định nghĩa một interface (không cần viết class), có các phương thức getter trùng với tên trường cần lấy.
+Spring Data JPA sẽ tự động map dữ liệu entity vào interface này.
+[1146] Dùng khi truy vấn đơn giản, lấy vài trường.
+[1147] LazyInitializationException:
+[1148] Entity Relationships
+[1149] Ánh xạ các quan hệ: OneToMany, ManyToOne, OneToOne, ManyToMany
+[1151] FetchType:
+[1152] + EAGER (Mặc định cho @ManyToOne, @OneToOne):
+[1153] Khi truy vấn entity cha, các entity con liên quan sẽ được load cùng lúc (tức là luôn JOIN hoặc query ngay lập tức).
+[1154] + LAZY (Mặc định cho @OneToMany, @ManyToMany):
+[1155] Khi truy vấn entity cha, các entity con liên quan chỉ được load khi truy cập đến (tức là sẽ sinh truy vấn riêng khi gọi getter).
+[1156] Chỉ nên dùng EAGER nếu thực sự luôn cần dữ liệu con mỗi khi lấy cha (tránh sinh ra JOIN lớn, hoặc tải dư dữ liệu).
+[1157] Thường để mặc định LAZY, khi thực sự cần mới lấy (giảm tải, tăng hiệu năng).
+[1158] N+1 problem:
+[1159] Khi lấy danh sách cha (ví dụ, 100 User), sau đó truy cập đến danh sách con (addresses của từng user), JPA sẽ lặp lại truy vấn con với mỗi cha, gây ra N+1 truy vấn.
+[1160] Giải pháp:
+[1161] + Fetch Join:
+[1162] @Query("SELECT u FROM User u LEFT JOIN FETCH u.addresses")
+List<User> findAllWithAddresses();
+[1163] Như vậy chỉ cần 1 query để lấy toàn bộ User cùng Address.
+[1164] + Dùng @EntityGraph:
+[1165] public interface UserRepository extends JpaRepository<User, Long> {
+[1166] @EntityGraph(attributePaths = "addresses")
+[1167] @Query("SELECT u FROM User u")
+[1168] List<User> findAllWithAddresses();
+[1169] }
+[1170] Entity Graph sẽ chỉ dẫn JPA/Hibernate lấy cả addresses khi truy vấn danh sách user, do đó chỉ sinh ra 1 hoặc 2 query, tránh N+1.
+[1171] + Dùng @BatchSize:
+[1172] @Entity public class User {
+[1173] @Id
+[1174] private Long id;
+[1175] private String name;
+[1177] @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+[1178] @BatchSize(size = 10)
+[1179] private List<Address> addresses;
+[1180] }
+[1181] hoặc
+[1182] spring.jpa.properties.hibernate.default_batch_fetch_size=20
+[1183] Với batch size, khi truy cập getAddresses() của nhiều user, Hibernate sẽ gom các truy vấn lại và lấy dữ liệu theo batch, giảm số lượng query so với từng user một.
+[1184] Giảm N+1 truy vấn xuống còn 1 + ceil(N / batch_size)
+[1185] Trong thực tế
+[1186] Transaction
+[1187] Khi một phương thức được đánh dấu @Transactional, toàn bộ các thao tác database bên trong sẽ được thực hiện trong một transaction duy nhất.
+[1188] Nếu có exception (lỗi), transaction sẽ rollback (hoàn tác). Nếu thành công, transaction sẽ commit (lưu vào DB).
+[1190] Spring sử dụng AOP (Aspect-Oriented Programming) để tự động mở/đóng transaction xung quanh các phương thức được đánh dấu @Transactional.
+[1191] Một số lưu ý:
+[1192] + Scope:
+Đặt @Transactional ở service layer (class hoặc method), không nên đặt ở repository.
+[1193] + Propagation:
+Mặc định là REQUIRED (nếu đang có transaction thì dùng chung, chưa có thì tạo mới).
+[1194] + Rollback:
+Mặc định rollback khi gặp RuntimeException hoặc Error, không rollback với checked exception trừ khi cấu hình thêm.
+[1195] + ReadOnly:
+Có thể dùng @Transactional(readOnly = true) cho các method chỉ đọc để tối ưu hiệu năng.
+[1197] Lifecycle & Auditing
+[1198] Tính năng tự động auditing: @CreatedDate, @LastModifiedDate
+[1199] Dùng khi muốn tự động lưu lại thời điểm tạo/cập nhật bản ghi, hoặc ai là người tạo/cập nhật (user).
+[1200] Cách dùng:
+[1201] + Kích hoạt auditing bằng annotation trong lớp cấu hình
+[1202] @Configuration
+[1203] @EnableJpaAuditing
+[1204] public class JpaConfig { }
+[1205] + Khai báo các trường audit trong entity
+[1206] @Entity
+[1207] @EntityListeners(AuditingEntityListener.class)
+[1208] public class User {
+[1209] @Id private Long id;
+[1210] @CreatedDate private LocalDateTime createdDate;
+[1211] @LastModifiedDate private LocalDateTime lastModifiedDate;
+[1212] @CreatedBy private String createdBy;
+[1213] @LastModifiedBy private String lastModifiedBy;
+[1214] // ...
+[1215] }
+[1216] Sau đó, Spring Data JPA sẽ tự động cập nhật các trường ngày tạo, ngày cập nhật, username khi tạo/cập nhật entity.
+[1217] Một số lỗi/phổ biến và kinh nghiệm thực tế
+[1218] N+1 Query Problem và cách xử lý.
+[1219] Lỗi LazyInitializationException.
+[1220] Batch insert/update:
+[1221] Batch insert/update là cách thêm hoặc cập nhật nhiều bản ghi vào database cùng lúc thay vì từng bản ghi một.
+[1222] Khi bạn gọi saveAll(list) (hoặc lặp save()), Hibernate sẽ gom 50 bản ghi (hoặc số bạn đặt) lại để gửi xuống database cùng một lúc.
+[1223] Thêm cấu hình sau vào application.properties hoặc application.yml:
+[1224] spring.jpa.properties.hibernate.jdbc.batch_size=50
+[1226] Nếu thao tác với dữ liệu rất lớn (hàng chục nghìn bản ghi), sau mỗi batch, bạn nên gọi:
+[1227] entityManager.flush();
+[1228] entityManager.clear();
+[1229] để “đẩy” dữ liệu xuống DB và giải phóng bộ nhớ.
+[1230] Cấu hình datasource, max-pool-size.
+[1232] Spring Security
+[1233] Là framework bảo mật tích hợp cho Spring Boot. Nó giống như một người gác cổng cho ứng dụng của chúng ta.
+[1234] Authentication, Authorization
+[1235] Authentication: Xác thực danh tính user (ai là người đang truy cập?).
+[1236] Authorization: Phân quyền (người dùng này được phép làm gì?).
+[1237] Spring Security 6
+[1238] Spring Security 6 là phiên bản hiện đại, loại bỏ hoàn toàn cấu hình cũ, đồng bộ với Spring Framework 6 và Java 17+.
+Cấu hình bảo mật phải dùng Bean SecurityFilterChain, không dùng kế thừa class nữa.
+Annotation, method security cũng thay đổi tên, nhiều API cũ bị loại bỏ.
+Việc migrate từ 5 lên 6 cần chú ý xóa bỏ toàn bộ WebSecurityConfigurerAdapter, đổi sang Bean, cập nhật các annotation và dùng Java 17 trở lên.
+[1239] Cấu hình cơ bản
+[1241] JWT (JSON Web Token)
+[1242] Là token được mã hóa từ một JSON object, dùng trong xác thực stateless giữa client và server.
+[1243] Cấu trúc: gồm 3 phần, ngăn cách bởi dấu chấm
+[1244] + Header: thông tin loại token và loại thuật toán được sử dụng cho sử dụng như HS256 và RS256
+[1245] + Payload: chứa thông tin user và token như userId, roles, thời gian hết hạn... không nên lưu các thông tin nhạy cảm ở Payload.
+[1246] + Signature: được mã hóa bằng Header + Payload và một secret key chỉ server mới biết. Do đó dù Header và Payload được mã hóa Base64, tức là nếu có token, có thể giải mã ngược và thấy được thông tin Header và Payload, nhưng nếu thay đổi chúng, signature không đồng nhất, secret key ở server sẽ không thể xác thực và token trở nên không hợp lệ.
+[1247] Ưu điểm:
+[1248] Đối với các web application sử dụng phương thức xác thực truyền thống qua cookie/session lưu ở trên server, client sẽ phải luôn gọi đúng về server đó để xác thực. Giả sử ứng dụng của chúng ta cần mở rộng thêm nhiều server hoặc triển khai microservices, client sẽ không biết gọi về server nào để xác thực, điều này có thể được giải quyết bằng sticky session (gắn 1 client với 1 server) nhưng nhược điểm vẫn kém rất nhiều trong việc dùng JWT trong trường hợp này.
+[1249] Việc dùng JWT khiến cho ứng dụng stateless thực sự, tức là không cần lưu bất kì user session nào trên server, chỉ cần lưu token trên client và gửi kèm thông tin xác thực trong mỗi request. Nó cũng giúp khả năng mở rộng, auto-scaling, tích hợp đa vùng tốt hơn. Rất phù hợp cho các hệ thống phân tán, microservices, yêu cầu mở rộng linh hoạt, high availability.
+[1250] Nhược điểm: Tuy nhiên cũng có một nhược điểm lớn đó là một khi đã phát hành token cho client, nó sẽ hợp lệ đến khi hết hạn, dù người dùng có đăng xuất hay bị khóa. Dẫn đến rủi ro bảo mật nếu lộ token.
+[1251] Các ứng dụng lớn hiện nay thường kết hợp dùng access token và refresh token để giải quyết phần nào bài toán trên. Khi người dùng đăng nhập thành công, hệ thống sẽ trả về access token và refresh token. Access token để đính kèm header trong mỗi request người dùng phục vụ việc xác thực, còn refresh token để lấy access token mới khi nó hết hạn.
+[1252] + Access token được đặt thời hạn ngắn khoảng 5 - 15 phút, nên lưu trên localStorage.
+[1253] + Refresh token có thời hạn dài hơn, thường là 7 – 30 ngày, nên lưu trên Cookie được gắn cờ Http Only hoặc trên Redis (với hệ thống phân tán)
+[1255] Do access token có thời gian sống ngắn, nên nếu bị lộ access token cũng giảm thiểu thời gian khai thác hệ thống.
+[1256] Với hệ thống cần bảo mật cao, muốn thu hồi token ngay lập tức khi đăng xuất có thể triển khai một Blacklist access token trên server (thường là trên Redis với hệ thống phân tán, phản hồi nhanh), mỗi lần API nhận request, kiểm tra access token đó có nằm trong blacklist không.
+[1257] Ngoài ra các hệ thống đa nền tảng như Facebook, Google... hệ thống sẽ cấp riêng refresh token cho từng thiết bị để ví dụ đăng xuất trên máy tính nhưng trên điện thoại vẫn ở trạng thái đăng nhập. Hoặc khi mất điện thoại, nghi ngờ có thiết bị lạ vào tài khoản, có thể chọn đăng xuất khỏi tất cả các thiết bị.
+[1258] Để cải thiện trải nghiệm người dùng, không phải đăng nhập lại khi hết hạn refresh token, mỗi lần làm mới access token, server đồng thời cấp luôn refresh token mới, nếu người dùng hoạt động thường xuyên, refresh token sẽ luôn được làm mới.
+[1259] Cấu hình trong Spring Boot:
+[1262] OAuth2
+[1263] Là phương thức xác thực ủy quyền cho bên thứ ba ví dụ Google, Facebook mà không cần nhập user name, password.
+[1264] Quy trình cơ bản:
+[1265] Ứng dụng hỏi có đồng ý cấp quyền đăng nhập với Google, Facebook không.
+[1266] Nếu đồng ý, dịch vụ bên thứ ba sẽ cấp cấp cho ứng dụng một access token dùng để gọi API từ ứng dụng.
+[1267] Access token có thời gian sử dụng ngắn, khi hết hạn sẽ dùng refresh token để lấy một access token mới.
+[1268] Như vậy, thay vì ứng dụng gửi token cho client, dịch vụ bên thứ 3 sẽ được ủy quyền làm việc đó, thường dùng JWT làm chuẩn token xác thực
+[1269] Cấu hình OAuth2 với Spring Boot:
+[1270] Cần cấu hình thêm về issuer-uri, public key hoặc jwk-set-uri trong file application.properties.
+[1271] Method-level security (@PreAuthorize, @Secured)
+[1272] Để bật bảo mật method-level, sử dụng annotation sau trong class cấu hình bảo mật (có @Configuration):
+[1273] @EnableMethodSecurity(prePostEnabled = true, securedEnabled = true)
+[1274] + prePostEnabled = true:
+Bật @PreAuthorize, @PostAuthorize.
+[1275] + securedEnabled = true:
+Bật @Secured.
+[1276] Các annotation sử dụng cho method-level sucurity:
+[1277] @PreAuthorize: Kiểm tra điều kiện quyền trước khi thực thi method. Có thể dùng Spring Expression Language (SpEL) để kiểm tra role, quyền, điều kiện...
+[1278] @PostAuthorize: Kiểm tra điều kiện sau khi thực thi method.
+[1279] @Secured: Chỉ kiểm tra role được truy cập method, không thể kiểm tra điều kiện phức tạp.
+[1280] @RolesAllowed: Tương tự @Secured, dùng chuẩn Java EE. Ít dùng.
+[1281] Ví dụ:
+[1284] hasRole(‘ADMIN’) trong @PreAuthorize tự động hiểu là ROLE_ADMIN
+[1285] Nếu sử dụng @Secured thì phải viết đầy đủ ROLE_ADMIN
+[1286] Nên dùng method-level security khi cần bảo vệ nghiệp vụ ở tầng service, kiểm tra quyền phức tạp, hoặc đảm bảo mọi luồng truy cập đều phải qua kiểm tra bảo mật, không chỉ ở endpoint.
+[1287] Trong các hệ thống microservice, các method nghiệp vụ có thể được gọi qua nhiều API khác nhau. Method-level security giúp bảo vệ chặt chẽ ở tầng nghiệp vụ, dù gọi từ đâu.
+[1288] Tổng quan luồng xử lý
+[1289] Request HTTP tới server ngay từ đầu sẽ gặp phải một chuỗi các filter của Spring Security gọi là Security Filter Chain.
+[1290] Mỗi filter có một nhiệm vụ riêng như authentication, authorization, bảo vệ CSRF, xử lý đăng xuất...
+[1291] Filter bảo vệ CSRF:
+[1292] CSRF (Cross-Site Request Forgery) là tấn công dựa trên việc kẻ xấu lợi dụng trình duyệt của người dùng đã đăng nhập sẵn (có session/cookie) để thực hiện các hành động không mong muốn trên một website khác.
+[1293] Với web application dùng session thì luôn nên bật bảo vệ CSRF.
+[1294] Với REST API stateless dùng JWT, OAuth2, không dùng session: nếu token ở client được lưu vào localStorage/sessionStorage (như access token) và được đính kèm vào header Authorization trong mỗi request thì không cần bật bảo vệ CRSF. Nếu token ở client được lưu vào cookie (như refresh token) thì nên bật bảo vệ CSRF.
+[1295] Xác thực (authentication):
+[1296] Đầu tiên, hệ thống kiểm tra request đã được xác thực hay chưa.
+[1297] Nếu chưa, các filter liên quan (như UsernamePasswordAuthenticationFilter đối với form login, hoặc một custom filter cho JWT) sẽ chịu trách nhiệm lấy thông tin xác thực từ request (username/password, token)
+[1298] Thông tin này sẽ được kiểm tra thông qua AuthenticationManager và các AuthenticationProvider. Nếu xác thực thành công, thông tin người dùng được lưu vào SecurityContext
+[1299] Phân quyền (authorization):
+[1300] Sau khi xác thực, Spring Security tiếp tục kiểm tra quyền truy cập của user với endpoint đang gọi. Điều này dựa trên các rule cấu hình (ví dụ role, authority...)
+[1301] Nếu không đủ quyền, hệ thống trả về lỗi 403 Forbidden.
+[1302] Nếu cả xác thực và phân quyền đều hợp lệ, request sẽ được chuyển tới controller, service để xử lý logic nghiệp vụ
+[1303] Các filter cuối cùng có thể xử lý thêm các vấn đề như logout, exception handling, hoặc ghi log nếu cần.
+[1304] Notes
+[1305] Luôn sử dụng các thuật toán mã hóa password mạnh như BCrypt
+[1306] Kiểm soát CORS: Nếu ứng dụng là API phục vụ frontend khác domain (ví dụ frontend dùng cổng 3000, backend dùng cổng 8080), cần cấu hình CORS.
+[1307] Custom Exception Handling:
+[1308] Vấn đề của xử lý exception khi sử dụng Spring Security là nó chặn trước request trước khi nó có thể gọi đến lớp xử lý exception nếu xảy ra lỗi xác thực. Ví dụ người dùng gửi về một JWT không hợp lệ, nó sẽ không thể trả về một thông báo lỗi theo format mà lớp xử lý exception của hệ thống tạo ra.
+[1309] Cách tốt nhất là sử dụng AuthenticationEntryPoint để trả về 401 (lỗi xác thực, token không hợp lệ) và AccessDeniedHandler để trả về 403 (không đủ quyền). Khi trả lỗi có thể tùy chỉnh cho giống format của lớp exception chung.
+[1311] Testing
+[1312] Thêm dependency spring-boot-starter-test.
+[1313] Unit Test (JUnit, Mockito)
+[1314] Kiểm thử đơn vị: test logic của service mà không phụ thuộc vào database hay Spring context.
+[1317] Giải thích:
+[1318] @RunWith(MockitoJUnitRunner.class): Sử dụng runner của Mockito để hỗ trợ tạo mock object.
+[1319] @Mock: Tạo một đối tượng giả (mock) của UserRepository. Khi test, đối tượng này không kết nối với database thật mà chỉ giả lập hành vi.
+[1320] @InjectMocks: Tạo một instance của UserService và tự động inject các mock (userRepository) vào.
+[1321] when(...).thenReturn(...): Định nghĩa hành vi cho mock. Khi gọi userRepository.findById(1), nó sẽ trả về một Optional&lt;User&gt; chứa đối tượng user.
+[1322] Kiểm tra: Gọi hàm findUserById(1) của service và kiểm tra kết quả trả về đúng là "Alice".
+[1324] Integration Test (Spring Boot Test, @SpringBootTest)
+[1325] Test tích hợp: kiểm tra nhiều thành phần thực tế hoạt động với nhau (service, repository, database...).
+[1327] Giải thích:
+[1328] @SpringBootTest: Khởi động toàn bộ Spring context (gần giống như chạy thật), inject các bean thật vào test.
+[1329] @Autowired: Tự động inject các bean thực tế từ Spring Container.
+[1330] Trong test, gọi hàm saveUser() để lưu một user mới vào database (có thể là database thật hoặc database trong bộ nhớ do cấu hình test).
+[1331] Sau đó, dùng repository để tìm lại user vừa lưu theo tên, và kiểm tra chắc chắn user này đã tồn tại (assertNotNull).
+[1333] Test Controller với @WebMvcTest
+[1334] Kiểm thử controller: đảm bảo API hoạt động như mong muốn mà không phụ thuộc vào logic service thực tế hay database.
+[1336] Giải thích:
+[1337] @WebMvcTest(UserController.class): Chỉ khởi động phần controller của Spring Boot, không load toàn bộ context. Rất nhanh, chỉ dành cho test Web layer (Controller, Filter...).
+[1338] MockMvc: Công cụ mô phỏng request HTTP đến controller, không cần chạy server thật.
+[1339] @MockBean: Tạo mock cho UserService, inject vào controller. Như vậy, controller khi gọi service sẽ dùng mock chứ không phải service thật.
+[1340] Kịch bản test: Giả lập khi gọi userService.findUserById(1) sẽ trả về user tên Alice. Sau đó mô phỏng một HTTP GET request đến /users/1 và kiểm tra:
+[1341] Trả về HTTP status OK (200)
+[1342] JSON trả về có trường name đúng là "Alice".
+[1344] Actuator và Monitoring
+[1345] Spring Boot Actuator endpoints
+[1346] Spring Boot Actuator là một module giúp bạn dễ dàng giám sát (monitoring) và quản lý ứng dụng Spring Boot thông qua các endpoint HTTP hoặc JMX.
+[1347] Các endpoint phổ biến:
+[1348] /actuator/health
+Kiểm tra tình trạng "sức khỏe" của ứng dụng, ví dụ database có kết nối được không, disk còn đủ không, service có chạy không...
+[1349] /actuator/metrics
+Cung cấp số liệu về hiệu năng như CPU, memory, số lượng request, thời gian xử lý, GC...
+[1350] /actuator/info
+Hiển thị thông tin tùy chọn về ứng dụng (version, mô tả, thông tin build...).
+[1351] /actuator/env
+Hiển thị các biến môi trường, thông tin cấu hình.
+[1352] /actuator/loggers
+Cho phép xem và thay đổi mức log của các package/class.
+[1353] /actuator/beans, /actuator/mappings, /actuator/threaddump, ...
+Các endpoint bổ sung khác giúp xem cấu trúc beans, mapping API, dump thread...
+[1354] Kích hoạt Actuator: thêm spring-boot-starter-actuator
+[1355] Bật/tắt endpoint trong application.properties:
+[1356] management.endpoints.web.exposure.include=health,info,metrics,loggers
+[1357] Hoặc để mở tất cả:
+[1358] management.endpoints.web.exposure.include=*
+[1359] Có thể tích hợp với hệ thống giám sát như Prometheus, Grafana... để vẽ biểu đồ, cảnh báo.
+[1360] Logging
+[1361] Spring Boot mặc định dùng Logback, có thể cấu hình lại sử dụng Log4j2.
+[1362] Mức log phổ biến:
+[1363] TRACE (chi tiết nhất)
+[1364] DEBUG
+[1365] INFO
+[1366] WARN
+[1367] ERROR
+[1368] Cấu hình mức log trong application.properties:
+[1369] logging.level.root=INFO
+[1370] logging.level.com.example.demo=DEBUG
+[1371] Log có thể được gửi đến ELK (Elasticsearch, Logstash, Kibana), Splunk, hoặc các dịch vụ cloud log (AWS CloudWatch, Azure Monitor...).
+[1372] Spring Cloud
+[1373] Service Discovery & Registry
+Các service tự đăng ký địa chỉ của mình và phát hiện các service khác. Cho phép các service tự tìm nhau thay vì phải cấu hình địa chỉ cứng.
+[1374] Ví dụ: Eureka, Zookeeper.
+[1375] Trong Spring Cloud, Eureka là giải pháp service discovery mặc định và phổ biến nhất. Zookeeper cũng được hỗ trợ, nhưng chủ yếu dùng khi có nhu cầu hoặc yêu cầu đặc biệt từ hệ thống.
+[1377] API Gateway
+[1378] API Gateway là cổng vào duy nhất, nhận request từ client, kiểm tra, xác thực, log, rồi chuyển tiếp đến các service phù hợp phía sau.
+[1379] Spring Cloud Gateway là giải pháp gateway hiện đại, non-blocking, hiệu năng cao của Spring Cloud.
+Ngoài ra, nếu hệ thống cần gateway độc lập, đa nền tảng, có thể dùng Kong Gateway, nhưng trong hệ sinh thái Spring Cloud thì Spring Cloud Gateway là lựa chọn chính thống..
+[1380] Configuration Management
+[1381] Trong hệ thống microservices với Spring Cloud, Spring Cloud Config Server đóng vai trò là nơi lưu trữ và phân phối cấu hình tập trung (có thể lưu trong Git, file, hoặc database).
+[1382] Các microservice sẽ cấu hình địa chỉ Config Server trong bootstrap.yml/properties. Khi khởi động, mỗi service sẽ tự động lấy cấu hình động từ Config Server về để sử dụng. Nếu muốn cập nhật cấu hình không cần restart, có thể gọi /actuator/refresh hoặc dùng Spring Cloud Bus để refresh tự động.
+[1383] Load Balancing
+[1384] Spring Cloud LoadBalancer giúp các request từ các service được phân phối đều đến các instance phía sau, tăng hiệu năng, tránh quá tải và giúp hệ thống microservices linh hoạt, dễ mở rộng.
+[1385] Circuit Breaker & Resilience
+[1386] Circuit breaker pattern là một mẫu thiết kế giúp bảo vệ hệ thống khi gọi đến các service bên ngoài (hoặc thành phần không ổn định).
+[1387] Thường sử dụng Resilence4j.
+Nếu phát hiện service bị lỗi liên tục (timeout, exception...), circuit breaker sẽ tạm “ngắt mạch” (cắt luồng), không gửi thêm request mới trong một thời gian nhất định để tránh làm hệ thống bị quá tải hoặc chờ đợi vô ích. Sau thời gian này, circuit breaker sẽ thử lại; nếu service phục hồi thì đóng lại mạch, cho phép request đi tiếp.
+[1388] Fallback là phương án thay thế, được dùng khi circuit breaker phát hiện lỗi và ngắt mạch.
+Nên dùng fallback khi bạn muốn hệ thống vẫn có thể phản hồi cho user trong trường hợp có lỗi, ví dụ:
+[1389] + Trả về dữ liệu mặc định, thông báo dễ hiểu,
+[1390] + Đọc cached data thay vì gọi service sống,
+[1391] + Hoặc thực hiện logic dự phòng khác.
+[1392] Distributed Tracing
+[1393] Để biết một request đã đi qua những service nào trong hệ thống microservices, ta sử dụng distributed tracing.
+[1394] Các công cụ như Spring Cloud Sleuth sẽ tự động gắn một traceId (mã theo dõi) vào mỗi request khi nó bắt đầu. Khi request này đi qua từng service, traceId (và các spanId) sẽ được truyền kèm theo, ghi lại thông tin tại mỗi điểm dừng.
+[1395] Sau đó, các log hoặc dữ liệu trace này được gửi đến hệ thống thu thập như Zipkin. Trên giao diện Zipkin, bạn có thể tra cứu theo traceId để xem toàn bộ luồng đi của request này qua từng service, thời gian xử lý ở mỗi bước, giúp dễ dàng debug, kiểm tra hiệu năng và phát hiện chỗ bottleneck.
+[1396] Centralized Logging
+[1397] Centralized Logging là giải pháp thu thập, xử lý và hiển thị log của tất cả các microservice về một nơi tập trung thay vì lưu rải rác trên từng server hoặc container. Điều này giúp dễ dàng theo dõi, tìm kiếm, phân tích log khi cần debug, audit, hoặc giám sát hệ thống.
+[1398] Thường dùng ELK Stack. ELK Stack gồm 3 thành phần chính:
+[1399] + Elasticsearch: Lưu trữ và cho phép tìm kiếm log mạnh mẽ, theo thời gian thực.
+[1400] + Logstash: Thu thập, xử lý, chuyển đổi log từ nhiều nguồn trước khi đẩy vào Elasticsearch.
+[1401] + Kibana: Giao diện trực quan để truy vấn, hiển thị, vẽ biểu đồ và dashboard từ dữ liệu log.
+[1402] Messaging & Event-driven
+[1403] Messaging & Event-driven là mô hình giúp các microservice giao tiếp, truyền thông tin với nhau thông qua các sự kiện (event) hoặc message thay vì gọi trực tiếp qua HTTP.
+[1404] Các service sẽ gửi và nhận dữ liệu qua một hệ thống trung gian gọi là message broker (như Kafka, RabbitMQ), giúp tách biệt các service, tăng tính linh hoạt, mở rộng và giảm phụ thuộc lẫn nhau.
+[1405] Security
+[1406] Luồng kiểm tra token tại API Gateway với Spring Cloud Security:
+[1407] Client gửi request đến API Gateway, kèm theo access token (thường là JWT hoặc OAuth2) trong header (ví dụ: Authorization).
+[1408] API Gateway nhận request và chuyển request này qua các filter bảo mật được cấu hình bởi Spring Cloud Security (kết hợp với Spring Security).
+[1409] Spring Cloud Security sẽ:
+[1410] Tự động trích xuất token từ header.
+[1411] Tự động xác thực token:
+[1412] Nếu là JWT, Spring Cloud Security sẽ kiểm tra chữ ký, thời hạn, issuer, audience,… (dựa vào cấu hình public key/secret).
+[1413] Nếu là OAuth2 opaque token, Spring Cloud Security sẽ tự động gọi đến Authorization Server (introspection endpoint) để xác thực token.
+[1414] Tự động kiểm tra phân quyền (authorization):
+[1415] Phân tích các claim, role trong token và kiểm tra xem user có quyền truy cập endpoint hay không (theo rule đã cấu hình).
+[1416] Nếu token hợp lệ và user có đủ quyền:
+[1417] Spring Cloud Security cho phép request được chuyển tiếp đến các service phía sau.
+[1418] Nếu token không hợp lệ hoặc thiếu quyền:
+[1419] Spring Cloud Security sẽ tự động chặn request và trả về lỗi 401 (unauthorized) hoặc 403 (forbidden) cho client.
+[1420] Externalized Configuration / Profiles
+[1421] Externalized Configuration / Profiles là cơ chế cho phép ứng dụng Spring Boot cấu hình các tham số hoạt động (URL DB, secret, port, endpoint…) bên ngoài code và theo từng môi trường (dev, test, prod), giúp dễ quản lý, dễ chuyển đổi môi trường mà không cần sửa mã nguồn.
+[1422] Spring Boot hỗ trợ externalized configuration bằng cách tách cấu hình theo từng môi trường (dev, test, prod) qua các file như application-dev.yml, application-prod.yml.
+[1423] Khi deploy, chỉ cần chọn profile phù hợp, hệ thống sẽ tự động nạp đúng cấu hình mà không cần sửa code.
+[1424] Health Check, Monitoring
+[1425] Health Check và Monitoring là các giải pháp giúp kiểm tra trạng thái hoạt động, hiệu năng và các chỉ số quan trọng của hệ thống microservices, đồng thời hỗ trợ cảnh báo sớm khi có sự cố.
+[1426] Các công cụ thường dùng:
+[1427] + Spring Boot Actuator:
+[1428] Cung cấp sẵn các endpoint như /actuator/health, /actuator/metrics, giúp kiểm tra trạng thái sống/chết (health), các thông số hệ thống (CPU, memory, thread, DB, v.v.).
+[1429] + Prometheus:
+[1430] Thu thập metrics từ nhiều service (bao gồm từ Actuator), lưu trữ và hỗ trợ cảnh báo theo rule.
+[1431] + Grafana:
+[1432] Trực quan hóa dữ liệu metrics từ Prometheus, tạo dashboard theo dõi trạng thái, hiệu năng, lịch sử hoạt động hệ thống.
+[1434] Spring Batch
+[1435] Spring Batch chuyên dùng cho các tác vụ xử lý dữ liệu lớn, chạy theo lô (batch), có tính định kì, ví dụ như nhập xuất dữ liệu, gửi email hàng loạt, tổng hợp báo cáo, đồng bộ dữ liệu giữa các hệ thống.
+[1436] Kiến trúc Spring Batch
+[1437] Job: Một tác vụ batch lớn, gồm nhiều bước (step).
+[1438] Step: Mỗi bước nhỏ trong job: đọc, xử lý, ghi.
+[1439] ItemReader: Đọc dữ liệu (từ file, DB, API...).
+[1440] ItemProcessor: Xử lý dữ liệu (chuyển đổi, validate...).
+[1441] ItemWriter: Ghi dữ liệu ra (DB, file, gửi API...).
+[1442] JobLauncher: Khởi động job.
+[1443] JobRepository: Quản lý trạng thái, lịch sử job. 
+Ví dụ:
+[1444] Job: ImportCustomerJob
+(Xử lý toàn bộ việc nhập dữ liệu khách hàng)
+[1445] Step: ImportCustomerStep
+(Gồm 3 thành phần chính: đọc file, xử lý, ghi vào DB)
+[1446] ItemReader: CustomerItemReader
+(Đọc từng dòng từ file CSV)
+[1447] ItemProcessor: CustomerItemProcessor
+(Kiểm tra, validate thông tin khách hàng, ví dụ: email hợp lệ, tuổi > 18...)
+[1448] ItemWriter: CustomerItemWriter
+(Ghi thông tin khách hàng hợp lệ vào bảng Customer trong database)
+[1449] JobLauncher: Được sử dụng để kích hoạt job (bằng code, scheduler, command line…)
+[1450] JobRepository: Lưu trạng thái thực thi, lịch sử từng job (thành công/thất bại, số bản ghi xử lý...)
+[1452] Cấu hình Job và Step
+[1453] Khai báo Job và Step bằng Java Config
+[1454] Sử dụng JobBuilderFactory để tạo job, đặt tên, khai báo trình tự các step và điều kiện chuyển tiếp giữa các step.
+[1455] Sử dụng StepBuilderFactory để tạo step, gán tên, định nghĩa reader, processor, writer, cấu hình chunk (kích thước lô xử lý).
+[1457] Chunk là cách chia nhỏ dữ liệu thành từng lô (batch nhỏ), ví dụ mỗi lần đọc/xử lý/ghi 10 bản ghi, giúp tăng hiệu suất (ít giao tiếp DB, rollback dễ dàng nếu lỗi).
+[1458] Ví dụ sử dụng .chunk(10) dữ liệu sẽ được xử lý theo từng lô 10 bản ghi.
+[1459] Quản lý trạng thái, restart job
+[1460] Quản lý trạng thái:
+[1461] JobRepository là nơi lưu trữ trạng thái, lịch sử thực thi của các job/step.
+[1462] Một job trong Spring Batch có nhiều trạng thái như:
+[1463] STARTED: Đang chạy.
+[1464] COMPLETED: Chạy xong thành công.
+[1465] FAILED: Bị lỗi.
+[1466] STOPPED, ABANDONED, UNKNOWN, ... (các trạng thái phụ khác).
+[1467] Restart job khi bị lỗi
+[1468] Khi job bị lỗi (FAILED), Spring Batch có thể restart lại job mà không cần chạy lại từ đầu toàn bộ dữ liệu.
+[1469] Nhờ vào việc lưu checkpoint (vị trí đã xử lý) và trạng thái step trong JobRepository, khi restart:
+[1470] + Các step đã COMPLETED sẽ được bỏ qua, chỉ chạy lại step bị lỗi hoặc chưa hoàn thành.
+[1471] + Các chunk đã commit thành công sẽ không bị xử lý lại.
+[1473] Xử lý lỗi (Skip, Retry, Transaction)
+[1474] Skip - bỏ qua record lỗi, không dừng cả job
+[1475] Khi gặp lỗi xử lý ở một bản ghi (ví dụ: dữ liệu sai format, không parse được…), thay vì dừng cả job, Spring Batch cho phép bỏ qua (skip) bản ghi đó và tiếp tục xử lý các bản ghi khác.
+[1476] Cấu hình qua .faultTolerant().skip(Exception.class).skipLimit(5) nghĩa là cho phép bỏ qua tối đa 5 lỗi kiểu Exception.
+[1478] Retry – Thử lại khi gặp lỗi tạm thời
+[1479] Đối với lỗi tạm thời (ví dụ: kết nối DB/API bị timeout, network chập chờn…), Spring Batch cho phép tự động retry (thử lại) một số lần trước khi bỏ cuộc hoặc skip.
+[1480] Cấu hình qua .retry(Exception.class).retryLimit(3) để thử lại tối đa 3 lần với lỗi Exception.
+[1482] Transaction – Đảm bảo tính nhất quán khi ghi nhiều bản ghi
+[1483] Chunk được xử lý trong cùng một transaction. Nếu một bản ghi trong chunk bị lỗi mà không được skip, toàn bộ chunk sẽ bị rollback, dữ liệu không bị ghi thiếu/cập nhật sai.
+[1484] Spring Batch quản lý transaction tự động cho mỗi chunk, đảm bảo tính nhất quán (atomicity): hoặc ghi thành công cả chunk, hoặc rollback cả chunk.
+[1485] Scheduling (Lên lịch chạy)
+[1486] Để tự động hóa việc chạy các job batch đúng theo lịch trình (ví dụ: hàng ngày, hàng giờ…), ta có thể sử dụng các công cụ lập lịch như Spring Scheduler
+[1488] Parallel & Partitioning (Chạy song song)
+[1489] Thay vì xử lý tuần tự toàn bộ dữ liệu, Spring Batch cho phép chia nhỏ (partition) dữ liệu hoặc step thành nhiều phần nhỏ (partition/sub-task) và xử lý các phần đó song song (parallel).
+Các cách chạy song song phổ biến:
+[1490] Multi-threaded Step
+[1491] Một step được cấu hình để nhiều thread xử lý các chunk song song.
+[1493] Partitioning
+[1494] Chia dữ liệu thành nhiều partition, mỗi partition là một step con, chạy song song trên nhiều thread hoặc nhiều node khác nhau.
+[1495] Phù hợp với dữ liệu lớn, cần chia khối lượng rõ ràng (theo range ID, theo file, theo khu vực…).
+[1497] Logging & Monitoring
+[1498] Để quản lý log và theo dõi batch, có thể cấu hình log riêng cho batch bằng logback-spring.xml hoặc application-batch.yml.
+[1499] Spring Batch tự động log tiến trình, trạng thái, lỗi của job.
+[1500] Có thể tích hợp với monitoring (Actuator, Prometheus…) để theo dõi và cảnh báo khi batch có sự cố.
+[1501] Kết nối nguồn dữ liệu
+[1502] Spring Batch hỗ trợ đọc/ghi dữ liệu từ nhiều nguồn như file CSV, Excel, XML, database, message queue…
+[1503] Ví dụ đọc DB:
+[1505] Nhiều dự án thực tế sẽ cấu hình DataSource riêng cho batch để tách biệt với hệ thống giao dịch chính, giúp batch chạy ổn định và dễ quản lý.
+[1506] Ví dụ trong application-batch.yml:
+[1508] Batch Parameters
+[1509] Batch Parameters là các giá trị/biến truyền vào khi khởi chạy job, dùng để tùy biến hành vi (ví dụ: file name, ngày xử lý, ID phiên bản…).
+[1510] Tham số có thể truyền qua:
+[1511] + Command line khi chạy jar:
+[1512] java -jar my-batch.jar "inputFile=customers.csv" "runDate=2024-06-01"
+[1513] + Scheduler hoặc API khi gọi JobLauncher.
+[1515] Testing Batch Job
+[1516] Unit Test:
+[1517] Dùng JUnit, Mockito để mock dữ liệu vào/ra, kiểm tra logic xử lý.
+[1518] Integration test:
+[1519] Kiểm thử toàn bộ job hoặc step, kiểm tra việc đọc – xử lý – ghi (end-to-end).
+[1520] Dùng @SpringBatchTest và JobLauncherTestUtils để chạy thử job/step trong môi trường test.
+[1522] Scenario - Liên hệ với hệ thống đã làm
+[1524] System Architect, Software design & Best practice coding
+[1525] Kiến trúc tổng quan hệ thống
+[1526] Monolithic Architecture: Kiến trúc đơn khối.
+[1527] Toàn bộ ứng dụng (từ UI, logic nghiệp vụ, đến truy xuất dữ liệu) được đóng gói và deploy thành một khối duy nhất (một file, một process).
+[1528] Modular Monolith / Domain-based Monolith.
+[1529] Modular Monolith: Là một dạng Monolithic, nhưng hệ thống được thiết kế thành nhiều module độc lập rõ ràng bên trong cùng một khối deploy
+[1530] (deploy một lần, chạy một process).
+[1531] Domain-based Monolith: Là một kiểu Modular Monolith, nhưng các module được phân chia dựa trên “domain” nghiệp vụ theo phong cách DDD (Domain-Driven Design).
+[1532] Microservices Architecture: Kiến trúc vi dịch vụ.
+[1533] Microservices là kiến trúc hệ thống mà mỗi chức năng (service) được tách ra thành một dịch vụ nhỏ, độc lập, giao tiếp qua API (thường là REST, gRPC, hoặc GraphQL)
+[1534] Ưu điểm:
+[1535] + Độc lập: Mỗi service triển khai riêng biệt nên không ảnh hưởng tới service khác nếu có lỗi.
+[1536] + Dễ mở rộng: có thể scale theo từng service, ví dụ service thanh toán có thể mở rộng riêng nếu lưu lượng tăng cao, không cần scale toàn hệ thống
+[1537] + Dễ triển khai: chỉ cần build/test và deploy từng service độc lập, thay vì với cả khối lớn như monolith
+[1538] + Linh hoạt công nghệ: Mỗi service có thể chọn ngôn ngữ, DB, FW phù hợp
+[1539] + Khả năng phục hồi: Nếu 1 service có sự cố, các service khác vẫn hoạt động ổn định. Khó sập hơn monolith
+[1540] Nhược điểm:
+[1541] + Quản lý phức tạp, yêu cầu Devops mạnh: Cần hệ thống CI/CD, monitoring, logging, container orchestration (Kubernetes, Docker…) chuyên nghiệp để vận hành trơn tru
+[1542] + Do giao tiếp qua mạng nên có vấn đề về độ trễ (network latency), lỗi truyền thông tin hoặc bảo mật mạng
+[1543] + Dữ liệu phân tán nên khó đảm bảo nhất quán hơn monolith
+[1545] Service-Oriented Architecture (SOA): Kiến trúc hướng dịch vụ.
+[1546] Ứng dụng chia nhỏ thành các service độc lập, giao tiếp qua chuẩn chung (SOAP, REST...).
+[1547] Ví dụ:
+Hệ thống ngân hàng, mỗi chức năng là một service: chuyển tiền, quản lý tài khoản, thanh toán hóa đơn…
+[1548] So sánh với Microservices:
+[1549] SOA và Microservices đều hướng dịch vụ, nhưng Microservices là phiên bản nhẹ, tách nhỏ tối đa, linh hoạt, hướng đến Devops hơn SOA truyền thống.
+[1550] Ví dụ:
+[1551] SOA: Một “Order Service” có thể xử lý tất cả logic về đơn hàng, quản lý cả đơn, vận chuyển, thanh toán, báo cáo...
+[1552] Microservices: “Order Service” chỉ lo đặt đơn, “Payment Service” chỉ xử lý thanh toán, “Shipping Service” chỉ lo vận chuyển – tách biệt hoàn toàn, mỗi team có thể phát triển và deploy độc lập.
+[1553] Serverless/Cloud- Architecture: Kiến trúc không máy chủ.
+[1554] Serverless là mô hình triển khai ứng dụng mà không phải quản lý máy chủ vật lý hoặc máy chủ ảo.
+[1555] Chỉ cần viết các function nhỏ (function as a service – FaaS), hệ thống cloud (AWS Lambda, Azure Functions, GCP Cloud Functions…) sẽ tự động chạy code khi có sự kiện và tự động scale, quản lý hạ tầng.
+[1556] Ví dụ:
+[1557] Khi có file upload lên S3 (AWS), một function Lambda tự động kích hoạt để xử lý file (resize ảnh, chuyển đổi format, gửi thông báo...).
+[1558] Kiến trúc hệ thống phân tán
+[1559] Hệ thống phân tán tổ chức các thành phần phần mềm chạy trên nhiều máy tính (node) khác nhau, phối hợp với nhau để thực hiện các tác vụ chung.
+[1560] Những thành phần này có thể là các service, microservice, module hay process… cùng giao tiếp qua mạng (TCP/IP, HTTP, gRPC, v.v) để chia sẻ dữ liệu, phân chia công việc, đảm bảo hiệu suất và độ tin cậy.
+[1561] Các đặc trưng
+[1562] Tính mở rộng (Scalability): Có thể bổ sung thêm node để tăng hiệu năng hoặc dung lượng.
+[1563] Tính sẵn sàng (Availability): Hệ thống hoạt động kể cả khi một số node bị lỗi.
+[1564] Tính nhất quán (Consistency): Đảm bảo dữ liệu đồng bộ giữa các node.
+[1565] Tính chịu lỗi (Fault Tolerance): Khi một thành phần gặp sự cố, hệ thống vẫn vận hành bình thường.
+[1566] Tính trong suốt (Transparency): Người dùng không nhận ra sự phân tán của các thành phần.
+[1567] Một số design pattern quan trọng
+[1568] Replication Pattern (Sao chép dữ liệu)
+[1569] Sao chép dữ liệu hoặc service lên nhiều node để tăng độ sẵn sàng và khả năng chịu lỗi.
+[1570] Sharding Pattern (Phân mảnh dữ liệu)
+[1571] Chia nhỏ dữ liệu thành nhiều phần, lưu trên các node khác nhau để tăng khả năng mở rộng và hiệu năng.
+[1572] Service Discovery Pattern (Tìm kiếm dịch vụ)
+[1573] Các service đăng ký vị trí với registry và tự động phát hiện nhau qua registry này.
+[1574] API Gateway Pattern
+[1575] Cổng truy cập duy nhất để nhận request từ client và phân phối đến các service backend.
+Ví dụ: Kong, NGINX.
+[1576] Circuit Breaker Pattern (Ngắt mạch)
+[1577] Tạm dừng request đến service khi service đó bị lỗi liên tục, giúp bảo vệ hệ thống.
+[1578] Message Queue Pattern (Hàng đợi thông điệp)
+[1579] Truyền thông điệp bất đồng bộ giữa các service, giảm phụ thuộc trực tiếp.
+Ví dụ: RabbitMQ, Kafka.
+[1580] Saga Pattern
+[1581] Quản lý giao dịch phân tán theo từng bước nhỏ, rollback linh hoạt khi có lỗi.
+Ví dụ: Đặt hàng nhiều bước trong thương mại điện tử.
+[1582] Event Sourcing Pattern
+[1583] Lưu lại toàn bộ sự kiện thay đổi trạng thái, giúp khôi phục, audit, và đảm bảo nhất quán cuối cùng.
+[1584] Domain-Driven Design (DDD)
+[1585] Là cách thiết kế phần mềm / tổ chức code tập trung vào mô hình nghiệp vụ (domain) và sự hiểu biết sâu sắc về nghiệp vụ đó.
+[1586] Nhấn mạnh việc chia nhỏ hệ thống theo domain (lĩnh vực nghiệp vụ), giúp codebase sát thực tế, dễ hiểu, dễ bảo trì.
+[1587] Các khái niệm
+[1588] Entities
+[1589] Đối tượng có “danh tính” (identity) duy nhất, tồn tại lâu dài trong hệ thống.
+[1590] Ví dụ Customer, Order (dù thông tin thay đổi, ID vẫn không đổi).
+[1591] Value Objects
+[1592] Đối tượng không có danh tính, chỉ quan tâm tới giá trị, so sánh bằng giá trị.
+[1593] Ví dụ Address, Money (hai địa chỉ giống hệt nhau coi là bằng nhau).
+[1594] Aggregates
+[1595] Một nhóm các entity và value object có liên quan.
+[1596] Dữ liệu bên trong aggregate sẽ được toàn vẹn và nhất quán (consistency).
+[1597] Ví dụ Order aggregate gồm Order (entity), danh sách OrderItem (entity hoặc value object), ShippingAddress (value object).
+[1598] Repositories
+[1599] Lớp trung gian để truy xuất, lưu trữ entity/aggregate khỏi persistence (DB, file…)
+[1600] Ví dụ OrderRepository để lưu/truy vấn Order.
+[1601] Services
+[1602] Chứa logic nghiệp vụ không thuộc về entity/value object nào cụ thể.
+[1603] Ví dụ PaymentService để xử lý thanh toán.
+[1604] Domain Event
+[1605] Sự kiện quan trọng xảy ra trong domain, cho phép các thành phần khác biết và hành động theo.
+[1606] Ví dụ OrderPlaced - Khách hàng đặt đơn hàng thành công.
+[1607] Khi đặt hàng xong, Order Service phát ra một event:
+OrderPlacedEvent (chứa thông tin đơn hàng, khách hàng…).
+[1608] Các “listener” khác nhau sẽ nhận sự kiện này và thực hiện việc riêng:
+[1609] EmailService nhận event, gửi email xác nhận.
+[1610] InventoryService nhận event, cập nhật số lượng tồn kho.
+[1611] ShippingService nhận event, tạo đơn vận chuyển.
+[1612] AnalyticsService nhận event, ghi nhận dữ liệu.
+[1614] Ví dụ tổng hợp
+[1615] // Entity
+[1616] public class Customer {
+[1617] private String id; // identity
+[1618] private String name; private
+[1619] Address address; // value object
+[1620] }
+[1622] // Value Object
+[1623] public class Address {
+[1624] private String city;
+[1625] private String street;
+[1626] // equals/hashCode chỉ so sánh giá trị
+[1627] }
+[1629] // Aggregate: Order gồm nhiều OrderItem
+[1630] public class Order {
+[1631] private String orderId;
+[1632] private List<OrderItem> items;
+[1633] private Address shippingAddress;
+[1634] }
+[1636] // Repository
+[1637] public interface OrderRepository {
+[1638] Order findById(String id);
+[1639] void save(Order order);
+[1640] }
+[1642] // Service
+[1643] public class PaymentService {
+[1644] public void pay(Order order, Money amount) { ... }
+[1645] }
+[1647] // Domain Event
+[1648] public class OrderPlacedEvent {
+[1649] private String orderId;
+[1650] private Date placedAt;
+[1651] }
+[1653] Bounded Context
+[1654] Một giới hạn rõ ràng về ngữ nghĩa và logic của một phần domain. Mỗi bounded context có mô hình, code, ngôn ngữ riêng biệt.
+[1655] Tác dụng: Tránh nhầm lẫn/chồng chéo giữa các domain khác nhau (ví dụ: “Order” ở context bán hàng khác với “Order” ở context kho vận).
+[1656] Ubiquitous Language
+[1657] Một ngôn ngữ chung, nhất quán giữa lập trình viên và chuyên gia nghiệp vụ, dùng xuyên suốt code, tài liệu, trao đổi.
+[1658] Tác dụng: Giúp tất cả thành viên hiểu nhau, code sát nghiệp vụ thực tế, giảm nhầm lẫn.
+[1659] Mẫu tổ chức code
+[1662] Một số kiến trúc tổ chức code khác
+[1663] Layered Architecture (N-Tier)
+[1664] Ý tưởng:
+Chia ứng dụng thành các lớp (layer) rõ ràng, mỗi lớp đảm nhiệm một vai trò.
+[1665] Thường gặp nhất:
+[1666] Presentation Layer: Giao diện (UI, API)
+[1667] Application Layer: Điều phối luồng nghiệp vụ
+[1668] Domain/Business Layer: Logic nghiệp vụ chính
+[1669] Data Access Layer: Truy xuất dữ liệu (DB, file…)
+[1671] Hexagonal / Ports & Adapters
+[1672] Ý tưởng:
+Ứng dụng là một “lõi” (core/domain) không phụ thuộc vào các yếu tố bên ngoài. Các cổng (port) và bộ chuyển đổi (adapter) giúp core kết nối ra ngoài (UI, DB, message broker, API…).
+[1673] Cách tổ chức:
+[1674] Core chỉ biết về interface (port).
+[1675] Adapter đảm nhiệm giao tiếp thực tế (REST, DB, file, …).
+[1676] Ưu điểm: Tách biệt rõ giữa logic nghiệp vụ và hạ tầng, dễ test, dễ thay thế adapter.
+[1677] Ví dụ: Thay đổi từ lưu file sang lưu DB mà không ảnh hưởng core.
+[1679] Clean / Onion Architecture
+[1680] Ý tưởng:
+Mọi phụ thuộc đều hướng vào “lõi” domain/business. Các lớp ngoài cùng là hạ tầng, càng vào trong càng gần domain logic.
+[1681] Cấu trúc:
+[1682] Core (Entities/Domain): Logic nghiệp vụ thuần, không phụ thuộc ai cả.
+[1683] Use Cases/Application: Quy trình nghiệp vụ, điều phối.
+[1684] Interface Adapters: Chuyển đổi giữa use case và hạ tầng.
+[1685] Frameworks/Drivers: Hạ tầng, thư viện, giao tiếp bên ngoài.
+[1686] Ưu điểm: Dễ thay đổi hạ tầng, dễ test, domain độc lập, dễ mở rộng.
+[1687] Ví dụ:
+Dễ đổi từ REST sang gRPC, từ MySQL sang MongoDB mà domain không đổi.
+[1689] CQRS
+[1690] Ý tưởng:
+Tách biệt hai phần:
+[1691] Command: Xử lý lệnh thay đổi trạng thái (C, U, D).
+[1692] Query: Truy vấn dữ liệu (R).
+[1693] Ưu điểm:
+[1694] Đọc và ghi có thể tối ưu riêng, dễ scale, dễ tối ưu hóa cho từng mục đích.
+[1695] Thường dùng với:
+[1696] Event Sourcing, hệ thống cần throughput cao, nghiệp vụ phức tạp.
+[1697] Ví dụ:
+Khi đặt hàng, command “CreateOrder” ghi dữ liệu.
+[1698] Query “GetOrderHistory” đọc dữ liệu đã được tổng hợp sẵn.
+[1700] Event-Driven Architecture
+[1701] Ý tưởng:
+Các thành phần trong hệ thống giao tiếp với nhau bằng event (sự kiện), không gọi trực tiếp.
+[1702] Cách hoạt động:
+[1703] Khi có sự kiện (ví dụ: “OrderCreated”), các service/subscriber lắng nghe sẽ xử lý theo nhu cầu riêng.
+[1704] Ưu điểm:
+[1705] Phi đồng bộ, giảm coupling, dễ mở rộng.
+[1706] Xử lý song song, phản ứng nhanh với sự kiện thực tế.
+[1707] Ví dụ:
+Đặt hàng xong, phát sự kiện “OrderCreated”. Service vận chuyển, gửi email, phân tích dữ liệu đều bắt sự kiện này để xử lý riêng.
+[1709] Design Principles:
+[1710] SOLID
+[1711] S – Single Responsibility Principle (SRP)
+[1712] Mỗi class chỉ nên có một trách nhiệm duy nhất.
+[1713] Ví dụ một class không nên vừa lấy dữ liệu từ database, xử lý dữ liệu rồi in ra. Thay vào đó chia thành các class riêng, mỗi class giữ một nhiệm vụ nhất định.
+[1714] O – Open/Closed Principle (OCP)
+[1715] Mở rộng thêm chức năng mới được, nhưng không cần sửa code cũ.
+[1716] Open for extension, close for modification.
+[1717] Ví dụ: Muốn thêm cách tính thuế mới, chỉ cần tạo class mới kế thừa hoặc implement interface, không phải sửa class cũ.
+[1718] L – Liskov Substitution Principle (LSP)
+[1719] Lớp con có thể thay thế cho lớp cha mà không làm sai logic chương trình.
+[1720] Ví dụ: Có class Bird và Penguin extends Bird.
+[1721] Nếu code nào dùng Bird thì dùng Penguin cũng phải an toàn (ví dụ không nên có hàm fly() ở Bird vì chim cánh cụt không bay được).
+[1722] I – Interface Segregation Principle (ISP)
+[1723] Nên chia nhỏ interface, tránh ép các class phải implement những phương thức không dùng.
+[1724] Ví dụ có interface Printer, Scanner riêng. Máy in thì chỉ cần implement Printer, không phải implement Scanner.
+[1725] D – Dependency Inversion Principle (DIP)
+[1726] Các module cấp cao không nên phụ thuộc vào các module cấp thấp, cả hai nên phụ thuộc vào abstraction.
+[1727] Ví dụ 1:
+[1728] Ổ cắm điện trên tường là abstraction (chuẩn chung)
+[1729] Thiết bị điện như quạt, tivi, sạc điện thoại là module cấp thấp
+[1730] Người sử dụng là module cấp cao
+[1731] Người sử dụng chỉ cần biết cắm thiết bị vào ổ điện là dùng được, không cần quan tâm bên trong quạt hay tivi cấu tạo ra sao.
+Ổ cắm là chuẩn chung, miễn thiết bị nào tương thích là cắm vào dùng được.
+[1732] Ví dụ 2:
+[1733] Module cấp cao: OrderService
+[1734] Abstraction: PaymentGateway (interface)
+[1735] Module cấp thấp: PaypalPayment, VNPayPayment
+[1736] (implement PaymentGateway)
+[1737] OrderService chỉ biết đến PaymentGateway, không quan tâm bạn dùng Paypal, VNPay hay gì khác.
+[1738] Khi muốn thay đổi cách thanh toán, chỉ cần implement interface mới, không sửa OrderService.
+[1739] DRY (Don’t Repeat Yourself)
+[1740] Ý nghĩa: Đừng lặp lại chính mình.
+Tránh lặp lại code, logic, dữ liệu ở nhiều chỗ. Nếu phải sửa đổi, chỉ sửa một nơi duy nhất.
+[1741] Ví dụ: Nếu validation logic cho email xuất hiện ở nhiều class, hãy tách ra thành hàm chung.
+[1742] KISS (Keep It Simple, Stupid)
+[1743] Ý nghĩa: Giữ cho mọi thứ đơn giản, dễ hiểu.
+Tránh phức tạp hóa vấn đề, code nên rõ ràng, dễ đọc, dễ bảo trì.
+[1744] Ví dụ: Nếu giải quyết bài toán cộng 2 số, chỉ cần dùng phép cộng, không cần viết thêm class, pattern phức tạp.
+[1745] YAGNI (You Aren’t Gonna Need It)
+[1746] Ý nghĩa: Đừng code những thứ bạn nghĩ sẽ cần trong tương lai, nhưng hiện tại chưa cần.
+Chỉ nên phát triển tính năng khi thực sự có nhu cầu sử dụng.
+[1747] Ví dụ: Nếu app chưa cần đa ngôn ngữ, đừng vội viết hệ thống dịch phức tạp ngay từ đầu.
+[1748] Design Patterns cổ điển
+[1749] Được hiểu như những bộ dụng cụ kinh nghiệm giải quyết các vấn đề thường gặp, giúp code sạch, dễ bảo trì và mở rộng.
+[1750] Các mẫu khởi tạo (creational patterns)
+[1751] Builder
+[1752] Builder dùng để tạo object phức tạp theo từng bước mà không cần constructor có nhiều tham số. Thường dùng khi object có nhiều field, đặc biệt optonal field. Thường thấy ở DTO, sử dụng Lombok @Builder.
+[1753] Lợi ích:
+[1754] + Tránh việc phải dùng constructor dài với nhiều tham số khó nhớ/thứ tự dễ lẫn lộn. Dễ mở rộng, thêm field mới không cần thay đổi constructor cũ.
+[1755] + Code rõ ràng, có thể chỉ truyền các field cần thiết.
+[1756] + Không cần nhớ thứ tự các tham số.
+[1757] + Hỗ trợ tạo object immutable (không thay đổi được sau khi tạo).
+[1758] Ví dụ 1 class User có 10 field, có 8 field là tùy chọn, để tạo ra một đối tượng User gồm 2 field bắt buộc và một số trong 8 field tùy chọn kia cần có sẵn rất nhiều constructor và rất dễ nhầm lẫn. Builder tạo ra để làm đơn giản điều này.
+[1759] Nếu cần thêm dữ liệu vào 1 field, ta cũng không cần dùng tới constructor.
+[1760] Khi truyền cũng không cần nhớ thứ tự như dùng constructor.
+[1761] Khi gọi build, object được tạo ra với các field final, không thể thay đổi giá trị các field nữa (không có setter)
+[1763] Singleton
+[1764] Đảm bảo chỉ có một instance duy nhất trong toàn bộ ứng dụng.
+[1765] Lợi ích: Quản lý tài nguyên hiệu quả, tránh tạo nhiều object không cần thiết.
+[1766] Trong Spring Boot, mặc định mọi bean đều là singleton, ví dụ service, logger.
+[1767] Factory method
+[1768] Cung cấp một cách để khởi tạo đối tượng mà không chỉ rõ lớp cụ thể.
+[1769] Thay vì gọi trực tiếp new, ta để subclass quyết định tạo đối tượng nào.
+[1770] Lợi ích: Tăng tính linh hoạt, dễ mở rộng, bảo trì, khi cần mở rộng không cần sửa code cũ (chỉ cần sửa factory) - nguyên lý Open/Close trong SOLID
+[1772] Abstract Factory khác Factory Method ở chỗ thay vì tạo ra 1 loại đối tượng, nó tạo ra nhiều đối tượng liên quan mà không chỉ rõ lớp cụ thể.
+[1773] Ví dụ khi viết ứng dụng có thể dùng trên cả Mac và Windows, mình có interface GUIFactory với các method như createButton() và createCheckbox().
+[1774] Mỗi nền tảng (Windows, Mac) sẽ có factory riêng, đảm bảo tạo ra cả bộ UI (button, checkbox) đồng bộ cho từng hệ điều hành.
+[1775] Nhờ đó, chỉ cần thay đổi factory là toàn bộ giao diện sẽ phù hợp với nền tảng mình chọn.
+[1776] Prototype
+[1777] Cho phép tạo object mới bằng cách sao chép từ một object gốc gọi là prototype, thay vì khởi tạo từ đầu.
+[1778] Mục đích là tiết kiệm chi phí khởi tạo, nhất là khi object phức tạp hoặc tốn nhiều tài nguyên (như hình ảnh, kết nối).
+[1779] Trong java, có thể dùng phương thức clone()
+[1781] Trong Spring, bean có scope “prototype” để luôn tạo mới object mỗi lần gọi, thay vì dùng lại instance cũ như singleton.
+[1782] Nhóm cấu trúc (structure patterns)
+[1783] Adapter
+[1784] Giúp chuyển đổi interface của một class này thành interface mà client mong muốn, để hai class vốn không tương thích có thể làm việc với nhau.
+[1785] Ví dụ: Mapping dữ liệu từ DTO sang Entity hoặc ngược lại.
+[1786] Decorate
+[1787] Decorator là mẫu thiết kế cho phép bổ sung hoặc thay đổi hành vi của object mà không cần sửa code gốc, bằng cách “bọc” object cũ bằng một object mới.
+[1788] Ví dụ: Trong dự án Spring Boot, khi cần thêm logging, caching hoặc validation cho service mà không sửa code gốc, dùng AOP hoặc viết các lớp decorator bọc quanh service gốc.
+[1789] Facade
+[1790] Facade là một lớp/cấu trúc đóng vai trò như một “cửa ngõ” duy nhất, cung cấp các phương thức tổng hợp nhiều bước xử lý phức tạp phía sau.
+[1791] Giả sử bạn có hệ thống đặt hàng (Order System). Khi người dùng tạo đơn hàng (placeOrder()), bạn cần thực hiện nhiều bước:
+[1792] Kiểm tra tồn kho (inventoryService.checkAndReserve())
+[1793] Thanh toán (paymentService.process())
+[1794] Tạo đơn giao hàng (shippingService.createShipment())
+[1795] Lưu đơn hàng (orderRepository.save())
+[1796] Thay vì để Controller gọi từng service một (rối và khó quản lý), bạn tạo một lớp OrderService kiểu facade như sau:
+[1798] Proxy
+[1799] Cung cấp một đại diện (proxy) để kiểm soát truy cập tới object thực sự, thường dùng để thêm logic trước/sau khi gọi object thật như kiểm tra quyền, logging, cache, hoặc lazy loading mà không sửa code gốc.
+[1800] Ví dụ @Transactional, @Cacheable, @Secured trong Spring đều là proxy: tự động bọc service để thêm transaction, cache, security…
+[1801] So sánh với Decorator:
+[1802] + Decorator thiên về mở rộng hành vi, chức năng cho object.
+[1803] + Proxy thiên về kiểm soát truy cập, quản lý object.
+[1804] + AOP có thể dùng cả hai pattern này, nhưng về mặt kỹ thuật, proxy là cách phổ biến nhất để triển khai AOP trong thực tế (như Spring).
+[1806] Nhóm hành vi (behavioral patterns)
+[1807] Observer
+[1808] Pattern này cho phép một đối tượng (Subject) thông báo thay đổi của nó đến nhiều Observer.
+[1809] Ví dụ khi bạn đăng ký nhận thông báo trên Facebook: mỗi khi có post mới, tất cả người theo dõi đều nhận được thông báo.
+[1810] Strategy
+[1811] Cho phép thay đổi thuật toán hoặc hành vi của một đối tượng tại runtime mà không cần thay đổi mã nguồn của đối tượng đó.
+[1812] Bạn có thể chọn nhiều phương thức thanh toán khác nhau (thẻ, chuyển khoản, ví điện tử) mà không cần thay đổi code đặt hàng.
+[1813] Template Method
+[1814] Định nghĩa skeleton (khung) của một thuật toán trong một phương thức, cho phép các lớp con override các bước cụ thể mà không thay đổi cấu trúc tổng thể của thuật toán.
+[1815] Ví dụ quy trình chuẩn bị đồ uống: đun nước, pha, rót ra cốc, thêm topping. Các loại đồ uống có thể thay đổi ở bước “pha”.
+[1816] Chain of Responsibility
+[1817] Chain of Responsibility là mẫu thiết kế cho phép gửi một yêu cầu dọc theo một chuỗi các đối tượng (handler).
+Mỗi handler sẽ kiểm tra xem có xử lý được yêu cầu không, nếu không thì chuyển tiếp sang handler tiếp theo trong chuỗi.
+[1818] Ví dụ:
+[1819] Duyệt đơn từ nhân viên → trưởng phòng → giám đốc.
+[1820] Chuỗi middleware trong web (authentication, logging, ...).
+[1822] React.js & Next.js
+[1823] JavaScript key point & core concepts
+[1824] ES6+ Syntax & Features
+[1825] Arrow function: cú pháp ngắn gọn của hàm thông thường
+[1826] Destructuring (object, array)
+[1827] Object: Lấy giá trị từ object
+[1829] Array: Lấy giá trị từ mảng
+[1831] Spread/Rest operator (...)
+[1832] Spread: Trải mảng/đối tượng ra
+[1834] Rest: Gom nhiều giá trị còn lại vào 1 biến
+[1836] Import/Export
+[1837] Default Import/Export: chỉ xuất 1 cái chính
+[1839] Named Import/Export: xuất nhiều cái, nhập theo tên
+[1841] Variables & Hoisting
+[1842] Scope: global (toàn bộ file), function (chỉ trong hàm), block (ví dụ khối if)
+[1843] Nếu 1 trang HTML cùng gọi 2 file js, các logic và biến global sẽ được dùng chung. Nếu biến global là var, giá trị sẽ bị ghi đè nếu trùng tên, dùng let hoặc const thì sẽ báo lỗi trùng tên.
+[1844] Hoisting
+[1845] Là cơ chế mà JS đưa khai báo biến và hàm lên đầu scope trước khi chạy code
+[1846] Hoisting biến: các biến let, var, const đều được hoist, nhưng với biến var thì không gán giá trị (undefined), biến let, const thì không thể sử dụng trước khi khai báo (gây lỗi)
+[1848] Hoisting hàm: Được hoisted, gọi được trước khi khai báo.
+[1850] Variables
+[1851] var (không nên dùng): khai báo trong hàm, có thể khai báo/gán lại, hay lỗi
+[1852] let: block scope (chỉ dùng được trong cặp {}), không khai báo lại được trong scope, nhưng gán lại được
+[1853] const: nên dùng mặc định, khai báo trong block scope, không khai báo/gán lại, nếu là object/array vẫn có thể thay đổi bên trong (không gán lại được cả biến)
+[1854] Asynchronuos Programming
+[1855] Callback
+[1856] Là một hàm truyền vào một hàm khác, hàm được truyền vào sẽ được gọi lại khi một tác vụ nào đó trong hàm gốc thực hiện xong.
+[1857] Dễ gây callback hell nếu dùng nhiều callback
+[1859] Promise
+[1860] Đối tượng đại diện cho một tác vụ bất đồng bộ có thể hoàn thành hoặc thất bại
+[1861] Cho phép dùng .then() để xâu chuỗi các thao tác async và .catch() để xử lý lỗi tập trung, giúp tránh callback hell, code dễ đọc hơn.
+[1863] Async/Await
+[1864] Cách viết code bất đồng bộ trông giống đồng bộ, dễ đọc hơn
+[1865] Chỉ dùng được trong function có từ khóa async
+[1866] Dùng await để đợi Promise hoàn thành
+[1868] Event Loop: Cơ chế giúp JavaScript xử lý các tác vụ bất đồng bộ như callback,  promise, timer...
+[1870] Call Stack: Nơi JavaScript xếp các hàm cần thực thi theo thứ tự. Khi hàm chạy xong sẽ bị loại khỏi stack.
+[1871] Error handling
+[1872] Callback: lỗi truyền qua tham số đầu tiên.
+[1874] Promise: dùng .catch()
+[1876] Async/Await: dùng try catch
+[1878] Array & Object Minipulation
+[1879] Các method thường gặp
+[1880] map: trả về mảng mới các phần tử được biến đổi từ mảng gốc
+[1882] filter: trả về mảng mới các phần tử thỏa mãn điều kiện
+[1884] reduce: duyệt qua từng phần tử, tính toán ra một giá trị duy nhất (cộng dồn, gộp, tính tổng, v.v.).
+[1886] find: trả về phần tử đầu tiên thỏa mãn điều kiện
+[1887] slice: trả về mảng con từ mảng gốc
+[1889] forEach, some, every, includes, indexOf, splice, join...
+[1890] Shallow clone vs Deep clone
+[1891] Shallow clone: tạo bản sao mới chỉ ở cấp 1 của object hoặc array
+[1892] Nếu bên trong có object/array lồng, các phần lồng này vẫn giữ tham chiếu (trỏ đến vùng nhớ cũ)
+[1893] Cách dùng:
+[1894] + Array: [...arr] hoặc arr.slice()
+[1895] + Object: { ...obj } hoặc Object.assign({}, obj)
+[1897] Deep clone: tạo bản sao hoàn toàn mới cho tất cả các cấp, cả các object/array lồng bên trong. Không còn bất kì tham chiếu nào đến bản gốc.
+[1898] Cách dùng:
+[1899] + Dùng JSON.parse(JSON.stringify(obj)) (nhanh, dễ dùng nhưng có giới hạn: không clone được function, date, symbol...)
+[1900] + Dùng thư viện như lodash: _.cloneDeep(obj)
+[1902] Immutable update (quan trọng trong React state)
+[1903] Không thay đổi trực tiếp dữ liệu gốc mà tạo ra một bản sao mới với các thay đổi mong muốn.
+[1904] Tại sao quan trọng trong React state?
+[1905] React sử dụng cơ chế so sánh để biết khi nào cần render lại UI.
+[1906] Nếu thay đổi trực tiếp state cũ, tham chiếu object/array không đổi nên React không phát hiện ra sự tahy đổi.
+[1907] Nếu tạo ra một object/array mới, React nhận ra sự thay đổi thông qua tham chiếu mới và render lại giao diện đúng cách.
+[1909] Function & this context
+[1910] this: từ khóa đặc biệt, đại diện cho đối tượng mà hàm đang được gọi trên nó.
+[1911] Nếu gọi dog.speak(), thì con chó chính là this.
+[1912] Xuất hiện khi dùng React CLASS component, nếu dùng function component thì không cần làm việc với this.
+[1913] Các trường hợp của this:
+[1914] + Object
+[1916] + Class
+[1918] + Trong event (DOM/React)
+[1919] Trong DOM event: this là phần tử DOM.
+[1921] Trong React nếu dùng class component, dùng arrow function hoặc bind để giữ đúng this.
+[1922] Arrow function vs normal function
+[1923] Arrow function không có this và arguments riêng như normal function
+[1924] this của arrow function lấy từ phạm vi bên ngoài (lexical scope)
+[1926] Event Handling (React)
+[1927] Synthetic event, event delegation
+[1928] Synthetic event
+[1929] React không sử dụng event thật từ DOM mà dùng một lớp đặc biệt gọi là SyntheticEvent, nó giúp code event chạy giống nhau trên mọi trình duyệt, tối ưu.
+[1930] Vẫn có thể dùng các thuộc tính và phương thức quen thuộc như event thật: event.target, event.preventDefault(), event.stopPropagation(),...
+[1931] Event delegation là kỹ thuật gắn một event handler lên cha để xử lý sự kiện cho các con (thay vì gắn từng con). React đã tối ưu sẵn.
+[1932] KHÔNG cần tự viết code event delegation như với DOM truyền thống.
+[1934] preventDefault
+[1935] Ngăn hành động mặc định của sự kiện
+[1936] Ví dụ ngăn form submit, ngăn link chuyển trang...
+[1938] stopPropagation
+[1939] Khi một sự kiện xảy ra (ví dụ click), nó sẽ “bubbles” (lan truyền) từ phần tử con lên các phần tử cha trong DOM.
+[1940] event.stopPropagation() sẽ ngăn chặn sự lan truyền đó.
+[1941] (chỉ chạy handleChildClick)
+[1943] Optional Chaining & Nullish Coalescing
+[1944] ?., ?? giúp code an toàn hơn khi truy cập thuộc tính
+[1945] Nếu bên trái ?. là null/undefined thì kết quả là undefined (thay vì báo lỗi)
+[1946] ?? giúp đặt giá trị mặc định nếu bên trái nó là null/undefined
+[1947] JSON & Data Communication
+[1948] JSON.parse: JSON (string) to object JavaScript.
+[1949] JSON.stringify: Ngược lại.
+[1950] Giao tiếp giữa client-server (API, fetch, axios)
+[1951] fetch: hàm có sẵn trong JS để gửi HTTP request, trả về promise.
+[1953] axious: chức năng tương tự, sử dụng đơn giản hơn, tự động parse JSON.
+[1955] Other Important Topics
+[1956] Other Data Structures
+[1957] Set: Lưu các giá trị duy nhất, không trùng lặp.
+[1958] Map: Lưu key-value, key có thể là bất cứ kiểu gì.
+[1959] Memory leak (closure, DOM reference)
+[1960] Là hiện tượng bộ nhớ không được giải phóng dù không còn dùng nữa, khiến app ngày càng nặng.
+[1961] Nguyên nhân phổ biến:
+[1962] Closure giữ tham chiếu tới biến/DOM cũ.
+[1963] Closure
+[1964] Là hành vi của JS cho phép một hàm nhớ được biến ở scope ngoài của nó, kể cả khi scope ngoài đã thực thi xong.
+[1965] Ứng dụng cho tạo biến private, lưu trạng thái giữa nhiều lần gọi hàm...
+[1967] + Ở đây, biến count nằm trong hàm makeCounter, nhưng khi hàm này trả về một hàm khác (closure), hàm đó vẫn nhớ và sử dụng được count.
+[1968] + Chỉ closure (hàm được return) mới truy cập và thay đổi count.
+Bạn không thể truy cập trực tiếp count từ bên ngoài.
+[1970] + Nhờ closure, giá trị của count được lưu và cập nhật qua mỗi lần gọi counter() mà không bị mất.
+[1972] React.js
+[1973] Basic concepts
+[1974] Virtual DOM
+[1975] Virtual DOM là một bản sao của DOM thật, được lưu trữ trong bộ nhớ của ứng dụng React.
+[1976] React sử dụng Virtual DOM để tối ưu hóa việc cập nhật giao diện người dùng bằng cách so sánh (diffing) và chỉ cập nhật những phần cần thiết thay vì làm mới toàn bộ DOM.
+[1977] Component Life Cycle
+[1978] Giai đoạn 1: Mounting (Khởi tạo)
+[1979] constructor: Khởi tạo state, binding các hàm.
+[1980] componentDidMount (class component) hoặc
+[1981] useEffect(() => { ... }, []) (function component):
+[1982] Chạy sau khi component được render lên DOM lần đầu tiên.
+[1983] Giai đoạn 2: Updating (Cập nhật khi state/props thay đổi hoặc force update)
+[1984] componentDidUpdate hoặc useEffect(() => { ... }, [deps]): Chạy sau khi component được cập nhật.
+[1985] shouldComponentUpdate: Quyết định xem có nên re-render component hay không.
+[1986] Giai đoạn 3: Unmounting (Xóa bỏ)
+[1987] componentWillUnmount hoặc useEffect(() => { return () => { ... } }, []): Chạy khi component sắp bị loại bỏ khỏi DOM (thường dùng để dọn dẹp, như clear timer, unsubscribe...)
+[1988] Props & State
+[1989] Props: Là dữ liệu được truyền từ component cha xuống component con. Props dùng để cấu hình hoặc truyền dữ liệu giữa các component.
+[1990] State: Là dữ liệu nội bộ của một component, có thể thay đổi trong vòng đời của component. Khi state thay đổi, component sẽ tự động re-render để cập nhật giao diện.
+[1991] Common hooks
+[1992] useState
+[1993] Dùng để quản lý state (trạng thái) của component.
+[1994] const [count, setCount] = useState<number>(0);
+[1995] Khi muốn cập nhật giá trị, gọi hàm setCount.
+[1996] useEffect
+[1997] Dùng để thực hiện các “side effect” (tác động phụ) như gọi API, cập nhật DOM, thiết lập hoặc dọn dẹp timer.
+[1998] Why useEffect?
+[1999] React chỉ dùng để render UI, nhưng đôi lúc bạn cần thực hiện các thao tác ngoài việc render, như:
+[2000] + Lấy dữ liệu từ server khi component mount.
+[2001] + Thêm/bỏ event listener (như lắng nghe window resize).
+[2002] + Thay đổi tiêu đề trang.
+[2003] Những thao tác này gọi là “side effects”. useEffect giúp bạn thực hiện và kiểm soát chúng.
+[2004] Sử dụng:
+[2005] + Không có dependency: Chạy sau mỗi lần render.
+[2006] useEffect(() => { ... });
+[2007] + Có dependency: Chỉ chạy lại khi giá trị trong mảng dependency thay đổi.
+[2008] useEffect(() => { ... }, [deps]);
+[2009] + Chạy khi component mount và unmount (dọn dẹp, ví dụ unsubscribe khỏi một subscription):
+[2011] Trường hợp cụ thể: Unsubscribe từ 1 subscription
+[2013] useContext
+[2014] Dùng để truy cập dữ liệu được chia sẻ thông qua Context API.
+[2015] const value = useContext(MyContext);
+[2016] useMemo
+[2017] Ghi nhớ (memoize) giá trị tính toán phức tạp, chỉ tính lại khi dependencies thay đổi. Tránh việc tính toán lại không cần thiết khi component re-render.
+[2018] const expensiveValue = useMemo(() => computeExpensiveValue(a, b), [a, b]);
+[2019] useCallback
+[2020] Ghi nhớ (memoize) một hàm, chỉ tạo lại hàm khi dependencies thay đổi.
+[2021] Giúp tránh tạo mới hàm không cần thiết, hữu ích khi truyền callback xuống các component con.
+[2022] const handleClick = useCallback(() => { ... }, [deps]);
+[2023] useReducer
+[2024] Quản lý logic state phức tạp (tốt hơn useState khi có nhiều state liên quan hoặc nhiều hành động cập nhật).
+[2025] Cần truyền vào một reducer function để xác định cách state thay đổi dựa trên action.
+[2026] Trả về [state, dispatch].
+[2027] Phù hợp cho các tình huống như: quản lý form, counter, hay các trường hợp có nhiều bước cập nhật state liên tiếp.
+[2029] useRef
+[2030] Lưu trữ giá trị có thể thay đổi mà không gây re-render khi cập nhật.
+[2031] Thường dùng để truy cập trực tiếp tới DOM element (ví dụ: focus vào input).
+[2032] Trả về một object .current để đọc/ghi giá trị.
+[2033] Cũng có thể dùng để lưu các giá trị như timer ID, giá trị trước đó, v.v… mà không làm component re-render.
+[2035] State Management
+[2036] Context API
+[2037] Cho phép truyền dữ liệu (state) toàn cục qua nhiều component mà không cần truyền props qua từng cấp.
+[2038] Ưu điểm: Đơn giản, phù hợp với những dữ liệu toàn cục ít thay đổi như theme, authentication, ngôn ngữ...
+[2039] Nhược điểm: Khi context cập nhật, tất cả các component con sử dụng context đều re-render → không phù hợp với dữ liệu thay đổi liên tục hoặc quá nhiều.
+[2040] Redux (Redux Toolkit), các pattern quản lý state toàn cục.
+[2041] Redux: thư viện quản lý state toàn cục phổ biến, giữ toàn bộ state của ứng dụng tại một nơi gọi là “store”. Thay đổi state thông qua actions và reducers.
+[2042] Redux Toolkit: Cấu hình Redux đơn giản hơn, code ngắn hơn, dễ dùng.
+[2043] So sánh:
+[2044] Redux thuần:
+[2049] Redux Toolkit:
+[2053] Key differences:
+[2054] Redux Toolkit tự động tạo action types/creducers
+[2055] createSlice gộp logic reducer + actions trong 1 object
+[2056] configureStore tự thêm middleware (như Redux Thunk)
+[2057] Cho phép mutation state trực tiếp (dùng Immer.js bên dưới)
+[2058] Code ngắn hơn ~40-60% so với Redux thuần
+[2060] Ví dụ Redux Toolkit trong xử lý giỏ hàng:
+[2061] Cấu trúc thư mục điển hình:
+[2063] Store:
+[2065] Cart Slice:
+[2069] Sử dụng trong react component:
+[2072] Các pattern quản lý state toàn cục:
+[2073] Single Source of Truth: Chỉ có một nơi lưu trữ state toàn cục (store).
+[2074] Unidirectional Data Flow: Dữ liệu chỉ chảy một chiều
+[2075] (store → UI → action → reducer → store).
+[2076] Selector Pattern: Sử dụng selector để lấy state, tránh truy cập trực tiếp.
+[2077] Module/Feature-based Slices: Mỗi slice quản lý một phần state cho từng tính năng/module.
+[2079] Xử lý side effects (middleware: Redux Thunk/Saga).
+[2080] Middleware là cổng chặn giữa dispatch action và reducer, giúp xử lý logic phụ trước khi action đến reducer.
+[2081] Redux Thunk: dùng cho dự án nhỏ/vừa, logic async đơn giản (fetch data CRUD), tích hợp với Redux Toolkit Query (đã xử lý sẵn API calls)
+[2082] Ví dụ: Fetch thông tin user từ server khi nhấn nút "Tải hồ sơ".
+[2083] → Dùng Thunk vì: Logic chỉ gồm 1 API call → Không cần công cụ phức tạp.
+Tác dụng của Thunk Middleware:
+[2084] Cho phép dispatch một function (thunk) thay vì object thông thường.
+[2085] Function này nhận dispatch làm tham số, giúp kiểm soát async flow dễ dàng.
+[2086] Redux Saga: dùng cho hệ thống có luồng nghiệp vụ phức tạp, cần kiểm soát bất đồng bộ (gọi nhiều API cùng lúc)
+[2087] Ví dụ: Khi cần xử lý chuỗi logic Đăng nhập → Fetch profile → Fetch tin nhắn → Hiện thông báo.
+[2089] → Dùng Saga vì: Nhiều bước tuần tự/song song + xử lý delay → Thunk khó kiểm soát.
+[2091] Component Architecture
+[2092] Tư duy phân tách component (smart/dumb, presentational/container).
+[2093] Smart/Container Component: Chịu trách nhiệm quản lý state, xử lý logic, gọi API, truyền props xuống cho Presentational.
+[2094] Dumb/Presentational Component: Chỉ nhận props, hiển thị UI, không quản lý logic hay state phức tạp.
+[2096] Tái sử dụng component, custom hooks.
+[2097] Ví dụ: Custom hook useFetch, component Button, Input tái sử dụng nhiều lần.
+[2098] Quản lý props, state hiệu quả.
+[2099] Chỉ truyền props cần thiết, tránh truyền props không cần thiết xuống sâu (prop drilling).
+[2100] Sử dụng Context API hoặc state management khi cần chia sẻ state toàn cục.
+[2101] Tối ưu re-render bằng React.memo, useMemo, useCallback.
+[2102] Ưu tiên “state tối thiểu” – chỉ lưu state thật sự cần thiết.
+[2103] Routing & Navigation
+[2104] Routing là cơ chế xác định nội dung nào sẽ hiển thị dựa trên URL hiện tại, đặc biệt là trong các ứng dụng SPA (Single-Page Application) nơi việc thay đổi URL không tải lại toàn bộ trang.
+[2105] Navigation là cách người dùng di chuyển giữa các "trang" hoặc các phần khác nhau của ứng dụng.
+[2106] Thường dùng React Router
+[2107] Nested routes
+[2108] Là việc định nghĩa các tuyến đường con nằm trong một tuyến đường cha, tạo cấu trúc phân cấp cho giao diện người dùng.
+[2109] Cho phép các thành phần con được hiển thị bên trong bố cục hoặc thành phần của tuyến đường cha, rất hữu ích cho các layout có phần chung và phần thay đổi bên trong (ví dụ: trang hồ sơ người dùng với các tab "Cài đặt", "Đơn hàng").
+[2111] Dynamic route
+[2112] Là các tuyến đường có chứa các phân đoạn biến đổi trong URL (ví dụ: /products/:id).
+[2113] Giúp hiển thị thông tin chi tiết của một mục cụ thể từ một tập hợp lớn (ví dụ: chi tiết sản phẩm 123, hồ sơ người dùng ABC) mà không cần định nghĩa riêng từng tuyến đường, làm cho URL thân thiện hơn và dễ quản lý.
+[2115] Route protection (PrivateRoute)
+[2116] Cơ chế hạn chế quyền truy cập vào các tuyến đường hoặc phần của ứng dụng dựa trên điều kiện nhất định, chủ yếu là xác thực (người dùng đã đăng nhập chưa) và ủy quyền (người dùng có vai trò/quyền hạn phù hợp không).
+[2118] API Integration
+[2119] Gọi và xử lý dữ liệu từ RESTful API/GraphQL.
+[2120] RESTful API
+[2121] Dùng axios tốt, nhiều tính năng hơn dùng fetch có sẵn trong js.
+[2122] axios:
+[2123] Ngoài ra axious cũng hỗ trợ một số tính năng:
+[2124] + Interceptors (Bộ chặn request/response)
+[2125] Cho phép thêm logic vào request trước khi được gửi đi và vào response trước khi được xử lý.
+[2126] Thêm token xác thực: Tự động thêm Authorization header vào mỗi request.
+[2127] Ghi log: Ghi lại thông tin request/response để debug.
+[2128] Xử lý lỗi chung: Tự động chuyển hướng đến trang đăng nhập nếu nhận được lỗi 401 (Unauthorized).
+[2129] Thêm spinner/loading indicator: Bật/tắt trạng thái loading cho toàn bộ ứng dụng.
+[2130] Ví dụ: Tự động thêm token xác thực vào mỗi request và tự động làm mới token khi token cũ hết hạn.
+[2133] + Hủy request (Cancellation)
+[2134] Ngăn chặn một request đang chờ xử lý nếu nó không còn cần thiết (ví dụ: người dùng đã rời trang hoặc gõ tìm kiếm mới).
+[2135] + Chống XSRF (Cross-Site Request Forgery)...
+[2137] GraphQL
+[2138] Cũng có thể dùng axios nhưng nên dùng thư viện chuyên dụng là Apollo Clinet
+[2140] Quản lý trạng thái loading, error, caching (ReactQuery)
+[2141] Khi gọi API, cần hiển thị cho người dùng biết điều gì đang xảy ra (đang tải, lỗi gì, dữ liệu cũ/mới).
+[2142] Sử dụng React Query - nay là TanStack Query:
+[2143] Tự động quản lý Loading/Error: Bạn không cần viết useState thủ công.
+[2144] Caching (Bộ nhớ đệm): Tự động lưu dữ liệu đã fetch, hiển thị nhanh dữ liệu cũ trong khi đang tải dữ liệu mới ở nền (chiến lược "Stale-While-Revalidate"). Giúp ứng dụng nhanh và mượt.
+[2145] Tự động làm mới: Tự động fetch lại dữ liệu khi người dùng focus vào tab trình duyệt, hoặc sau một khoảng thời gian nhất định.
+[2146] Giảm code lặp lại (boilerplate): Viết ít code hơn mà vẫn có nhiều tính năng.
+[2147] Ví dụ dùng React Query:
+[2149] Performance Optimization
+[2150] Tối ưu re-render: React.memo, useMemo, useCallback.
+[2151] Giúp React tránh render lại những component hoặc tính toán/hàm không cần thiết, khi props hoặc dependencies của chúng không thay đổi.
+[2152] Code splitting, lazy loading (React.lazy, Suspense).
+[2153] Chia nhỏ code thành các gói nhỏ hơn, chỉ tải những phần code cần thiết khi chúng được yêu cầu, thay vì tải toàn bộ ứng dụng cùng lúc.
+[2155] Virtualization cho danh sách lớn
+[2156] Chỉ render những mục (item) trong danh sách lớn mà người dùng đang nhìn thấy trên màn hình, thay vì render tất cả.
+[2157] Khi bạn cuộn qua một danh sách 10.000 mục, chỉ có 20-30 mục hiển thị. Virtualization chỉ render 20-30 mục đó, giúp hiệu suất mượt mà.
+[2158] Debouncing và Throttling
+[2159] Hạn chế số lần một hàm xử lý sự kiện (event handler) được gọi khi một sự kiện xảy ra liên tục (ví dụ: gõ phím, cuộn trang, thay đổi kích thước cửa sổ).
+[2160] Debounce: Chờ một khoảng thời gian nhất định sau lần cuối cùng sự kiện xảy ra mới thực thi hàm tiếp. (Ví dụ: Tìm kiếm gõ phím, chỉ gửi request sau khi người dùng ngừng gõ một lúc).
+[2161] Throttle: Hạn chế thực thi 1 hàm trong khoảng thời gian ( tương tự như rate limit của backend) (Ví dụ: Xử lý sự kiện cuộn trang, chỉ cập nhật vị trí sau mỗi 200ms).
+[2162] Ví dụ sử dụng thư viện lodash.debounce:
+[2164] Bundle analysis
+[2165] Form Handling & Validation
+[2166] react-hook-form / Formik: Xử lý form
+[2167] yup: Quản lý validation
+[2169] TypeScript
+[2170] Bản nâng cấp của JavaScript, thêm vào JS tính năng Static Typing (kiểu dữ liệu tĩnh), tức là có thể định nghĩa kiểu của biến, hàm, đối tượng. Code TypeScript sau cùng cũng sẽ được biên dịch trở lại JS thuần khi build hoặc run.
+[2171] Lợi ích:
+[2172] Giúp phát hiện lỗi ngay trong quá trình viết code (trước khi chạy) thay vì đợi đến lúc chạy ứng dụng.
+[2173] Làm code rõ ràng hơn, dễ bảo trì hơn, đặc biệt trong các dự án lớn.
+[2175] Styling Solutions
+[2176] Inline Styles: Viết CSS trực tiếp vào thuộc tính style của phần tử JSX dưới dạng một đối tượng JavaScript.
+[2178] CSS Modules: Tạo ra các file CSS thông thường, nhưng với tên class được tự động hash (ví dụ: button_module__abc123).
+[2179] Điều này đảm bảo tên class là duy nhất và không bị xung đột giữa các component.
+[2180] Ví dụ: (1) MyButton.module.css
+[2182] (2) MyButton.jsx:
+[2184] Import style như trên, trong quá trình build, các class trong className sẽ được thêm hash vào cuối để được đảm bảo là duy nhất trong toàn bộ ứng dụng.
+[2186] Styled Components
+[2187] Dù cả Inline Style và Style Component đều có thể custom style ngay trong component, nhưng hạn chế lớn nhất của Inline Style là bị giới hạn bởi những gì HTML style attribute có thể làm, nó không phải CSS đầy đủ.
+[2188] Styled Components giải quyết hạn chế trên.
+[2191] Utility-first CSS:
+[2192] Sử dụng Tailwind CSS hoặc Bootstrap để thêm các style class có sẵn ngay trong HTML/JSX.
+[2194] Testing
+[2195] Sử dụng Jest. Ví dụ:
+[2196] Mục tiêu: Kiểm tra xem App và ToastContainer có được hiển thị trên màn hình không.
+[2197] 1. Chuẩn bị (Tạo các component giả để test):
+[2198] Tạo 2 file đơn giản này, ví dụ trong thư mục src:
+[2201] 2. File Test (ví dụ: src/App.test.tsx):
+[2204] render(...): "Vẽ" cấu trúc ứng dụng của bạn vào một DOM ảo để test.
+[2205] Mock...Provider: Chúng ta dùng các Provider "giả" đơn giản, vì trong test này, chúng ta không quan tâm đến logic nội bộ của chúng, chỉ cần chúng bao bọc App đúng cách.
+[2206] data-testid="xyz";: Một thuộc tính đặc biệt để giúp bạn dễ dàng "tìm thấy" các phần tử trong test.
+[2207] screen.getByTestId(‘xyz’): Tìm phần tử có data-testid là "xyz" trong DOM ảo.
+[2208] expect(...).toBeInTheDocument(): Kiểm tra xem phần tử tìm được có thực sự nằm trong DOM ảo hay không.
+[2210] Build & Tooling
+[2211] Bundlers (Trình đóng gói): Webpack, Vite
+[2212] Gom tất cả các module JavaScript, CSS, hình ảnh, v.v., thành một hoặc nhiều file nhỏ hơn để tối ưu hóa việc tải trên trình duyệt.
+[2213] // Bạn viết nhiều file JS:
+[2214] // app.js, components/Button.js, utils/api.js
+[2216] // Bundler sẽ kết hợp chúng thành 1 hoặc vài file:
+[2217] // dist/bundle.js (hoặc dist/main.js, dist/vendor.js)
+[2219] Transpilers (Trình biên dịch mã nguồn): Babel, TypeScript Compiler (tsc)
+[2220] Chuyển đổi mã nguồn viết bằng các phiên bản JavaScript hiện đại (ES6+, JSX, TypeScript) thành JavaScript tương thích với các trình duyệt cũ hơn hoặc môi trường Node.js.
+[2223] Linters (Công cụ kiểm tra cú pháp/phong cách): ESLint
+[2224] Phân tích mã nguồn để tìm ra các lỗi cú pháp, vấn đề về phong cách code, và các lỗi tiềm ẩn khác. Giúp duy trì chất lượng và tính nhất quán của code.
+[2225] Formatters (Công cụ định dạng code): Prettier
+[2226] Tự động định dạng code theo một bộ quy tắc nhất quán (ví dụ: thụt lề, dấu chấm phẩy, khoảng trắng).
+[2227] Next.js
+[2228] Đặc điểm
+[2229] Là một React Framework, không chỉ là thư viện:
+[2230] Cung cấp cấu trúc và bộ công cụ hoàn chỉnh để xây dựng ứng dụng web.
+[2231] Tập trung vào hiệu suất và trải nghiệm người dùng
+[2232] Tối ưu SEO (Search Engine Optimization) nhờ chiến lược render SSR, SSG...
+[2233] Hỗ trợ full-stack (với API Routes): Cho phép bạn xây dựng cả frontend và các API backend đơn giản trong cùng một dự án.
+[2234] So sánh với React.js
+[2235] Khi bạn xây dựng một ứng dụng với React thuần túy (ví dụ: dùng Create React App), ứng dụng đó thường là một Single-Page Application (SPA) và chỉ được render phía client (Client-Side Rendering - CSR).
+[2236] Next.js bổ sung các khả năng sau:
+[2237] Các chiến lược Render mạnh mẽ (Data Fetching):
+[2238] Mặc định, chiến lược render tất cả các component trong thư mục app (ví dụ: page.tsx, layout.tsx, và các component con) là Server Components (SC).
+[2239] Server Components tự động quyết định cách chúng được render dựa trên dữ liệu mà chúng cần:
+[2240] Server-Side Rendering (SSR): Trang được render hoàn chỉnh thành HTML trên server cho mỗi request của người dùng.
+[2241] Chiến lược này dùng khi SC phải fetch dữ liệu động, gọi API như danh sách sản phẩm, thông tin người dùng...
+[2242] Trình duyệt nhận được HTML đầy đủ, hiển thị ngay lập tức, và sau đó JavaScript sẽ được tải và "hydrates" (kích hoạt các tương tác) trên HTML đó.
+[2243] Lợi ích: Tốt cho SEO, tải nhanh hơn trên các thiết bị yếu hoặc mạng chậm vì nội dung HTML đã có sẵn khi tải trang.
+[2244] So với React: React thuần túy mặc định là CSR, tức là trình duyệt phải tải JS, sau đó JS mới render nội dung. SSR của Next.js cung cấp HTML đầy đủ ngay từ đầu.
+[2245] Static Site Generation (SSG): Trang được render thành HTML tĩnh tại thời điểm build.
+[2246] Chiến lược này là mặc định cho Server Components nếu không có dữ liệu động.
+[2247] Ví dụ các trang About Us, Policy... không cần fetch dữ liệu từ backend.
+[2248] Lợi ích: Tốc độ tải cực nhanh vì chỉ cần phục vụ các file HTML tĩnh từ CDN, chi phí thấp, bảo mật cao. Tuyệt vời cho blog, trang sản phẩm.
+[2249] So với React: React không có tính năng này tích hợp sẵn.
+[2251] Ngoài ra còn 2 chiến lược tùy chỉnh khác:
+[2252] Incremental Static Regeneration (ISR): Kết hợp SSG với khả năng cập nhật lại trang tĩnh sau một khoảng thời gian nhất định mà không cần rebuild toàn bộ ứng dụng.
+[2253] Client-Side Rendering (CSR): Next.js vẫn hỗ trợ CSR thông qua useEffect hoặc thư viện React Query, cho phép bạn chọn chiến lược phù hợp cho từng phần của ứng dụng.
+[2254] Định tuyến dựa trên hệ thống file (File-system Routing):
+[2255] Chỉ cần tạo một file .js, .jsx, .ts, .tsx trong thư mục pages (hoặc app đối với App Router, Next.js 15+), Next.js sẽ tự động tạo một route cho nó.
+[2256] Ví dụ: app/about.js sẽ tự động tạo route /about. pages/posts/[id].js tạo route động /posts/:id.
+[2257] Với React, bạn phải cài đặt và cấu hình một thư viện router (như React Router) một cách thủ công.
+[2258] API routes:
+[2259] Cho phép bạn tạo các endpoint API backend ngay trong thư mục pages/api (hoặc app/api).
+[2260] React chỉ là frontend. Để có API, bạn phải xây dựng một backend riêng biệt.
+[2261] Tuy nhiên trong các hệ thống vừa và lớn, Next.js vẫn chỉ nên nắm vai trò frontend, backend nên xây dựng riêng.
+[2262] Tối ưu hóa hình ảnh tích hợp (next/image):
+[2263] Component <Image/> của Next.js tự động tối ưu hóa hình ảnh (nén, đổi kích thước, chuyển đổi định dạng WebP, lazy loading) để tải nhanh hơn.
+[2264] Tối ưu hóa phông chữ (next/font):
+[2265] Tự động tối ưu hóa phông chữ.
+[2266] Tự động Code Splitting:
+[2267] Next.js tự động chia nhỏ code thành các gói nhỏ hơn cho từng trang. Mỗi trang chỉ tải code JS cần thiết cho chính nó.
+[2268] Với Create React App, bạn phải tự cấu hình React.lazy và Suspense cho từng component để đạt được Code Splitting hiệu quả.
+[2269] Fast Refresh (Trải nghiệm phát triển nhanh):
+[2270] Khi bạn thay đổi code, Next.js cập nhật ứng dụng ngay lập tức mà không làm mất trạng thái của component.
+[2271] Create React App cũng có Hot Module Replacement, nhưng Fast Refresh của Next.js thường ổn định và hiệu quả hơn.
+[2272] Hỗ trợ TypeScript, CSS Modules, Sass tích hợp sẵn:
+[2273] Cấu hình, tối ưu hóa sâu cho TypeScript, CSS Modules, Sass, Tailwind CSS.
+[2274] Vue.js (Core Concepts)
+[2275] Angular (Core Concepts)
+[2276] Scenario
+[2278] Devops & CI/CD
+[2279] Git
+[2280] Hệ thống quản lý mã nguồn phân tán.
+[2281] Overview
+[2282] Working Directory: Thư mục làm việc hiện tại.
+[2283] Staging Area: Khu vực tạm để chuẩn bị commit.
+[2284] Commit: Lưu lại trạng thái mã nguồn.
+[2285] Các lệnh thường dùng
+[2286] git init, git clone, git add, git commit, git push, git pull, git fetch.
+[2287] git branch, git checkout, git merge, git rebase, git reset, git revert, git stash, git cherry-pick.
+[2288] git log, git diff, git status, git reflog.
+[2289] Xử lý conlict
+[2290] Tình huống 1: Conflict khi pull/merge/rebase
+[2291] Nguyên nhân:
+[2292] + Nhiều người cùng sửa một file/dòng code.
+[2293] + Merge nhánh cũ vào nhánh mới có thay đổi xung đột.
+[2294] Cách xử lý:
+[2295] + Chạy git status để xem file conflict
+[2296] + Xem thay đổi từ 2 phía
+[2297] + Sửa thủ công, lưu file, git add
+[2298] + Tiếp tục quá trình merge/rebase
+[2299] git merge --continue # hoặc git rebase –continue
+[2301] Tình huống 2: Conflict khi cherry-pick
+[2302] Nguyên nhân: Commit được cherry-pick sửa code xung đột với code hiện tại.
+[2303] Cách xử lý:
+[2304] + Sửa file như tình huống 1
+[2305] + Sau khi fix xong dùng git cherry-pick –continue
+[2306] Tình huống 3: Conflict khi pull với thay đổi ở local chưa commit
+[2307] Cách xử lý:
+[2308] + Lưu tạm thay đổi ở local với git stash
+[2309] + Git pull
+[2310] + Khôi phục thay đổi với git stash pop / git stash apply
+[2311] Lưu ý:
+[2312] + Ưu tiên merge/rebase thường xuyên để giảm conflict
+[2313] + Luôn kéo code mới nhất trước khi bắt đầu làm việc (git pull --rebase).
+[2314] + Chia nhỏ commit để giảm scope conflict.
+[2315] + Thông báo cho team khi fix conflict phức tạp
+[2316] Best Practices
+[2317] Commit message: Viết rõ ràng theo quy ước.
+[2318] Atomic Commit: Mỗi commit chỉ thực hiện một thay đổi logic.
+[2319] Git Ignore: Thêm file không cần quản lý (log, binary) vào .gitignore.
+[2320] Bảo mật: Không commit secret key/token (dùng .env hoặc vault).
+[2321] Git rebase, git merge
+[2322] Giả sử branch ban đầu trông thế này:
+[2324] Combine các commit với rebase:
+[2326] Ưu điểm:
+[2327] Lịch sử commit sạch sẽ, dễ theo dõi.
+[2328] Tránh các commit merge không cần thiết.
+[2329] Nhược điểm: Nguy hiểm nếu dùng trên nhánh public (vì thay đổi lịch sử).
+[2330] Dùng khi: Cập nhật code từ nhánh chính vào feature branch.
+[2332] Combine các commit với merge:
+[2334] Ưu điểm:
+[2335] Lịch sử commit rõ ràng, thể hiện timeline phát triển song song.
+[2336] An toàn khi làm việc trên các nhánh public (ví dụ: main/master).
+[2337] Nhược điểm: Tạo ra nhiều commit "noise" (vd: "Merge branch X into Y").
+[2338] Dùng khi: Hợp nhất các nhánh lớn (ví dụ: feature → develop).
+[2340] Combine các commit với squash merge:
+[2342] + Merge thường: Giữ nguyên toàn bộ lịch sử commit
+[2343] + Merge squash: gộp nhiều commit thành 1 commit, giúp lịch sử nhánh đích sạch, gọn, che đi các commit trung gian
+[2345] Git cherry-pick
+[2346] Copy 1 commit vào 1 nhánh
+[2348] Revert một commit đã push
+[2349] Xác định mã commit cần revert:
+[2350] git log --oneline
+[2351] Thực hiện revert: git revert <commit-hash>
+[2352] Đẩy thay đổi lên remote: git push origin <branch-name>
+[2353] Nếu commit revert gây xung đột, phải fix conflict, sau khi fix:
+[2354] git add .
+[2355] git revert --continue
+[2356] Xóa commit cuối cùng trong local/remote
+[2357] Trên local:
+[2358] git reset --hard HEAD~1 # Xóa commit và thay đổi trong working directory
+[2359] git reset --soft HEAD~1 # Giữ thay đổi trong staging area
+[2360] Trên remote:
+[2361] git push --force-with-lease origin <branch-name>
+[2362] Chỉ dùng --force khi làm việc một mình, tránh ảnh hưởng đến người khác.
+[2363] OS & Linux
+[2364] Cloud Provider (AWS)
+[2365] Containerization - Docker & Kubernetes, Helm
+[2366] Docker
+[2367] Là nền tảng để đóng gói, phân phối và chạy các ứng dụng trong các chiếc “hộp” gọi là container.
+[2368] Container là một môi trường biệt lập, chứa tất cả các thành phần cần thiết để chạy ứng dụng (mã nguồn, thư viện, dependencies...) giúp ứng dụng đảm bảo chạy đồng nhất ở mọi môi trường.
+[2369] Core concept:
+[2370] Image: một snapshot của ứng dụng, bao gồm source code và toàn bộ môi trường để chạy nó
+[2371] Container: một instance, tức là 1 phiên bản chạy của image
+[2372] Dockerfile: Một text file chứa hướng dẫn để build một image
+[2373] Dockerhub: Kho lưu trữ image công khai
+[2374] Docker compose: Sử dụng một file docker-compose.yml để định nghĩa và quản lý multi-container cần dùng để chạy một ứng dụng
+[2375] Volume: nơi lưu dữ liệu nằm ngoài container, giống như một ổ cứng riêng không bị mất dữ liệu khi xóa hoặc tạo lại container. Thường dùng lưu database records hoặc các file upload trong hệ thống.
+[2377] Basic workflow:
+[2378] + Tạo Dockerfile:
+[2379] FROM: định nghĩa môi trường chạy (ví dụ Java 17)
+[2380] WORKDIR: định nghĩa thư mục làm việc (work directory)
+[2381] COPY: copy application file to container (ví dụ copy các file jar build bởi maven vào container)
+[2382] ENTRYPOINT: câu lệnh để chạy application. Ví dụ dưới: java –jar app.jar
+[2384] + Build  the Docker Image: tạo image từ Dockerfile
+[2385] docker build -t my-image .
+[2386] + Chạy docker container:
+[2387] docker run -p 8080:8080 my-image
+[2388] + Nếu nhiều container cùng chạy, sử dụng Docker Compose
+[2389] Chạy file docker-compose.yml để chạy nhiều dịch vụ (như db, be, fe, redis...)
+[2391] Start all services:
+[2392] docker-compose up
+[2393] hoặc nếu muốn chạy ở detached mode (chế độ ngầm):
+[2394] docker-compose up -d
+[2395] Một số command thay gặp:
+[2396] docker build -t my-image .
+[2397] Build an image from a docker file:
+[2398] docker build: Command to build image from Dockerfile
+[2399] -t my-image: Assign the image name my-image (tag)
+[2400] . : specific the current directory as the build context (the place that contains Dockerfile and necessary files)
+[2401] --> If you have Dockerfile in the current directory, running this command will create an image named my-image
+[2402] docker images
+[2403] List all docker images: display all image list, includes name, tag, image ID, created time and size
+[2405] docker run -p host_port:container_port my-image
+[2406] Run a container from image:
+[2407] docker run: create and run container
+[2408] -p host_port:container_port: Map port in host post with port in container
+[2409] Ex: -p 8080:8080 means access port 8080 in host machine -> port 8080 in container
+[2410] my-image: image name to run container
+[2412] docker ps
+[2413] List all running container
+[2414] Display container ID, status, image, mapping port...
+[2416] docker stop container_id
+[2417] Stop a running container
+[2419] docker rm container_id
+[2420] Remove a container after use
+[2422] docker rmi image_id
+[2423] Remove an image from the machine (can only be removed when no container is using that image)
+[2425] docker-compose up
+[2426] Start all services (multiple containers) by docker-compose.yml
+[2427] Automatically build image (if needed) and run containers, port configs, volume, environment... defined in docker-compose.yml
+[2428] Default running in foreground (display logs in terminal)
+[2430] docker-compose down
+[2431] Stop and delete all containers, network, volumn... created by docker-compose up
+[2432] Real-world application sử dụng docker với Spring boot và React js
+[2433] + Project structure:
+[2435] + Docker for backend:
+[2438] + Dockerfile for frontend
+[2439] # Sử dụng image Node để build ứng dụng
+[2440] FROM node:20-alpine as build
+[2441] WORKDIR /app
+[2442] COPY package*.json ./
+[2443] RUN npm install
+[2444] COPY . .
+[2445] RUN npm run build
+[2447] # Sử dụng image Nginx để phục vụ file tĩnh React
+[2448] FROM nginx:stable-alpine
+[2449] COPY --from=build /app/build /usr/share/nginx/html
+[2450] # Copy file cấu hình Nginx nếu cần (tùy chỉnh này cho trường hợp API backend ở cổng khác)
+[2451] # COPY nginx.conf /etc/nginx/nginx.conf
+[2452] EXPOSE 80
+[2453] CMD ["nginx", "-g", "daemon off;"]
+[2454] _____________________________________________________________
+[2455] DETAIL:
+[2456] WORKDIR /app : Create and move to /app directory in container (work space)
+[2457] COPY package*.json ./ :
+[2458] Copy files that declare package (package.json, package-lock.json) to container
+[2459] Only copy these files to use cache when npm install
+[2460] RUN npm install : install all packages and dependencies
+[2461] COPY . . : Copy all source code of frontend project to /app folder in container. Now app directory has react source code, configs, assets...
+[2462] RUN npm run build :
+[2463] Build React app to static files (usually folder /app/build)
+[2464] Static files are packed, compressed, optimized HTML, CSS, JS files
+[2465] COPY --from=build /app/build /usr/share/nginx/html :
+[2466] Copy build files from build stage (directory /app/build) to served directory of Nginx (/usr/share/nginx/html)
+[2467] # COPY nginx.conf /etc/nginx/nginx.conf :
+[2468] It’s optional (to use, remove comment tag), if you need to config Nginx in more detail (for example: proxy API to another backend port, custom header, rewrite...). Copy your config file (nginx.conf) to right place.
+[2469] EXPOSE 80
+[2470] Open port 80 (default port of HTTP server). Docker knows that this container will listen on port 80
+[2471] CMD ["nginx", "-g", "daemon off;"]
+[2472] Command to start Nginx in foreground mode (non-background running), help Docker keep the main process
+[2473] docker-compose.yml
+[2475] depends_on: để đảm bảo backend run sau database, frontend run sau backend
+[2477] Build and run steps
+[2478] Build each application before using Docker
+[2479] Backend (using maven)
+[2480] + Move to backend directory, run:
+[2481] mvn clean package
+[2482] + File jar will be in the folder backend/target/
+[2483] Frontend
+[2484] + Move to frontend directory, run:
+[2485] npm install
+[2486] npm run build
+[2487] + Build folder will be available after run above command
+[2488] Build and run with Docker Compose
+[2489] Move t	o root directory of project, run:
+[2490] docker-compose up --build
+[2492] Accessing
+[2493] Frontend: http://localhost:3000
+[2494] Backend: http://localhost:8080
+[2495] When ReactJS call API from backend, make sure call the correct address
+[2496] If proxy is needed, you can config in React with package.json or adjust configuration of Nginx proxy.
+[2497] Best practice khi sử dụng Docker:
+[2498] + Tối ưu hóa docker image:
+[2499] Sử dụng multi-stage build:
+Chỉ copy các file cần thiết vào image cuối cùng, loại bỏ tool, source code, thư viện build không cần thiết.
+[2500] Chọn base image tối ưu:
+Ưu tiên các image nhẹ như alpine, slim, hoặc các image chính thức được cập nhật thường xuyên.
+Ví dụ: node:20-alpine, python:3.12-slim, openjdk:17-jre-slim.
+[2501] Chỉ copy những gì cần thiết:
+Sử dụng .dockerignore để loại trừ file/thư mục không cần thiết (node_modules, .git, test, docs...).
+[2502] Layer caching thông minh:
+Sắp xếp lệnh Dockerfile để tận dụng cache, copy file cấu hình/lock trước, cài dependency rồi mới copy source code.
+[2503] Minify, compress, clean up:
+Xóa cache build, temp file sau khi cài dependency (sử dụng lệnh rm -rf, --no-cache khi có thể).
+[2505] + Bảo mật docker image:
+[2506] Chỉ cài những gì cần thiết:
+Tránh cài tool, package dư thừa. Chỉ giữ đúng runtime và dependency cho app.
+[2507] Luôn dùng bản image mới nhất:
+Update image base thường xuyên để nhận các bản vá bảo mật.
+[2508] User không phải root:
+Thêm lệnh USER appuser (sau khi tạo user bằng RUN adduser ...) để hạn chế quyền trong container.
+[2509] Chặn expose không cần thiết:
+Chỉ mở đúng cổng app, không expose thêm cổng hoặc dịch vụ không dùng.
+[2510] Quản lý secrets đúng cách:
+Không hard-code mật khẩu, token vào image. Sử dụng biến môi trường hoặc external secrets.
+[2511] Kiểm tra lỗ hổng security:
+Sử dụng công cụ như Trivy, Snyk để scan image, phát hiện package lỗi thời, lỗ hổng bảo mật.
+[2513] + Với Dockerfile:
+[2514] Gọn gàng, dễ đọc:
+Thêm chú thích, phân tách rõ các bước build, chỉ giữ lại những lệnh cần thiết.
+[2515] Không hard-code sensitive info:
+Không đẩy file cấu hình bí mật, mật khẩu, private key vào image.
+[2516] Dọn rác sau khi build:
+Ví dụ sau khi apt-get install, thực hiện apt-get clean và xóa /var/lib/apt/lists/*.
+[2517] Sử dụng Healthcheck:
+Thêm lệnh HEALTHCHECK để Docker tự kiểm tra trạng thái app.
+[2518] Kubernetes
+[2519] Là một open source platform quản lý nhiều container, tự động deploy, scale và quản lý các ứng dụng được container hóa (như sử dụng docker)
+[2520] So với docker:
+[2521] + Docker: là công cụ để tạo và chạy container
+[2522] + K8s: là platform có thể quản lý nhiều container Docker (hoặc non-Docker container), trên nhiều server khác nhau
+[2524] So với docker compose:
+[2526] Core concept:
+[2527] + Cluster (cụm máy chủ): tập hợp các servers được quản lý cùng nhau
+[2528] Một hệ thống lớn có thể có nhiều cluster, mỗi cluster có nhiều server. Cluster giống như một khu vườn, trong khu vườn có nhiều mảnh đất nhỏ để trồng từng loại cây. Từng mảnh đất này giống như các server.
+[2529] + Server (Node): máy chủ vật lý hoặc ảo, có thể chạy nhiều ứng dụng
+[2530] + Pod: Là đơn vị nhỏ nhất chứa một hoặc nhiều container.
+[2531] Giống như mỗi chậu cây trên 1 mảnh đất (có thể chứa 1 cây hoặc một cụm cây)
+[2532] + Container: một ứng dụng hoặc dịch vụ riêng lẻ (như Spring boot app hoặc Postgre s database...).
+[2533] Giống như một cây trong chậu.
+[2534] + Deployment: deploy toàn bộ ứng dụng.
+[2535] Giống như kế hoạch trồng cây số lượng lớn trong vườn. Bạn khai báo số lượng chậu cây (Pod), loại cây (Container) sẽ được trồng, K8s sẽ tự động trồng đúng số lượng theo yêu cầu.
+[2536] + Service: bộ định tuyến giúp các ứng dụng bên ngoài hoặc các Pod khác biết cách truy cập đến một Pod.
+[2537] Giống như biển chỉ dẫn trong vườn, giúp mọi người biết đường tới các chậu cây.
+[2538] + Namespace: chia nhỏ cluster thành các môi trường (dev, test, prod...) hoặc phân quyền truy cập cho từng team, giúp quản lý dễ dàng hơn
+[2539] Giống như các khu vực riêng biệt trong vườn: vườn rau, vườn hoa, vườn cây cảnh...
+[2540] + Volume: nơi lưu trữ dữ liệu dùng chung hoặc lâu dài cho các Container
+[2541] Giống kho phân bón có thể dùng chung để bón cho các chậu cây khi cần.
+[2542] + ConfigMap & Secret:  ConfigMap lưu trữ cấu hình không nhạy cảm, Secret lưu trữ thông tin nhạy cảm
+[2543] + Ingress: quản lý truy cập từ bên ngoài vào các dịch vụ trong cluster
+[2544] Giống cổng kiểm soát ra vào CHÍNH của cả khu vườn
+[2545] Tại sao dùng Kubernetes?
+[2546] + Tự động hóa quản lý container: triển khai, cập nhật, rollback, scale tự động.
+[2547] + Đảm bảo tính sẵn sàng: Nếu 1 container chết, K8s tự động khởi động lại hoặc thay thế.
+[2548] + Cân bằng tải: điều phối traffic đều cho các container.
+[2549] + Quản lý cấu hình và secret: dễ dàng truyền biến môi trường, file cấu hình, secret an toàn.
+[2550] + Phù hợp cho microservices: Quản lý tốt các ứng dụng chia nhỏ thành các service độc lập.
+[2552] Kiến trúc K8s
+[2553] +---------------------------------------------------------------+
+|                   Kubernetes Cluster                          |
+|                                                               |
+|  +-------------------+      +-----------------------+         |
+|  |    Clients        |----->|    Control Plane      |         |
+|  | - kubectl         |      |  (Master Node)        |         |
+|  | - Dashboard       |      |-----------------------|         |
+|  +-------------------+      |   API Server          |         |
+|                             |   etcd                |         |
+|                             |   Scheduler           |         |
+|                             |   Controller Manager  |         |
+|                             +-----------------------+         |
+|                                                               |
+|  +-------------------+   +-------------------+                |
+|  | Worker Node 1     |   | Worker Node 2     |                |
+|  |-------------------|   |-------------------|                |
+|  | kubelet           |   | kubelet           |                |
+|  | kube-proxy        |   | kube-proxy        |                |
+|  | Container runtime |   | Container runtime |                |
+|  |                   |   |                   |                |
+|  |   +-------------+ |   |   +------------+  |                |
+|  |   |   Pod       | |   |   |   Pod      |  |                |
+|  |   |             | |   |   |            |  |                |
+|  |   | +---------+ | |   |   | +--------+ |  |                |
+|  |   | |Volume   | | |   |   | |Volume  | |  |                |
+|  |   | +---------+ | |   |   | +--------+ |  |                |
+|  |   |             | |   |   |            |  |                |
+|  |   +-------------+ |   |   +------------+  |                |
+|  +-------------------+   +-------------------+                |
+|                                                               |
+|   +------------------------------------------------------+    |
+|   |            Service (ClusterIP, NodePort, LB)         |    |
+|   |  - Expose Pod ra bên ngoài hoặc nội bộ cluster       |    |
+|   +------------------------------------------------------+    |
+|                                                               |
+|   +----------------------------------------------------+      |
+|   |              External System/Resource              |      |
+|   |  - Database, NFS, Cloud Storage, API, ...          |      |
+|   +----------------------------------------------------+      |
+|                                                               |
++---------------------------------------------------------------+
+[2556] + Clients / API (kubectl, dashboard)
+[2557] kubectl: command tool để giao tiếp với K8s
+[2558] Dashboard/Devops tool: Giao diện quản trị, CICD, monitoring
+[2559] + Master Node (Control Plane)
+[2560] API server: cửa giao tiếp, nhận lệnh từ client/devops
+[2561] Scheduler: Quyết định pod nào chạy ở node nào dựa vào tài nguyên, rule, policies
+[2562] Controller Manager: Tự động thực hiện các hành động đảm bảo trạng thái hệ thống đúng như khai báo về số lượng pod, tự động xử lý lỗi...
+[2563] etcd: Hệ thống lưu trữ key-value phân tán, dùng để lưu trữ toàn bộ trạng thái của cluster (cấu hình, secret, trạng thái pod...), đảm bảo tính nhất quán của dữ liệu trong cluster
+[2564] + Worker Nodes
+[2565] kubelet: “người quản lý”, nhận lệnh từ Master Node, monitor các Pod
+[2566] kube-proxy: Network manager, forward yêu cầu đến đúng cổng
+[2567] Container Runtime: Container running platform, ví dụ như Docker.
+[2568] + Pods
+[2569] Là đơn vị nhỏ nhất, thường chứa 1 container (có thể nhiều), Pod được tạo hoặc hủy bởi K8s tùy vào kế hoạch Deployment/ReplicaSet
+[2570] + Service & Network
+[2571] Service: địa chỉ ảo, giúp Pods giao tiếp và load balancing
+[2572] Ingress, LoadBalancer: Export services ra ngoài internet
+[2573] + Volume
+[2574] emptyDir: được tạo khi Pod được tạo và tồn tại đến khi Pod bị xóa, thường dùng làm bộ nhớ tạm
+[2576] hostPath: Dùng để mount một thư mục trên node (server) vào Pod, có thể nguy hiểm nếu không cấu hình cẩn thận
+[2578] configMap, secret: Dùng để mount các file cấu hình hoặc các thông tin nhạy cảm (password, key,...) vào container. Đây là các file cấu hình secret của từng container, cần phân biệt với ConfigMap & Secret của Kubernetes.
+[2579] PersistentVolume (PV) & PersistentVolumeClaim (PVC): Dùng để lưu trữ dữ liệu bền vững, vượt ngoài vòng đời của Pod. PV là tài nguyên lưu trữ vật lý trên cluster, còn PVC là yêu cầu sử dụng storage của user. Phù hợp cho các ứng dụng cần lưu trữ dữ liệu lâu dài (cơ sở dữ liệu, logs,...).
+[2583] Quy trình hoạt động điển hình:
+[2585] Real-world example
+[2586] + Cấu trúc thư mục:
+[2587] Dockerfile: Mỗi service có một Dockerfile riêng để build image
+[2588] k8s/: thư mục lưu trữ toàn bộ các file yaml của K8s
+[2590] Quy trình CI/CD cơ bản (tham khảo phần sau)
+[2591] Mục tiêu của CI/CD:
+[2592] Tự động build, test, đóng gói Docker image cho cả BE và FE
+[2593] Push image lên Docker Registry
+[2594] Tự động deploy lên K8s cluster (trên cloud hoặc local như Minikube...)
+[2595] Ví dụ CI/CD với github actions:
+[2596] name: CI/CD Pipeline
+[2598] on:
+[2599] push:
+[2600] branches: [main]
+[2601] pull_request:
+[2602] branches: [main]
+[2604] jobs:
+[2605] build-and-deploy:
+[2606] runs-on: ubuntu-latest
+[2607] steps:
+[2608] # 1. Lấy code
+[2609] - uses: actions/checkout@v3
+[2611] # 2. Setup Java/Node.js
+[2612] - name: Set up JDK 17
+[2613] uses: actions/setup-java@v3
+[2614] with:
+[2615] java-version: '17'
+[2616] distribution: 'temurin'
+[2617] - name: Set up Node.js
+[2618] uses: actions/setup-node@v3
+[2619] with:
+[2620] node-version: '18'
+[2622] # 3. Cài dependency và lint, test, sonar cho backend
+[2623] - name: Install backend dependencies and run lint
+[2624] run: |
+[2625] cd backend
+[2626] ./gradlew spotlessCheck  # Lint (nếu dùng Spotless cho Java/Kotlin)
+[2627] - name: Run backend unit test
+[2628] run: |
+[2629] cd backend
+[2630] ./gradlew test
+[2631] - name: SonarQube Scan (backend)
+[2632] env:
+[2633] SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+[2634] run: |
+[2635] cd backend
+[2636] ./gradlew sonarqube \
+[2637] -Dsonar.projectKey=your-key \
+[2638] -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
+[2639] -Dsonar.login=${{ secrets.SONAR_TOKEN }}
+[2641] # 4. Cài dependency và lint, test, sonar cho frontend
+[2642] - name: Install frontend dependencies and run lint
+[2643] run: |
+[2644] cd frontend
+[2645] npm install
+[2646] npm run lint
+[2647] - name: Run frontend unit test
+[2648] run: |
+[2649] cd frontend
+[2650] npm test -- --watchAll=false
+[2651] - name: SonarQube Scan (frontend)
+[2652] env:
+[2653] SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+[2654] run: |
+[2655] cd frontend
+[2656] npx sonar-scanner \
+[2657] -Dsonar.projectKey=your-frontend-key \
+[2658] -Dsonar.organization=your-org \
+[2659] -Dsonar.sources=. \
+[2660] -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
+[2661] -Dsonar.login=${{ secrets.SONAR_TOKEN }}
+[2663] # 5. Build Docker images
+[2664] - name: Build backend image
+[2665] run: |
+[2666] cd backend
+[2667] docker build –t ${{ secrets.DOCKER_REGISTRY }}/backend:${{ github.sha }} .
+[2668] - name: Build frontend image
+[2669] run: |
+[2670] cd frontend
+[2671] docker build -t ${{ secrets.DOCKER_REGISTRY }}/frontend:${{ github.sha }} .
+[2673] # 6. Push images
+[2674] - name: Login to Docker Registry
+[2675] run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+[2676] - name: Push backend image
+[2677] run: docker push ${{ secrets.DOCKER_REGISTRY }}/backend:${{ github.sha }}
+[2678] - name: Push frontend image
+[2679] run: docker push ${{ secrets.DOCKER_REGISTRY }}/frontend:${{ github.sha }}
+[2681] # 7. Deploy to Kubernetes
+[2682] - name: Deploy to Kubernetes
+[2683] uses: azure/k8s-deploy@v4
+[2684] with:
+[2685] manifests: |
+[2686] ./k8s/backend/spring-deployment.yaml
+[2687] ./k8s/frontend/react-deployment.yaml
+[2688] images: |
+[2689] ${{ secrets.DOCKER_REGISTRY }}/backend:${{ github.sha }}
+[2690] ${{ secrets.DOCKER_REGISTRY }}/frontend:${{ github.sha }}
+[2692] # 8. Kiểm tra rollout (tuỳ chọn, nâng cao)
+[2693] - name: Check rollout status backend
+[2694] run: kubectl rollout status deployment/backend
+[2695] - name: Check rollout status frontend
+[2696] run: kubectl rollout status deployment/frontend
+[2698] Kiểm tra rollout: xem trạng thái quá trình deploy/update của một tài nguyên.
+[2700] Quy trình thực tế end-to-end – refer từ file trên:
+[2701] + Developer push code lên Git (main branch), trước khi push:
+[2702] SonarQube kiểm tra code quality, nguy hiểm bảo mật
+[2703] pre-commit hook: chạy lint, format code trước khi push
+[2704] + Tạo Pull Request (merge request)
+[2705] Developer tạo PR để merge code từ các nhánh phụ vào nhánh main
+[2706] Trước khi merge, có thể check code, review và request fix nếu cần
+[2707] + Sau khi xử lý merge và push lên nhánh main, quá trình CI/CD bắt đầu:
+[2708] Build backend và React.js, setup tất cả các phụ thuộc
+[2709] Chạy lại lint lần nữa để đảm bảo tất cả đều pass lint
+[2710] Run unit test: check business logic
+[2711] Run SonarQube/Sonar Cloud (CI/CD stage): kiểm tra lần nữa kĩ hơn - chất lượng code, code smell (code có rủi ro), security, coverage (mức độ pass test)...
+[2712] Sau khi pass các pre-condition trên, build Docker image cho BE, FE
+[2713] Push image lên Docker Registry (có thể là Docker Hub, hoặc ECR với AWS)
+[2714] Cập nhật image mới cho deployment trong K8s, K8s thực hiện rolling update, không bị gián đoạn dịch vụ khi đang update.
+[2715] + K8s sẽ tự động:
+[2716] Tạo một Pod mới với image vừa cập nhật, đợi nó chạy xong, health check ok
+[2717] Xóa dần các Pod cũ, tiếp tục tạo Pod mới cho đến khi đủ số lượng
+[2718] Đảm bảo mọi service luôn sẵn sàng cho đến khi các Pod đều đã chạy với image mới
+[2719] K8s dùng service discovery để FE, BE, DB tự động kết nối với nhau
+[2720] Thu thập log và monitoring tích hợp qua Prometheus / Grafana / ELK stack / CloudWatch (với AWS)
+[2722] Helm
+[2723] Helm là một công cụ quản lý package (giống như apt, yum, npm nhưng cho Kubernetes).
+[2724] Helm giúp bạn đóng gói, chia sẻ, cài đặt, nâng cấp, rollback các ứng dụng trên Kubernetes một cách dễ dàng bằng các "chart".
+[2725] Core concept: Helm Chart
+[2726] Helm Chart là một “gói” gồm các file YAML định nghĩa tài nguyên (Deployment, Service, ConfigMap, Secret...) và các template hỗ trợ biến, logic.
+[2727] Chart giúp bạn dễ dàng tái sử dụng, cấu hình linh hoạt và quản lý ứng dụng phức tạp trên K8s.
+[2728] Cấu trúc Helm Chart:
+[2730] Các lệnh cơ bản:
+[2731] + Cài đặt Helm:
+[2732] curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+[2733] + Làm việc với chart:
+[2734] Tạo chart mới: helm create mychart
+[2735] Cài chart lên cluster: helm install release-name ./mychart
+[2736] Nâng cấp chart (update config, version..): helm upgrade release-name ./mychart
+[2737] Gỡ chart: helm uninstall release-name
+[2738] Xem list release đã cài: helm list
+[2739] Rollback: helm rollback release-name <revision>
+[2740] Tùy biến cấu hình với values.yaml
+[2741] Có thể ghi đè giá trị trong values.yaml bằng file khác hoặc trực tiếp qua dòng lệnh:
+[2742] helm install release-name ./mychart -f my-values.yaml
+[2743] hoặc
+[2744] helm install release-name ./mychart --set image.tag=2.0
+[2745] Các giá trị này sẽ được đưa vào template YAML qua cú pháp {{ .Values.xxx }}.
+[2746] Làm việc với template (biến và logic)
+[2747] Trong thư mục templates/, các file .yaml có thể dùng biến, vòng lặp, điều kiện bằng cú pháp Go template.
+[2749] Một số chart phổ biến:
+[2750] nginx: Triển khai Nginx web server.
+[2751] mysql, postgresql, mongodb: Database chart.
+[2752] prometheus, grafana: Monitoring.
+[2753] jenkins: CI/CD.
+[2754] wordpress, redmine: Ứng dụng web phổ biến.
+[2755] bitnami/kafka, bitnami/redis, bitnami/elasticsearch...
+[2757] Real-world example:
+[2759] Frontend gửi request tới backend qua service discovery.
+[2760] Backend kết nối MySQL cũng qua service name.
+[2761] Mỗi thành phần là một deployment và có service riêng.
+[2763] Cấu trúc Helm Chart tổng thể:
+[2768] ...
+[2770] Infrastructure as Code
+[2771] Infrastructure as Code là việc mô tả hạ tầng (server, network, storage, cấu hình ứng dụng, v.v.) bằng file code/script thay vì cấu hình thủ công.
+[2772] Nhờ IaC, bạn có thể:
+[2773] Tự động tạo mới, sửa đổi, xóa hạ tầng chỉ bằng code.
+[2774] Dễ kiểm soát, version, rollback, review và chia sẻ.
+[2775] Đảm bảo mọi môi trường (dev, staging, prod) giống nhau, tránh sai sót thủ công.
+[2776] Áp dụng với Kubernetes & Helm:
+[2777] Các file YAML Kubernetes (Deployment, Service, Ingress, ConfigMap, v.v.) chính là IaC.
+[2778] Helm chart là “gói” IaC: bạn chỉ cần giữ chart trên Git, mọi người đều có thể deploy hệ thống giống nhau.
+[2779] Khi cần thay đổi cấu hình (số Pod, image, port, DB,...) chỉ chỉnh sửa file values hoặc template và cập nhật lên Git.
+[2780] Các tool IaC phổ biến:
+[2781] Terraform: Tạo hạ tầng cloud (AWS, GCP, Azure, v.v.)
+[2782] Ansible: Tự động cấu hình server, app.
+[2783] Helm: Quản lý ứng dụng trên K8s.
+[2784] Kustomize: Tùy biến YAML trên K8s.
+[2786] CI/CD
+[2787] CI/CD là quy trình tự động hóa từ lúc code được commit lên Git → build → test → deploy lên server/cluster.
+[2788] CI (Continuous Integration): Tự động kiểm tra, build, test code khi có thay đổi.
+[2789] CD (Continuous Deployment/Delivery): Tự động deploy code/app lên môi trường (dev, staging, prod).
+[2790] Lợi ích:
+[2791] Triển khai nhanh, giảm lỗi, rollback dễ dàng.
+[2792] Đảm bảo chất lượng code (test, lint, kiểm tra bảo mật...).
+[2793] Dễ mở rộng, chuẩn hóa quy trình làm việc nhóm.
+[2794] Jenkins
+[2795] Jenkins là nền tảng CI/CD mã nguồn mở, phổ biến từ lâu, có thể cài trên server riêng.
+[2796] Định nghĩa quy trình CI/CD qua file Jenkinsfile hoặc cấu hình qua giao diện web.
+[2797] Jenkins hỗ trợ build, test, deploy cho hầu hết ngôn ngữ/lập trình, tích hợp với nhiều công cụ (Docker, cloud, VM, scp, rsync, v.v.).
+[2798] Có thể mở rộng qua plugin.
+[2799] Quy trình Jenkins điển hình:
+[2800] Jenkins nhận tín hiệu có code mới (webhook/polling).
+[2801] Tự động chạy các bước build/test/deploy như bạn định nghĩa trong pipeline.
+[2802] Ví dụ một Jenkinsfile:
+[2803] pipeline {
+[2804] agent any
+[2805] stages {
+[2806] stage('Build') {
+[2807] steps {
+[2808] echo 'Building the application...'
+[2809] // Ví dụ với Node.js: sh 'npm install'
+[2810] // Ví dụ với Java: sh 'mvn clean package'
+[2811] }
+[2812] }
+[2813] stage('Test') {
+[2814] steps {
+[2815] echo 'Running tests...'
+[2816] // Ví dụ với Node.js: sh 'npm test'
+[2817] // Ví dụ với Java: sh 'mvn test'
+[2818] }
+[2819] }
+[2820] stage('Deploy') {
+[2821] steps {
+[2822] echo 'Deploying application...'
+[2823] // Ví dụ: sh './deploy.sh'
+[2824] // Hoặc: sh 'scp target/app.jar user@server:/deploy/path/'
+[2825] }
+[2826] }
+[2827] }
+[2828] post {
+[2829] success {
+[2830] echo 'Pipeline succeeded!'
+[2831] }
+[2832] failure {
+[2833] echo 'Pipeline failed.'
+[2834] }
+[2835] }
+[2836] }
+[2837] GitHub actions
+[2839] Mỗi lần push, pull request, hoặc theo lịch, workflow sẽ tự động chạy.
+[2840] Hỗ trợ rất nhiều action (build, test, deploy, notification, cloud, ...).
+[2842] Khi có sự kiện (push, PR, tag, ...), GitHub Actions tự động chạy workflow.
+[2843] Thực hiện build, test, upload artifact, deploy, v.v. theo file yaml.
+[2844] Ví dụ GitHub Actions workflow file đơn giản (.github/workflows/ci-cd.yml)
+[2845] name: Simple CI/CD
+[2847] on:
+[2848] push:
+[2849] branches: [ main ]
+[2850] pull_request:
+[2851] branches: [ main ]
+[2853] jobs:
+[2854] build-test-deploy:
+[2855] runs-on: ubuntu-latest
+[2857] steps:
+[2858] - name: Checkout code
+[2859] uses: actions/checkout@v3
+[2861] - name: Set up Node.js # Đổi cho phù hợp, ví dụ với Java thì dùng setup-java
+[2862] uses: actions/setup-node@v3
+[2863] with:
+[2864] node-version: '18'
+[2866] - name: Build
+[2867] run: |
+[2868] echo "Building the application..."
+[2869] # npm install
+[2870] # với Java: mvn clean package
+[2871] # với Python: pip install -r requirements.txt
+[2873] - name: Test
+[2874] run: |
+[2875] echo "Running tests..."
+[2876] # npm test
+[2877] # với Java: mvn test
+[2878] # với Python: pytest
+[2880] - name: Deploy
+[2881] run: |
+[2882] echo "Deploying application..."
+[2883] # ./deploy.sh
+[2884] # scp, rsync, hoặc lệnh deploy khác
+[2886] Monitoring & Logging
+[2887] Monitoring
+[2888] Monitoring là việc theo dõi liên tục các chỉ số (metrics) của hệ thống: CPU, RAM, Disk, Network, số lượng request, thời gian đáp ứng, lỗi, trạng thái dịch vụ...
+[2889] Giúp phát hiện sớm sự cố, cảnh báo chủ động, tối ưu hiệu năng, đảm bảo hệ thống luôn hoạt động ổn định.
+[2890] Các công cụ phổ biến: Prometheus, Grafana, CloudWatch...
+[2891] Logging
+[2892] Logging là việc ghi lại các sự kiện, hoạt động, lỗi... của hệ thống và ứng dụng vào file hoặc hệ thống lưu trữ tập trung.
+[2893] Log giúp debug, phân tích nguyên nhân lỗi, điều tra bảo mật, truy vết hoạt động, kiểm tra lịch sử, v.v.
+[2894] Các công cụ phổ biến: ELK stack (Elasticsearch, Logstash, Kibana), Loki, CloudWatch Logs...
+[2896] Security best practices
+[2897] Kiểm soát quyền truy cập: Sử dụng xác thực mạnh, phân quyền rõ ràng (RBAC), chỉ cấp quyền tối thiểu cần thiết.
+[2898] Quản lý secret an toàn: Không lưu mật khẩu, token, key trong code; dùng công cụ quản lý secret (Kubernetes Secret, Vault, AWS Secrets Manager...).
+[2899] Sử dụng HTTPS/SSL: Bảo vệ dữ liệu khi truyền qua mạng.
+[2900] Kiểm tra lỗ hổng thường xuyên: Scan code, scan image, kiểm tra dependency bằng các công cụ bảo mật (SonarQube, Trivy, Snyk, ...)
+[2901] Cập nhật phần mềm thường xuyên: Vá lỗi bảo mật, cập nhật version mới.
+[2902] Không chạy ứng dụng với quyền root nếu không cần thiết.
+[2903] Bảo vệ endpoint, hạn chế IP truy cập, dùng firewall/network policy.
+[2904] Kiểm tra và log truy cập hệ thống, phát hiện hoạt động bất thường.
+[2906] Deployment Strategies
+[2907] Rolling Update
+[2908] Triển khai dần dần phiên bản mới, lần lượt thay thế từng phần của hệ thống.
+[2909] Đảm bảo luôn có dịch vụ online, không downtime.
+[2910] Phù hợp với Kubernetes, Docker Swarm, các hệ thống có nhiều node.
+[2911] Blue-Green Deployment
+[2912] Tạo hai môi trường song song: “Blue” (cũ) và “Green” (mới).
+[2913] Khi deploy xong ở môi trường “Green”, chuyển trafffic từ “Blue” sang “Green”.
+[2914] Giúp rollback nhanh nếu có sự cố, giảm rủi ro.
+[2915] Canary Deployment
+[2916] Chỉ deploy phiên bản mới cho một phần nhỏ người dùng (ví dụ: 5% traffic).
+[2917] Theo dõi phản hồi, nếu ổn thì tăng dần số người dùng sử dụng bản mới.
+[2918] Phù hợp khi cần kiểm tra, thử nghiệm, giảm tác động lỗi.
+[2919] Recreate
+[2920] Dừng toàn bộ phiên bản cũ rồi mới chạy phiên bản mới.
+[2921] Có downtime, ít dùng trong hệ thống cần high availability.
+[2923] Best practice:
+[2924] Luôn có phương án rollback nhanh.
+[2925] Triển khai từng bước, có kiểm thử tự động trước khi release.
+[2926] Theo dõi hệ thống sát sao khi vừa deploy.
+[2928] Testing & Quality Assurance
+[2929] TDD, BDD, Unit/Integration/E2E Testing
+[2930] TDD
+[2931] Là phương pháp phát triển phần mềm mà bạn viết test trước, sau đó mới code để làm test đó chạy pass.
+[2932] Quy trình:
+[2933] Viết test (thường là unit test).
+[2934] Chạy test (fail vì chưa có code).
+[2935] Viết code hoàn thiện.
+[2936] Chạy lại test (pass).
+[2937] Refactor code/test nếu cần.
+[2938] Lợi ích: Code chất lượng hơn, ít bug, dễ bảo trì.
+[2939] Ví dụ: Giả sử bạn muốn tạo hàm kiểm tra đăng nhập:
+[2940] Viết kiểm thử trước (ví dụ dùng Jest với JavaScript):
+[2941] test('đăng nhập thành công với tài khoản đúng', () => {
+  expect(login('user', 'pass')).toBe(true);
+});
+test('đăng nhập thất bại với tài khoản sai', () => {
+  expect(login('user', 'wrongpass')).toBe(false);
+});
+[2942] Viết mã để kiểm thử vượt qua:
+[2943] function login(username, password) {
+  return username === 'user' && password === 'pass';
+}
+[2945] BDD
+[2946] Phát triển dựa trên hành vi, tập trung vào kịch bản sử dụng thực tế.
+[2947] Test thường được mô tả bằng ngôn ngữ tự nhiên (Given-When-Then) giúp cả dev, tester, BA, khách hàng cùng hiểu.
+[2948] Ví dụ dùng Gherkin (cú pháp của Cucumber):
+[2950] Các loại test
+[2951] Unit Test: Kiểm tra từng “đơn vị” nhỏ nhất (hàm, class) một cách độc lập.
+[2952] Ví dụ: Kiểm tra 1 hàm tính toán, 1 API xử lý đầu vào.
+[2953] Integration Test: Kiểm tra sự phối hợp giữa các module, hoặc giữa app với DB, API ngoài.
+[2954] E2E (End-to-End) Test: Kiểm tra toàn bộ luồng hoạt động, từ giao diện người dùng đến backend, database... như người dùng thật.
+[2955] Thường kết hợp cả 3 loại để đảm bảo chất lượng toàn diện.
+[2956] Performance Testing, Load Testing
+[2957] Performance Testing: Đo hiệu năng hệ thống/app (tốc độ, độ trễ, throughput, sử dụng CPU/RAM...).
+[2958] Load Testing: Đưa tải lớn (nhiều người dùng, request đồng thời) để xem hệ thống chịu được bao nhiêu trước khi chậm/hỏng.
+[2959] Stress Testing: Đẩy quá tải để xem điểm gãy hệ thống.
+[2960] Soak Testing: Chạy tải ổn định trong thời gian dài, tìm lỗi rò rỉ tài nguyên (memory leak...).
+[2961] Công cụ phổ biến: JMeter, Gatling, Locust, k6, Artillery.
+[2962] Code Review, Static Code Analysis (SonarQube)
+[2963] Code Review
+[2964] Là quá trình đồng đội kiểm tra code của nhau trước khi merge vào branch chính.
+[2965] Nhằm phát hiện bug, code smell, sai logic, thiếu test, code khó hiểu...
+[2966] Được tích hợp trong GitHub/GitLab/Bitbucket Pull Request/Merge Request.
+[2967] Lợi ích: Nâng cao chất lượng, chia sẻ kiến thức, giảm rủi ro.
+[2968] Static Code Analysis
+[2969] Là việc dùng công cụ tự động quét code để phát hiện lỗi, lỗ hổng, code xấu, vi phạm chuẩn coding, lặp code, bug tiềm ẩn...
+[2970] SonarQube là công cụ rất phổ biến: hỗ trợ đa ngôn ngữ, phân tích code smell, bug, security hotspot, technical debt, v.v.
+[2971] Thường tích hợp vào CI/CD để kiểm tra tự động, không cho phép merge nếu điểm chất lượng thấp.
+[2973] Automation Testing (Selenium, Cypress)
+[2974] Automation Testing là sử dụng các script/công cụ để tự động kiểm thử, thay vì thao tác tay.
+[2975] Selenium: Thư viện automation test phổ biến nhất cho web application, hỗ trợ nhiều ngôn ngữ (Java, Python, C#, JS...), chạy trên nhiều browser.
+[2976] Cypress: Framework hiện đại cho E2E testing web, dễ viết test, tích hợp CI/CD tốt, rất mạnh cho SPA/React/Vue/Angular.
+[2977] Appium: Tự động test mobile app.
+[2978] Lợi ích: Test nhanh, lặp lại nhiều lần, giảm công sức thủ công, tăng độ tin cậy.
+[2980] Overall picture
+[2982] Hardware / Network → cơ sở vật lý & kết nối
+[2983] OS / Virtualization → quản lý tài nguyên, chạy process / container
+[2984] Middleware / Platform → DB, message queue, caching, server, load balancer
+[2985] Application / Backend / Frontend → business logic, API, UI
+[2986] Enterprise & Distributed Patterns → microservices, DDD, event-driven, resilience
+[2987] DevOps / CI-CD / Cloud → deploy, scale, config, automation
+[2988] Observability / Security → monitor, trace, bảo mật, alerting
+[2990] Another topics
+[2991] Algorithm
+[2992] Node.js
+[2993] C & C++
+[2994] Python, Bash, Shell
+[2995] Mobile programming
+[2996] Network infra
+[2997] AI
+[2998] Big Data
+[2999] Blockchain
+[3000] Security
+[3001] Soft Skills & Leadership

@@ -1,23 +1,23 @@
-# Nguyên lý thiết kế
+# Nguyên lý YAGNI
 
-## 5. Nguyên lý YAGNI — You Aren't Gonna Need It
+## 
 
-### 5.1. Khái niệm cốt lõi
+### Khái niệm cốt lõi
 
 > Không implement các features, abstractions, hoặc flexibility mà bạn không cần ngay bây giờ.
 
 YAGNI là một nguyên lý của extreme programming (XP) khuyên rằng không nên thiết kế dự phòng. Chỉ xây dựng những gì được yêu cầu bởi requirements hiện tại, không phải những gì bạn dự đoán có thể cần trong tương lai.
 
-### 5.2. Mục đích
+### Mục đích
 
 - **Tránh nỗ lực lãng phí:** Không dành thời gian code features sẽ không bao giờ được dùng
 - **Codebase nhỏ gọn hơn, sạch hơn:** Ít code hơn có nghĩa ít bug hơn và dễ bảo trì hơn
 - **Giao hàng nhanh hơn:** Ship giá trị cho người dùng sớm hơn
 - **Giảm độ phức tạp:** Không có abstractions không cần thiết làm rối thiết kế
 
-### 5.3. YAGNI trong thực tế
+### YAGNI trong thực tế
 
-#### 5.3.1. Những gì KHÔNG NÊN làm
+#### Những gì KHÔNG NÊN làm
 
 ```typescript
 // Bad: Thêm "flexibility" cho nhu cầu tưởng tượng trong tương lai
@@ -35,7 +35,7 @@ class User {
 }
 ```
 
-#### 5.3.2. Những gì NÊN làm thay thế
+#### Những gì NÊN làm thay thế
 
 ```typescript
 // Good: Đơn giản và trực tiếp — giải quyết vấn đề hiện tại
@@ -51,7 +51,7 @@ class UserRepository {
 }
 ```
 
-### 5.4. YAGNI vs. Nguyên lý SOLID
+### YAGNI vs. Nguyên lý SOLID
 
 YAGNI không có nghĩa là viết code lộn xộn, không thể mở rộng. Nó có nghĩa là:
 
@@ -63,7 +63,7 @@ YAGNI không có nghĩa là viết code lộn xộn, không thể mở rộng. N
 
 > **Tip:** Chìa khóa là **timing**. Nguyên lý SOLID giúp khi cần mở rộng code hiện tại. YAGNI nói: đợi cho đến khi thực sự cần mở rộng nó. Premature abstraction cũng có hại như premature optimization.
 
-### 5.5. Nhận diện vi phạm YAGNI
+### Nhận diện vi phạm YAGNI
 
 Cẩn thận với các dấu hiệu đỏ sau:
 
@@ -73,13 +73,13 @@ Cẩn thận với các dấu hiệu đỏ sau:
 - **Feature flags cho features chưa quyết định:** Hệ thống over-configured
 - **Interfaces quá nhiều:** Một interface cho mỗi class, kể cả internal services nhỏ
 
-### 5.6. Khi nào YAGNI có thể bị áp dụng quá đà
+### Khi nào YAGNI có thể bị áp dụng quá đà
 
 - Khi nó dẫn đến **code trùng lặp** rõ ràng nên được chia sẻ
 - Khi codebase trở nên **khó test** do tight coupling
 - Khi **nhu cầu kiến trúc rõ ràng** (ví dụ: database layer) bị bỏ qua
 
-### 5.7. Quy tắc thực tế
+### Quy tắc thực tế
 
 | Câu hỏi | YAGNI verdict |
 |---|---|
@@ -88,7 +88,7 @@ Cẩn thận với các dấu hiệu đỏ sau:
 | Đây là để tránh một code smell rõ ràng? | Sửa smell đó |
 | Đây là vì "we might need it"? | Không thêm |
 
-### 5.8. Mối quan hệ YAGNI và DRY
+### Mối quan hệ YAGNI và DRY
 
 > **Tóm tắt:** YAGNI và DRY bổ sung cho nhau. YAGNI ngăn xây dựng những thứ sẽ không được dùng. DRY ngăn lặp lại những thứ sẽ được dùng. Cùng nhau, chúng giúp codebase gọn gàng và phù hợp.
 

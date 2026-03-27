@@ -1,4 +1,4 @@
-# SOLID Principles - Nguyên tắc thiết kế hướng đối tượng
+# SOLID Principles
 
 ## 1. Tổng quan
 
@@ -16,13 +16,13 @@
 
 ## 2. S - Single Responsibility Principle (SRP)
 
-### 2.1. Nguyên tắc
+### Nguyên tắc
 
 > Một class chỉ có **một lý do duy nhất** để thay đổi.
 
 Mỗi class nên chỉ làm **một việc** và làm tốt việc đó. Nếu một class có nhiều hơn một lý do để thay đổi, nó đang vi phạm SRP.
 
-### 2.2. Ví dụ vi phạm SRP
+### Ví dụ vi phạm SRP
 
 ```java
 // ❌ Vi phạm SRP — class làm quá nhiều việc, có nhiều lý do thay đổi
@@ -43,7 +43,7 @@ class UserManager {
 }
 ```
 
-### 2.3. Tuân thủ SRP
+### Tuân thủ SRP
 
 ```java
 // ✅ Tuân thủ SRP — mỗi class một trách nhiệm duy nhất
@@ -102,7 +102,7 @@ class UserValidator {
 }
 ```
 
-### 2.4. Dấu hiệu vi phạm SRP
+### Dấu hiệu vi phạm SRP
 
 | Dấu hiệu | Mô tả |
 |---------|-------|
@@ -115,12 +115,12 @@ class UserValidator {
 
 ## 3. O - Open/Closed Principle (OCP)
 
-### 3.1. Nguyên tắc
+### Nguyên tắc
 
 > **Open for extension**, **closed for modification**.
 > Thiết kế class để có thể **mở rộng** (thêm tính năng mới) mà **không cần sửa** code hiện có.
 
-### 3.2. Ví dụ vi phạm OCP
+### Ví dụ vi phạm OCP
 
 ```java
 // ❌ Vi phạm OCP — mỗi khi thêm payment method mới phải sửa class này
@@ -138,7 +138,7 @@ class PaymentProcessor {
 }
 ```
 
-### 3.3. Tuân thủ OCP
+### Tuân thủ OCP
 
 ```java
 // ✅ Tuân thủ OCP — dùng interface để mở rộng không cần sửa code cũ
@@ -211,7 +211,7 @@ class CryptoPayment implements PaymentMethod {
 }
 ```
 
-### 3.4. Strategy Pattern
+### Strategy Pattern
 
 OCP thường được implement qua **Strategy Pattern** — đóng gói các thuật toán có thể thay thế cho nhau:
 
@@ -269,13 +269,13 @@ class PriceCalculator {
 
 ## 4. L - Liskov Substitution Principle (LSP)
 
-### 4.1. Nguyên tắc
+### Nguyên tắc
 
 > Subclass (lớp con) phải có thể **thay thế được** superclass (lớp cha) mà **không làm hỏng** chương trình.
 
 Nói cách khác: nếu class `B` extends `A`, thì mọi nơi dùng `A` đều có thể dùng `B` mà không gây lỗi.
 
-### 4.2. Ví dụ vi phạm LSP
+### Ví dụ vi phạm LSP
 
 ```java
 // ❌ Vi phạm LSP — Penguin extends Bird nhưng không thể bay
@@ -299,7 +299,7 @@ void makeBirdFly(Bird bird) {
 }
 ```
 
-### 4.3. Tuân thủ LSP
+### Tuân thủ LSP
 
 ```java
 // ✅ Tuân thủ LSP — chia thành interface phù hợp
@@ -347,7 +347,7 @@ void printBirdName(Bird bird) {
 }
 ```
 
-### 4.4. LSP Checklist
+### LSP Checklist
 
 | Điều kiện | Mô tả |
 |-----------|-------|
@@ -382,12 +382,12 @@ class Square { /* ... */ }
 
 ## 5. I - Interface Segregation Principle (ISP)
 
-### 5.1. Nguyên tắc
+### Nguyên tắc
 
 > Không nên ép class implement interface có method **mà nó không dùng đến**.
 > Chia interface lớn, chung chung thành nhiều interface nhỏ, cụ thể.
 
-### 5.2. Ví dụ vi phạm ISP
+### Ví dụ vi phạm ISP
 
 ```java
 // ❌ Vi phạm ISP — MultifunctionPrinter phải implement tất cả
@@ -413,7 +413,7 @@ class SimplePrinter implements Machine {
 // => Code smell: nhiều method không dùng, dễ quên throw exception
 ```
 
-### 5.3. Tuân thủ ISP
+### Tuân thủ ISP
 
 ```java
 // ✅ Tuân thủ ISP — chia nhỏ interface
@@ -462,7 +462,7 @@ class PhotoScanner implements Scanner {
 }
 ```
 
-### 5.4. So sánh OCP và ISP
+### So sánh OCP và ISP
 
 | Nguyên tắc | Tập trung vào | Giải pháp |
 |-----------|-------------|-----------|
@@ -473,14 +473,14 @@ class PhotoScanner implements Scanner {
 
 ## 6. D - Dependency Inversion Principle (DIP)
 
-### 6.1. Nguyên tắc
+### Nguyên tắc
 
 > **High-level modules** (class xử lý nghiệp vụ) không nên phụ thuộc **low-level modules** (class thực hiện chi tiết).
 > Cả hai nên phụ thuộc **abstraction** (interface/abstract class).
 
 Hệ quả: Abstractions không nên phụ thuộc Details. Details nên phụ thuộc Abstractions.
 
-### 6.2. Ví dụ vi phạm DIP
+### Ví dụ vi phạm DIP
 
 ```java
 // ❌ Vi phạm DIP — OrderService phụ thuộc trực tiếp vào concrete class
@@ -496,7 +496,7 @@ class OrderService {
 // => Muốn đổi sang MongoDB? Phải sửa OrderService
 ```
 
-### 6.3. Tuân thủ DIP
+### Tuân thủ DIP
 
 ```java
 // ✅ Tuân thủ DIP — phụ thuộc interface (abstraction)
@@ -582,7 +582,7 @@ class AppConfig {
 
 ## 7. Tổng kết và mối quan hệ
 
-### 7.1. Bảng tổng hợp
+### Bảng tổng hợp
 
 | Chữ | Nguyên tắc | Gốc tiếng Anh | Hành động |
 |-----|-----------|--------------|-----------|
@@ -592,7 +592,7 @@ class AppConfig {
 | **I** | Interface Segregation | *"Prefer small, specific interfaces"* | Chia interface lớn thành nhỏ |
 | **D** | Dependency Inversion | *"Depend on abstractions, not concretions"* | Phụ thuộc interface, không phải class cụ thể |
 
-### 7.2. Mối quan hệ giữa các nguyên tắc
+### Mối quan hệ giữa các nguyên tắc
 
 ```
 SRP ──────► Giúp ISP
@@ -608,7 +608,7 @@ DIP ──────► Giúp OCP
    └──► High-level phụ thuộc abstraction → dễ thêm implementation mới
 ```
 
-### 7.3. Quy tắc đọc ngược từ D → S
+### Quy tắc đọc ngược từ D → S
 
 | Từ dưới lên (implementation) | Lên trên (abstraction) |
 |------------------------------|------------------------|

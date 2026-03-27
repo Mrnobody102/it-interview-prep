@@ -1,6 +1,4 @@
-# Kiến trúc phần mềm
-
-## Clean & Hexagonal Architecture
+# Clean & Hexagonal Architecture
 
 ### 1. Tổng quan
 
@@ -12,7 +10,7 @@ flowchart TD
     HA["Hexagonal Architecture"]
     OA["Onion Architecture"]
 
-    CA --> DEP["Dependency Rule: Point Inward"]
+    CA --> DEP["Dependency Rule:<br>Point Inward"]
     HA --> PORTS["Ports & Adapters"]
     OA --> LAYER["Layered by Dependency"]
 ```
@@ -40,7 +38,7 @@ flowchart TD
     subgraph IA["Interface Adapters"]
         PRES["Presenters"]
         CONV["DTO Converters"]
-        GATE["Gateway Interfaces"]
+        GATE["Gateway<br>Interfaces"]
     end
 
     subgraph AL["Application Layer"]
@@ -63,7 +61,7 @@ flowchart TD
     AL -.->|"depends on interfaces only"| INTP
 ```
 
-#### 2.1. Chi tiết các Layers
+#### Chi tiết các Layers
 
 | Layer | Trách nhiệm | Dependencies | Ví dụ |
 |-------|-------------|--------------|---------|
@@ -72,7 +70,7 @@ flowchart TD
 | **Interface Adapters** | Convert data between formats | Use Cases, External | `OrderController`, `OrderPresenter` |
 | **Frameworks & Drivers** | External tools, DB, UI, web | Everything | `Spring MVC`, `JPA`, `REST API` |
 
-#### 2.2. Dependency Rule
+#### Dependency Rule
 
 > **The Dependency Rule**: Source code dependencies chỉ có thể point inward. Outer layers có thể phụ thuộc vào inner layers, nhưng inner layers không bao giờ phụ thuộc vào outer layers.
 
@@ -91,7 +89,7 @@ flowchart TD
 - Use Cases chỉ biết về Entities và interfaces (không phải implementations)
 - Infrastructure implements interfaces được định nghĩa bởi inner layers
 
-#### 2.3. Code Example
+#### Code Example
 
 ```java
 // ========== DOMAIN LAYER (Core) ==========
@@ -287,7 +285,7 @@ flowchart TD
     end
 ```
 
-#### 3.1. Ports
+#### Ports
 
 **Ports** là interfaces được định nghĩa bởi application core. Chúng có hai loại:
 
@@ -319,7 +317,7 @@ public interface NotificationPort {
 }
 ```
 
-#### 3.2. Adapters
+#### Adapters
 
 **Adapters** là implementations kết nối ports với outside world.
 

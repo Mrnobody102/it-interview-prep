@@ -1,19 +1,17 @@
-# Kiến trúc phần mềm
+# Serverless Architecture
 
-## 4. Kiến trúc Serverless
-
-### 4.1. Tổng quan
+## Tổng quan
 
 Không cần quản lý server — chỉ tập trung vào code. Cloud provider (AWS Lambda, Azure Functions, GCP Cloud Functions) tự động quản lý infrastructure bên dưới bao gồm provisioning, scaling, và server maintenance.
 
-### 4.2. Khái niệm cốt lõi
+### Khái niệm cốt lõi
 
 - **FaaS (Function as a Service):** Chạy code dựa trên events; chỉ trả tiền cho thời gian thực thi
 - **BaaS (Backend as a Service):** Sử dụng dịch vụ bên thứ ba (Auth0, Firebase) cho chức năng backend
 - **Stateless:** Mỗi function invocation độc lập; không có state được lưu giữa các calls
 - **Auto-scaling:** Tự động scale từ 0 đến hàng nghìn concurrent executions
 
-### 4.3. Đặc điểm
+### Đặc điểm
 
 | Thuộc tính | Mô tả |
 |---|---|
@@ -23,7 +21,7 @@ Không cần quản lý server — chỉ tập trung vào code. Cloud provider (
 | **Cold Start** | Invocation đầu tiên có thể có latency |
 | **State** | Mặc định stateless |
 
-### 4.4. Ưu điểm
+### Ưu điểm
 
 - **Không quản lý server:** Developers hoàn toàn tập trung vào business logic
 - **Chi phí hiệu quả:** Chỉ trả khi code chạy — lý tưởng cho traffic pattern không đều
@@ -31,7 +29,7 @@ Không cần quản lý server — chỉ tập trung vào code. Cloud provider (
 - **Giảm operational overhead:** Không cần DevOps team quản lý server
 - **Deployment nhanh:** Upload function code là lập tức live
 
-### 4.5. Nhược điểm
+### Nhược điểm
 
 - **Cold start latency:** Invocation đầu tiên (hoặc sau idle) có thể chậm (100ms–10s)
 - **Vendor lock-in:** Kiến trúc gắn chặt với cloud provider cụ thể
@@ -40,7 +38,7 @@ Không cần quản lý server — chỉ tập trung vào code. Cloud provider (
 - **Stateless complexity:** Phải externalize state sang databases hoặc caches
 - **Không phù hợp cho long-running processes:** Dùng containers hoặc VMs thay thế
 
-### 4.6. Use cases phổ biến
+### Use cases phổ biến
 
 | Use Case | Service |
 |---|---|
@@ -50,7 +48,7 @@ Không cần quản lý server — chỉ tập trung vào code. Cloud provider (
 | **Xử lý dữ liệu realtime** | Kinesis → Lambda |
 | **IoT backends** | IoT Core → Lambda |
 
-### 4.7. Ví dụ: AWS Lambda Function
+### Ví dụ: AWS Lambda Function
 
 ```javascript
 // handler.js
@@ -85,7 +83,7 @@ functions:
           method: get
 ```
 
-### 4.8. Best Practices
+### Best Practices
 
 - **Giữ functions nhỏ và tập trung:** Nguyên lý Single Responsibility áp dụng
 - **Tối thiểu dependencies:** Package nhỏ = cold start nhanh hơn
