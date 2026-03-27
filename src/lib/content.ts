@@ -5,18 +5,20 @@
  * With eager: true, content is bundled at build time.
  * Cache key = filename (last segment of the path).
  *
- * Examples:
- *   vi/backend/java/java-core/oop.md  → key: "oop"
- *   vi/backend/spring-boot/spring-mvc.md → key: "spring-mvc"
- *   vi/frontend/react.md             → key: "react"
- *   vi/database/db-types.md          → key: "db-types"
- *   vi/backend/dotnet/dotnet-backend.md → key: "dotnet-backend"
+ * Build a topicId -> filename map directly from the filesystem path so we don't
+ * rely on fragile prefix-stripping heuristics.
  */
 
 // Cache: lang -> filename -> markdown
 const cache: Record<string, Record<string, string>> = {
   vi: {},
   en: {},
+};
+
+// Map: lang -> filename -> true (built from filesystem at load time)
+const filenameSet: Record<string, Set<string>> = {
+  vi: new Set(),
+  en: new Set(),
 };
 
 function loadCache() {
@@ -35,30 +37,40 @@ function loadCache() {
     const [lang, , ...rest] = parts;
     const filename = rest[rest.length - 1];
     cache[lang as "vi" | "en"][filename] = content;
+    filenameSet[lang as "vi" | "en"].add(filename);
   }
 }
 
 export type Language = "vi" | "en";
 
-const NO_STRIP_TOPIC_IDS = new Set([
-  "java-core-oop",
-  "java-core-collections",
-  "java-core-concurrency",
-  "java-core-lambda-stream",
-  "java-core-generics",
-  "java-core-io",
-  "java-core-jvm-gc",
-  "java-core-memory-management",
-  "java-core-versions",
-]);
-
-function topicIdToFilename(topicId: string, parentId?: string): string {
-  if (!parentId || NO_STRIP_TOPIC_IDS.has(topicId)) return topicId;
-  const prefix = parentId + "-";
-  if (topicId.startsWith(prefix)) {
-    return topicId.slice(prefix.length);
+/**
+ * Given a topicId and its parentId, figure out the best filename to look up.
+ * Strategy:
+ *   1. Try exact topicId match
+ *   2. Try parentId + "-" prefix stripped version
+ *   3. Try last segment of topicId (for multi-hyphenated IDs like topic-subtopic-specific)
+ *   4. Try topicId with most suffixes stripped (max 2 levels deep)
+ */
+function resolveFilename(topicId: string, parentId?: string): string[] {
+  const candidates: string[] = [topicId];
+  if (parentId) {
+    const prefix = parentId + "-";
+    if (topicId.startsWith(prefix)) {
+      candidates.push(topicId.slice(prefix.length));
+    }
   }
-  return topicId;
+  // For heavily hyphenated IDs, try the last segment
+  if (topicId.includes("-") && !candidates.includes(topicId.split("-").pop()!)) {
+    candidates.push(topicId.split("-").pop()!);
+  }
+  return candidates;
+}
+
+function findContent(lang: Language, candidates: string[]): string {
+  for (const c of candidates) {
+    if (cache[lang][c]) return cache[lang][c];
+  }
+  return "";
 }
 
 function findParentId(
@@ -104,10 +116,8 @@ export async function getContentForTopicAsync(
 ): Promise<string> {
   loadCache();
   const parentId = findParentId(topics, topicId);
-  if (cache[lang][topicId]) return cache[lang][topicId];
-  const stripped = topicIdToFilename(topicId, parentId);
-  if (stripped !== topicId && cache[lang][stripped]) return cache[lang][stripped];
-  return "";
+  const candidates = resolveFilename(topicId, parentId);
+  return findContent(lang, candidates);
 }
 
 export function getContentForTopic(
@@ -127,10 +137,8 @@ export function getContentForTopic(
 ): string {
   loadCache();
   const parentId = findParentId(topics, topicId);
-  if (cache[lang][topicId]) return cache[lang][topicId];
-  const stripped = topicIdToFilename(topicId, parentId);
-  if (stripped !== topicId && cache[lang][stripped]) return cache[lang][stripped];
-  return "";
+  const candidates = resolveFilename(topicId, parentId);
+  return findContent(lang, candidates);
 }
 
 export async function getTopicContentAsync(
@@ -140,8 +148,8 @@ export async function getTopicContentAsync(
   _grandParentId?: string
 ): Promise<string> {
   loadCache();
-  const filename = topicIdToFilename(topicId, parentId);
-  return cache[lang][filename] || "";
+  const candidates = resolveFilename(topicId, parentId);
+  return findContent(lang, candidates);
 }
 
 export function getTopicContent(
@@ -151,8 +159,8 @@ export function getTopicContent(
   _grandParentId?: string
 ): string {
   loadCache();
-  const filename = topicIdToFilename(topicId, parentId);
-  return cache[lang][filename] || "";
+  const candidates = resolveFilename(topicId, parentId);
+  return findContent(lang, candidates);
 }
 
 export async function getAllContentKeys(lang: Language): Promise<string[]> {

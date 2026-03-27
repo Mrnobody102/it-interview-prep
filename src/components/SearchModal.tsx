@@ -21,34 +21,34 @@ interface SearchResult {
 function buildTopicMap() {
   const topicMap = new Map<string, { topicId: string; topicName: string; categoryId: string; categoryName: string }>();
 
-  const noStripTopicIds = new Set([
-    'java-core-oop',
-    'java-core-collections',
-    'java-core-concurrency',
-    'java-core-lambda-stream',
-    'java-core-generics',
-    'java-core-io',
-    'java-core-jvm-gc',
-    'java-core-memory-management',
-    'java-core-versions',
-  ]);
-
-  function topicIdToFilename(topicId: string, parentId?: string): string {
-    if (!parentId || noStripTopicIds.has(topicId)) return topicId;
-    const prefix = parentId + '-';
-    if (topicId.startsWith(prefix)) return topicId.slice(prefix.length);
-    return topicId;
+  function resolveFilename(topicId: string, parentId?: string): string[] {
+    const candidates: string[] = [topicId];
+    if (parentId) {
+      const prefix = parentId + '-';
+      if (topicId.startsWith(prefix)) {
+        candidates.push(topicId.slice(prefix.length));
+      }
+    }
+    if (topicId.includes('-') && !candidates.includes(topicId.split('-').pop()!)) {
+      candidates.push(topicId.split('-').pop()!);
+    }
+    return candidates;
   }
 
   function processTopics(topics: Topic[], catId: string, lang: 'vi' | 'en', parentId?: string) {
     for (const t of topics) {
-      const filename = topicIdToFilename(t.id, parentId);
-      topicMap.set(`${lang}:${filename}`, {
-        topicId: t.id,
-        topicName: t.name[lang],
-        categoryId: catId,
-        categoryName: categories.find((c) => c.id === catId)?.name[lang] || catId,
-      });
+      const filenames = resolveFilename(t.id, parentId);
+      // Register all candidate filenames pointing to this topic
+      for (const filename of filenames) {
+        if (!topicMap.has(`${lang}:${filename}`)) {
+          topicMap.set(`${lang}:${filename}`, {
+            topicId: t.id,
+            topicName: t.name[lang],
+            categoryId: catId,
+            categoryName: categories.find((c) => c.id === catId)?.name[lang] || catId,
+          });
+        }
+      }
       if (t.subtopics) processTopics(t.subtopics, catId, lang, t.id);
     }
   }
