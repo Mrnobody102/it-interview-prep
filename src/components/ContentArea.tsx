@@ -4,7 +4,7 @@ import remarkGfm from "remark-gfm";
 import rehypeRaw from "rehype-raw";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus, solarizedlight } from "react-syntax-highlighter/dist/esm/styles/prism";
-import { type Category, type Topic } from "../data/categories";
+import { type Category, type Topic } from "../data/categories/index";
 import { getContentForTopicAsync } from "../lib/content";
 import mermaid from "mermaid";
 

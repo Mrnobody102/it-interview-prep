@@ -1,18 +1,18 @@
-import { softwareArchitectureDesign } from "./software-architecture-design";
+import { systemCategory } from "./system";
 import { backend } from "./backend";
 import { frontend } from "./frontend";
 import { database } from "./database";
-import { systemDesign } from "./system-design";
 import { devops } from "./devops";
+import { aiRobotics } from "./ai-robotics";
 import { otherSkills } from "./other-skills";
 
 export const categories = [
-  softwareArchitectureDesign,
+  systemCategory,
   backend,
   frontend,
   database,
-  systemDesign,
   devops,
+  aiRobotics,
   otherSkills,
 ];
 

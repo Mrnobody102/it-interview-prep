@@ -1,18 +1,65 @@
 import type { Category } from "./types";
 
-export const softwareArchitectureDesign: Category = {
-  id: "software-architecture-design",
-  name: {
-    vi: "Kiến trúc phần mềm",
-    en: "Software Architecture",
-  },
+export const systemCategory: Category = {
+  id: "he-thong",
+  name: { vi: "Hệ thống", en: "System" },
   description: {
     vi: "Kiến trúc phần mềm và thiết kế hệ thống",
     en: "Software architecture and system design",
   },
-  icon: "📐",
+  icon: "🏗️",
   topics: [
-    // ===== I. KIẾN TRÚC TỔNG QUAN HỆ THỐNG =====
+    // ===== I. OVERVIEW (from System Design) =====
+    {
+      id: "overview",
+      name: { vi: "Overview", en: "Overview" },
+      expanded: true,
+      subtopics: [
+        {
+          id: "overview-computer-architecture",
+          name: { vi: "Computer Architecture", en: "Computer Architecture" },
+        },
+        {
+          id: "production-app-architecture",
+          name: {
+            vi: "Production App Architecture",
+            en: "Production App Architecture",
+          },
+        },
+        {
+          id: "overview-design-requirements",
+          name: { vi: "Design Requirements", en: "Design Requirements" },
+        },
+        {
+          id: "networking",
+          name: { vi: "Networking", en: "Networking" },
+        },
+        {
+          id: "overview-api-design",
+          name: { vi: "API Design", en: "API Design" },
+        },
+        {
+          id: "caching-cdn",
+          name: { vi: "Caching & CDN", en: "Caching & CDN" },
+        },
+        {
+          id: "overview-proxy-server",
+          name: { vi: "Proxy Server", en: "Proxy Server" },
+        },
+        {
+          id: "load-balancer",
+          name: { vi: "Load Balancer", en: "Load Balancer" },
+        },
+        {
+          id: "overview-message-queue-main",
+          name: {
+            vi: "Message Queue (Kafka, RabbitMQ, ActiveMQ)",
+            en: "Message Queue (Kafka, RabbitMQ, ActiveMQ)",
+          },
+        },
+      ],
+    },
+    // ===== II. SOFTWARE ARCHITECTURE =====
     {
       id: "system-architecture-overview",
       name: {
@@ -55,7 +102,7 @@ export const softwareArchitectureDesign: Category = {
         },
       ],
     },
-    // ===== DESIGN PRINCIPLES =====
+    // ===== III. DESIGN PRINCIPLES =====
     {
       id: "design-principles",
       name: { vi: "Design Principles", en: "Design Principles" },
@@ -88,7 +135,7 @@ export const softwareArchitectureDesign: Category = {
         },
       ],
     },
-    // ===== DESIGN PATTERNS =====
+    // ===== IV. DESIGN PATTERNS =====
     {
       id: "design-patterns",
       name: { vi: "Design Patterns", en: "Design Patterns" },
@@ -108,7 +155,7 @@ export const softwareArchitectureDesign: Category = {
         },
       ],
     },
-    // ===== ADVANCED ARCHITECTURE =====
+    // ===== V. ADVANCED ARCHITECTURE =====
     {
       id: "advanced-architecture",
       name: { vi: "Advanced Architecture", en: "Advanced Architecture" },
@@ -125,6 +172,28 @@ export const softwareArchitectureDesign: Category = {
         {
           id: "clean-architecture",
           name: { vi: "Clean & Hexagonal Architecture", en: "Clean & Hexagonal Architecture" },
+        },
+      ],
+    },
+    // ===== SCENARIO =====
+    {
+      id: "scenario",
+      name: { vi: "Scenario", en: "Scenario" },
+      expanded: true,
+      subtopics: [
+        {
+          id: "scenario-design-millions-users",
+          name: {
+            vi: "Một hệ thống hàng triệu người dùng thiết kế thế nào? Những điểm quan trọng để tối ưu hệ thống đó.",
+            en: "Design for millions of users? Key optimization points.",
+          },
+        },
+        {
+          id: "request-response-flow",
+          name: {
+            vi: "Một luồng request-response client đi qua các thành phần của một hệ thống web application hiện đại thế nào",
+            en: "Request-response flow in modern web application",
+          },
         },
       ],
     },

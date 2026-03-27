@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Search, Sun, Moon, Menu } from "lucide-react";
-import { type Category } from "../data/categories";
+import { type Category } from "../data/categories/index";
 
 interface HeaderProps {
   onSearchClick: () => void;
