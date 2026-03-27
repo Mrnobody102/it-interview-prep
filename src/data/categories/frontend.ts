@@ -26,6 +26,11 @@ export const frontend: Category = {
     {
       id: "react",
       name: { vi: "React", en: "React" },
+      subtopics: [
+        { id: "react-core", name: { vi: "React Core", en: "React Core" } },
+        { id: "react-hooks", name: { vi: "Hooks", en: "Hooks" } },
+        { id: "react-advanced", name: { vi: "Advanced Patterns", en: "Advanced Patterns" } },
+      ],
     },
     {
       id: "nextjs",

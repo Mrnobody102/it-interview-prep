@@ -2,13 +2,13 @@
 
 ## Tổng quan
 
-C++ la ngon ngu manh me cho backend systems doi hoi hieu nang cao. Duoc dung rong rai trong game servers, high-frequency trading, embedded systems, va cac he thong real-time.
+C++ là ngôn ngữ mạnh mẽ cho backend systems đòi hỏi hiệu năng cao. Được dùng rộng rãi trong game servers, high-frequency trading, embedded systems, và các hệ thống real-time.
 
-## Cac dat diem cot loi
+### Các đặc điểm cốt lõi
 
-| Dat diem | Mo ta |
+| Đặc điểm | Mô tả |
 |-----------|--------|
-| **Hieu nang cuc cao** | Zero-cost abstraction, compile-time polymorphism |
+| **Hiệu năng cực cao** | Zero-cost abstraction, compile-time polymorphism |
 | **Memory control** | Manual memory management, RAII pattern |
 | **Static typing** | Type safety at compile time |
 | **Cross-platform** | Linux, Windows, embedded systems |
@@ -35,32 +35,32 @@ public:
     }
 };
 
-// Tu dong giai phong khi ra khoi scope
+// Tự động giải phóng khi ra khỏi scope
 void process() {
     DatabaseConnection db("mysql://localhost/db");
     auto result = db.execute("SELECT * FROM users");
-    // connection tu dong disconnect khi ham ket thuc
+    // connection tự động disconnect khi hàm kết thúc
 }
 ```
 
-### Smart Pointers (C++11 tro len)
+### Smart Pointers (C++11 trở lên)
 
 ```cpp
 #include <memory>
 
-// unique_ptr - duy nhat so huu resource
+// unique_ptr - duy nhất sở hữu resource
 unique_ptr<Database> db = make_unique<Database>("connection_string");
 
-// shared_ptr - chia se ownership
+// shared_ptr - chia sẻ ownership
 shared_ptr<Cache> globalCache = make_shared<Cache>(1024);
 
-// weak_ptr - tham chieu khong so huu
+// weak_ptr - tham chiếu không sở hữu
 weak_ptr<Cache> cacheRef = globalCache;
 if (auto cache = cacheRef.lock()) {
     cache->get("key");
 }
 
-// tran raw pointer khi co the
+// tránh raw pointer khi có thể
 void badPractice(Database* db);    // ❌
 void goodPractice(unique_ptr<Database> db); // ✅
 void alsoGood(const shared_ptr<Database>& db); // ✅
@@ -68,7 +68,7 @@ void alsoGood(const shared_ptr<Database>& db); // ✅
 
 ## Multi-threading
 
-### Thread co ban
+### Thread cơ bản
 
 ```cpp
 #include <thread>
@@ -97,7 +97,7 @@ public:
     void processOrder(const Order& order) {
         lock_guard<mutex> lock(mtx);
         ++processedCount;
-        // xu ly order...
+        // xử lý order...
     }
 };
 ```
@@ -116,14 +116,14 @@ future<string> fetchUserData(int userId) {
 
 void handleRequest(int userId) {
     auto dataFuture = fetchUserData(userId);
-    // lam viec khac trong khi data dang fetch
-    string data = dataFuture.get(); // blocking neu chua xong
+    // làm việc khác trong khi data đang fetch
+    string data = dataFuture.get(); // blocking nếu chưa xong
 }
 ```
 
 ## Networking
 
-### Asynchronous I/O voi Boost.Asio
+### Asynchronous I/O với Boost.Asio
 
 ```cpp
 #include <boost/asio.hpp>
@@ -192,14 +192,14 @@ string httpGet(const string& url) {
 
 ## C++ Backend Frameworks
 
-| Framework | Dac diem | Use Case |
+| Framework | Đặc điểm | Use Case |
 |-----------|-----------|---------|
 | **Drogon** | C++17, async, high-performance | REST API |
 | **Crow** | Header-only, lightweight | Small services |
 | **CppCMS** | Full-stack, high-performance | Web applications |
 | **oatpp** | Pure C++, zero-dependency | Microservices |
 
-### Vi du: Drogon
+### Ví dụ: Drogon
 
 ```cpp
 #include <drogon/drogon.h>
@@ -220,24 +220,24 @@ int main() {
 
 ## Best Practices
 
-- **RAII cho resource management** — khong bao gio de resource leak
-- **Prefer value semantics** — dung `vector<T>` thay vi `vector<T*>`
-- **Use smart pointers** — tran `new/delete` truc tiep
-- **Avoid exceptions in hot paths** — exceptions co overhead
-- **Profile before optimizing** — dung guess, hay measure
-- **Zero-cost abstractions** — dung `auto`, lambda, ranges
+- **RAII cho resource management** — không bao giờ để resource leak
+- **Prefer value semantics** — dùng `vector<T>` thay vì `vector<T*>`
+- **Use smart pointers** — tránh `new/delete` trực tiếp
+- **Avoid exceptions in hot paths** — exceptions có overhead
+- **Profile before optimizing** — đừng guess, hãy measure
+- **Zero-cost abstractions** — dùng `auto`, lambda, ranges
 
-## Cac cau hoi phong van thuong gap
+## Các câu hỏi phỏng vấn thường gặp
 
-### 1. Su khac nhau giua `unique_ptr` va `shared_ptr`?
+### 1. Sự khác nhau giữa `unique_ptr` và `shared_ptr`?
 
-`unique_ptr` chi co mot owner duy nhat, tu dong giai phong khi ra khoi scope — khong co overhead cho reference counting. `shared_ptr` cho phep nhieu owner, dung atomic reference counting — co overhead ve memory va CPU.
+`unique_ptr` chỉ có một owner duy nhất, tự động giải phóng khi ra khỏi scope — không có overhead cho reference counting. `shared_ptr` cho phép nhiều owner, dùng atomic reference counting — có overhead về memory và CPU.
 
-### 2. Khi nao nen dung `volatile`?
+### 2. Khi nào nên dùng `volatile`?
 
-`volatile` trong C++ chi bao cho compiler khong toi uu hoa read/write — dung cho memory-mapped hardware registers. Khong dung cho concurrency (dung `atomic` hoac `mutex`).
+`volatile` trong C++ chỉ báo cho compiler không tối ưu hóa read/write — dùng cho memory-mapped hardware registers. Không dùng cho concurrency (dùng `atomic` hoặc `mutex`).
 
-### 3. Thread pool implement nhu the nao?
+### 3. Thread pool implement như thế nào?
 
 ```cpp
 class ThreadPool {
@@ -284,6 +284,6 @@ public:
 };
 ```
 
-### 4. Memory barrier va memory model trong C++11?
+### 4. Memory barrier và memory model trong C++11?
 
-C++11 dinh nghia memory ordering: `memory_order_relaxed`, `memory_order_acquire`, `memory_order_release`, `memory_order_acq_rel`, `memory_order_seq_cst`. Dung `atomic` voi `memory_order` phu hop de kiem soat visibility giua threads.
+C++11 định nghĩa memory ordering: `memory_order_relaxed`, `memory_order_acquire`, `memory_order_release`, `memory_order_acq_rel`, `memory_order_seq_cst`. Dùng `atomic` với `memory_order` phù hợp để kiểm soát visibility giữa threads.

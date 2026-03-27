@@ -164,6 +164,124 @@ children = [
 Supervisor.start_link(children, strategy: :one_for_one)
 ```
 
+### OTP Supervision Strategies
+
+#### Supervisor Strategies
+
+```elixir
+# One-for-one: restart only the crashed process
+Supervisor.start_link([
+  {Worker, []}
+], strategy: :one_for_one)
+
+# One-for-all: restart all if any process crashes
+Supervisor.start_link([
+  {Cache, []},
+  {EventHandler, []}
+], strategy: :one_for_all)
+
+# Rest-for-one: restart processes below it when they crash
+Supervisor.start_link([
+  {MainWorker, []},
+  {SubWorker1, []},
+  {SubWorker2, []}
+], strategy: :rest_for_one)
+```
+
+#### Error Kernel Pattern
+
+```elixir
+defmodule MyApp.Application do
+  use Application
+
+  @impl true
+  def start(_type, _args) do
+    children = [
+      # Critical services first
+      MyApp.Repo,
+      MyApp.Cache,
+
+      # Workers after critical services
+      {MyApp.Worker.Supervisor, strategy: :one_for_one},
+    ]
+
+    Supervisor.start_link(children, strategy: :rest_for_one)
+  end
+end
+```
+
+#### Distributed Erlang
+
+```elixir
+# Node 1:
+Node.start(:node1@localhost)
+Process.register(self(), :coordinator)
+
+# Node 2:
+Node.start(:node2@localhost)
+Node.connect(:node1@localhost)
+
+# Cross-node communication
+send({:coordinator, :node1@localhost}, {:task, self()})
+
+receive do
+  {:result, value} -> IO.puts("Got: #{value}")
+end
+```
+
+### Behavior and Custom Behaviors
+
+#### Defining a Custom Behavior
+
+```elixir
+defmodule MyServer do
+  use GenServer
+
+  # Required callbacks
+  @impl true
+  def init(args) do
+    {:ok, args}
+  end
+
+  @impl true
+  def handle_call(:get_state, _from, state) do
+    {:reply, state, state}
+  end
+
+  # Override handle_info
+  @impl true
+  def handle_info(:timeout, state) do
+    {:noreply, state}
+  end
+end
+```
+
+#### ETS-based Server (Stateless)
+
+```elixir
+defmodule ETSRegistry do
+  def start_link do
+    GenServer.start_link(__MODULE__, :ets.new(__MODULE__, [:set, :named_table]), name: __MODULE__)
+  end
+
+  @impl true
+  def init(table) do
+    {:ok, table}
+  end
+
+  def put(key, value) do
+    :ets.insert(__MODULE__, {key, value})
+  end
+
+  def get(key) do
+    case :ets.lookup(__MODULE__, key) do
+      [{^key, value}] -> {:ok, value}
+      [] -> {:error, :not_found}
+    end
+  end
+end
+```
+
 ## Phoenix Framework (Web)
 
 ### Router and Controllers
@@ -265,6 +383,66 @@ from(u in User,
 )
 |> Repo.all()
 ```
+
+### Caching & Performance
+
+#### ETS (Erlang Term Storage)
+
+```elixir
+# Create ETS table
+:ets.new(:user_cache, [:set, :named_table, read_concurrency: true])
+
+# Write
+:ets.insert(:user_cache, {"user_1", %{name: "Alice", email: "alice@example.com"}})
+
+# Read
+:ets.lookup(:user_cache, "user_1")
+
+# Auto-expiring cache with TTL
+defmodule TTLCache do
+  use GenServer
+
+  def start_link(default) do
+    GenServer.start_link(__MODULE__, default, name: __MODULE__)
+  end
+
+  def put(key, value, ttl_ms) do
+    GenServer.cast(__MODULE__, {:put, key, value, ttl_ms})
+  end
+
+  def get(key) do
+    case :ets.lookup(__MODULE__, key) do
+      [{^key, value, expiry}] when expiry > System.system_time(:millisecond) ->
+        {:ok, value}
+      _ -> :not_found
+    end
+  end
+
+  @impl true
+  def init(_default) do
+    :ets.new(__MODULE__, [:set, :named_table, read_concurrency: true])
+    {:ok, %{}}
+  end
+end
+```
+
+#### Process Dictionary (Avoid in Production)
+
+```elixir
+# DO NOT use in production - hard to test, not distributed
+Process.put(:current_user_id, 123)
+user_id = Process.get(:current_user_id)
+Process.delete(:current_user_id)
+```
+
+#### Performance Tips
+
+- Use `concurrent` instead of `sequential` when possible
+- ETS for fast in-memory cache
+- `:persistent_term` for constants
+- Avoid large messages between processes
+- Use `binary` instead of `list` for strings
+- `iodata` for output streams
 
 ## OTP Patterns
 

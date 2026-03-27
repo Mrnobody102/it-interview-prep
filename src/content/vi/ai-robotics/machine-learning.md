@@ -2,171 +2,407 @@
 
 ## Tổng quan
 
-Machine Learning là tập con của AI cho phép hệ thống tự học từ dữ liệu thay vì được lập trình tường minh.
+Machine Learning (ML) là lĩnh vực xây dựng các thuật toán học từ dữ liệu để đưa ra dự đoán hoặc quyết định mà không cần lập trình tường minh theo luật cố định. Trong môi trường phỏng vấn, bạn thường được kỳ vọng hiểu cả **lý thuyết** (tại sao một mô hình hoạt động) và **thực hành** (cách huấn luyện, xác thực và triển khai một cách đáng tin cậy).
 
-## Các loại Machine Learning
+Một workflow ML sản xuất thường theo các bước:
 
-| Loại | Mô tả | Ví dụ |
-|------|-------|-------|
-| **Supervised Learning** | Học từ dữ liệu có label | Classification, Regression |
-| **Unsupervised Learning** | Học từ dữ liệu không label | Clustering, Dimensionality Reduction |
-| **Reinforcement Learning** | Học qua tương tác với môi trường | Game AI, Robotics |
-| **Semi-supervised** | Kết hợp labeled và unlabeled | Self-training |
+1. Xác định bài toán và mục tiêu
+2. Thu thập dữ liệu và kiểm tra chất lượng
+3. Feature engineering và tiền xử lý
+4. Huấn luyện và xác thực mô hình
+5. Tinh chỉnh siêu tham số và lựa chọn mô hình
+6. Phân tích lỗi và kiểm tra độ bền
+7. Triển khai và giám sát liên tục
 
-## Supervised Learning
+---
 
-### Classification
+## Các Paradigm Học: Supervised vs Unsupervised vs Reinforcement
+
+| Paradigm | Dữ liệu | Mục tiêu | Thuật toán tiêu biểu | Ví dụ thực tế |
+|---|---|---|---|---|
+| **Supervised Learning** | Có nhãn `(X, y)` | Dự đoán nhãn đã biết | Linear/Logistic Regression, Trees, SVM | Dự đoán churn, phát hiện gian lận |
+| **Unsupervised Learning** | Không nhãn `X` | Khám phá cấu trúc ẩn | K-Means, DBSCAN, PCA | Phân khúc khách hàng, tìm bất thường |
+| **Reinforcement Learning (RL)** | Phản hồi từ môi trường Agent | Tối đa hóa phần thưởng tích lũy | Q-learning, DQN, PPO | Điều khiển robot, chơi game |
+
+### Reinforcement Learning nhìn một góc
+
+- **State (s):** biểu diễn trạng thái hiện tại của môi trường
+- **Action (a):** quyết định của agent
+- **Reward (r):** tín hiệu phản hồi vô hướng
+- **Policy `π(a|s)`:** chiến lược ánh xạ trạng thái sang hành động
+- **Mục tiêu:** tối đa hóa expected discounted return `E[Σ γ^t r_t]`
+
+RL thường không hiệu quả về mẫu và phức tạp về vận hành; với nhiều bài toán kinh doanh, supervised learning vẫn là lựa chọn thực tế mặc định.
+
+---
+
+## Các Mô hình Supervised Cốt lõi
+
+## Linear Regression
+
+Dùng cho biến mục tiêu liên tục.
+
+Công thức:
+
+`y = β0 + β1x1 + β2x2 + ... + βpxp + ε`
+
+Các giả định (quan trọng trong phỏng vấn):
+
+- Quan hệ tuyến tính
+- Sai số độc lập
+- Phương sai đồng nhất (homoscedasticity)
+- Không đa cộng tuyến nghiêm trọng
+- Phần dư xấp xỉ phân phối chuẩn (để suy luận thống kê)
+
+## Logistic Regression
+
+Dùng cho bài toán phân loại. Dù tên gọi là "regression", đây thực chất là mô hình phân loại.
+
+`P(y=1|x) = sigmoid(w^Tx + b)`
+
+- Đầu ra là xác suất thuộc lớp
+- Ranh giới quyết định tuyến tính trong không gian đặc trưng
+- Hệ số có thể diễn giải (odds ratios)
+- Hoạt động rất tốt như baseline
+
+### Ví dụ: tiền xử lý + phân loại + đánh giá
 
 ```python
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score, classification_report
+import numpy as np
+import pandas as pd
 
-# Chuẩn bị dữ liệu
-X_train, X_test, y_train, y_test = train_test_split(
-    features, labels, test_size=0.2, random_state=42
+from sklearn.model_selection import train_test_split, StratifiedKFold, GridSearchCV
+from sklearn.compose import ColumnTransformer
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import OneHotEncoder, StandardScaler
+from sklearn.impute import SimpleImputer
+
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import (
+    accuracy_score,
+    precision_score,
+    recall_score,
+    f1_score,
+    roc_auc_score,
+    classification_report,
 )
 
-# Huấn luyện
-clf = RandomForestClassifier(n_estimators=100, max_depth=10)
-clf.fit(X_train, y_train)
+# Tải dữ liệu
+# df = pd.read_csv("customer_churn.csv")
 
-# Đánh giá
+numeric_features = ["age", "balance", "tenure", "monthly_spend"]
+categorical_features = ["country", "segment", "device_type"]
+
+numeric_transformer = Pipeline(steps=[
+    ("imputer", SimpleImputer(strategy="median")),
+    ("scaler", StandardScaler()),
+])
+
+categorical_transformer = Pipeline(steps=[
+    ("imputer", SimpleImputer(strategy="most_frequent")),
+    ("onehot", OneHotEncoder(handle_unknown="ignore")),
+])
+
+preprocessor = ColumnTransformer(
+    transformers=[
+        ("num", numeric_transformer, numeric_features),
+        ("cat", categorical_transformer, categorical_features),
+    ]
+)
+
+clf = Pipeline(steps=[
+    ("preprocessor", preprocessor),
+    ("model", LogisticRegression(max_iter=2000, class_weight="balanced")),
+])
+
+# X = df.drop(columns=["churn"])
+# y = df["churn"]
+
+# Ví dụ placeholder để code chạy được
+X = pd.DataFrame({
+    "age": np.random.randint(18, 70, 500),
+    "balance": np.random.normal(1000, 300, 500),
+    "tenure": np.random.randint(1, 120, 500),
+    "monthly_spend": np.random.normal(80, 20, 500),
+    "country": np.random.choice(["US", "UK", "VN"], 500),
+    "segment": np.random.choice(["A", "B", "C"], 500),
+    "device_type": np.random.choice(["web", "mobile"], 500),
+})
+y = (X["monthly_spend"] + X["balance"] * 0.001 + (X["segment"] == "C").astype(int) > 1.8).astype(int)
+
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42, stratify=y
+)
+
+clf.fit(X_train, y_train)
 y_pred = clf.predict(X_test)
-print(accuracy_score(y_test, y_pred))
+y_prob = clf.predict_proba(X_test)[:, 1]
+
+print("Accuracy:", accuracy_score(y_test, y_pred))
+print("Precision:", precision_score(y_test, y_pred))
+print("Recall:", recall_score(y_test, y_pred))
+print("F1:", f1_score(y_test, y_pred))
+print("AUC-ROC:", roc_auc_score(y_test, y_prob))
 print(classification_report(y_test, y_pred))
 ```
 
-### Regression
+---
 
-```python
-from sklearn.linear_model import LinearRegression, Ridge
-from sklearn.preprocessing import StandardScaler
+## Các Mô hình Tree-based
 
-# Scale dữ liệu
-scaler = StandardScaler()
-X_scaled = scaler.fit_transform(features)
+## Decision Trees
 
-# Ridge Regression (regularization)
-model = Ridge(alpha=1.0)
-model.fit(X_train, y_train)
+- Chia đệ quy dựa trên giảm impurity (Gini/Entropy cho phân loại, MSE cho hồi quy)
+- Dễ diễn giải
+- Dễ overfitting nếu không ràng buộc
 
-# Dự đoán
-predictions = model.predict(X_test)
-```
+Các siêu tham số quan trọng:
+
+- `max_depth`
+- `min_samples_split`
+- `min_samples_leaf`
+- `max_features`
+
+## Random Forest (Bagging)
+
+- Tập hợp các decision trees huấn luyện trên bootstrap samples
+- Mỗi lần split dùng random subset của features
+- Giảm variance và cải thiện generalization
+
+## Gradient Boosting (Boosting)
+
+- Xây dựng các weak learners tuần tự
+- Mỗi learner sửa lỗi của các learners trước đó
+- Hiệu suất mạnh trên dữ liệu dạng bảng (tabular)
+
+Các implementation phổ biến:
+
+- **XGBoost:** có regularization, mạnh mẽ, rất phổ biến trong competitions
+- **LightGBM:** nhanh, tiết kiệm bộ nhớ, histogram-based growth
+
+### So sánh chiến lược ensemble
+
+| Phương pháp | Family | Train Style | Điểm mạnh | Rủi ro |
+|---|---|---|---|---|
+| Random Forest | Bagging | Các tree song song | Ổn định, ít cần tune | Kích thước lớn |
+| XGBoost | Boosting | Tuần tự | Độ chính xác cao | Overfitting nếu quá aggressive |
+| LightGBM | Boosting | Leaf-wise growth | Rất nhanh trên dữ liệu lớn | Có thể overfit dữ liệu nhỏ, nhiễu |
+| Stacking | Meta-ensemble | Đa tầng | Kết hợp các mô hình đa dạng | Rủi ro validation leakage |
+
+---
+
+## Các Mô hình Dựa trên Khoảng cách và Margin
+
+## SVM (Support Vector Machine)
+
+- Tìm hyperplane phân cách với margin tối đa
+- Kernel trick cho phép ranh giới phi tuyến (RBF, polynomial)
+- Hiệu quả với dữ liệu kích thước trung bình, chiều cao
+
+Siêu tham số quan trọng: `C`, `kernel`, `gamma`
+
+## K-Nearest Neighbors (KNN)
+
+- Dự đoán từ các neighbors trong không gian đặc trưng
+- Không có giai đoạn huấn luyện thực sự (lazy learner)
+- Nhạy cảm với scaling và các đặc trưng nhiễu không liên quan
+
+Siêu tham số quan trọng: `n_neighbors`, `metric`, `weights`
+
+---
 
 ## Unsupervised Learning
 
-### K-Means Clustering
+## Clustering
+
+### K-Means
+
+- Phân cụm dựa trên phân vùng, tối thiểu hóa within-cluster variance
+- Hoạt động tốt nhất với các cụm hình cầu
+- Cần đặt trước `k`
+
+### DBSCAN
+
+- Clustering dựa trên mật độ
+- Phát hiện noise và các cụm có hình dạng tùy ý
+- Tham số: `eps`, `min_samples`
+
+### Hierarchical Clustering
+
+- Xây dựng dendrogram (agglomerative/divisive)
+- Không cần xác định trước số cụm
+
+## Giảm Chiều Dữ liệu
+
+### PCA
+
+- Chiếu tuyến tính tối đa hóa phương sai
+- Hữu ích cho denoising, nén, và tăng tốc
+
+### t-SNE
+
+- Kỹ thuật phi tuyến cho trực quan hóa
+- Tuyệt vời cho embedding 2D/3D
+- Không lý tưởng để bảo toàn cấu trúc toàn cục
+
+### Ví dụ: clustering + giảm chiều
 
 ```python
-from sklearn.cluster import KMeans
-from sklearn.preprocessing import StandardScaler
-
-# Chuẩn hóa
-scaler = StandardScaler()
-X_scaled = scaler.fit_transform(data)
-
-# Tìm optimal k bằng Elbow method
-inertias = [KMeans(n_clusters=k).fit(X_scaled).inertia_
-            for k in range(1, 11)]
-
-# Cluster với k=3
-kmeans = KMeans(n_clusters=3, random_state=42)
-labels = kmeans.fit_predict(X_scaled)
-```
-
-### PCA (Dimensionality Reduction)
-
-```python
-from sklearn.decomposition import PCA
-
-pca = PCA(n_components=0.95)  # Giữ lại 95% variance
-X_reduced = pca.fit_transform(X)
-print(f"Số chiều: {pca.n_components_}")
-```
-
-## Model Evaluation
-
-### Cross-Validation
-
-```python
-from sklearn.model_selection import cross_val_score, KFold
-
-kfold = KFold(n_splits=5, shuffle=True, random_state=42)
-scores = cross_val_score(clf, X, y, cv=kfold, scoring='f1')
-print(f"Mean F1: {scores.mean():.3f} (+/- {scores.std()*2:.3f})")
-```
-
-### Metrics
-
-| Metric | Use Case |
-|--------|----------|
-| **Accuracy** | Balanced classes |
-| **Precision** | Minimize false positives |
-| **Recall** | Minimize false negatives |
-| **F1-Score** | Harmonic mean của precision và recall |
-| **AUC-ROC** | Model discrimination |
-
-## Feature Engineering
-
-```python
-import pandas as pd
-from sklearn.preprocessing import OneHotEncoder
-from sklearn.compose import ColumnTransformer
-
-# Xử lý numeric features
-numeric_features = ['age', 'salary', 'experience']
-numeric_transformer = StandardScaler()
-
-# Xử lý categorical features
-categorical_features = ['department', 'city']
-categorical_transformer = OneHotEncoder(drop='first')
-
-# Combine
-preprocessor = ColumnTransformer(
-    transformers=[
-        ('num', numeric_transformer, numeric_features),
-        ('cat', categorical_transformer, categorical_features)
-    ])
-
-X_processed = preprocessor.fit_transform(df)
-```
-
-## Overfitting vs Underfitting
-
-```python
-# Overfitting: model quá phức tạp, fit noise
-# Giải pháp: regularization, cross-validation, dropout
-
-# Underfitting: model quá đơn giản
-# Giải pháp: tăng model complexity, thêm features
-
-from sklearn.model_selection import validation_curve
 import numpy as np
+from sklearn.datasets import make_blobs
+from sklearn.preprocessing import StandardScaler
+from sklearn.cluster import KMeans, DBSCAN, AgglomerativeClustering
+from sklearn.decomposition import PCA
+from sklearn.manifold import TSNE
 
-# Ví dụ với regularization
-alphas = np.logspace(-4, 1, 50)
-train_scores, val_scores = validation_curve(
-    Ridge(), X, y, param_name='alpha',
-    param_range=alphas, cv=5
-)
+X, _ = make_blobs(n_samples=1000, centers=4, cluster_std=1.2, random_state=42)
+X = StandardScaler().fit_transform(X)
+
+kmeans_labels = KMeans(n_clusters=4, random_state=42, n_init=10).fit_predict(X)
+dbscan_labels = DBSCAN(eps=0.25, min_samples=8).fit_predict(X)
+hier_labels = AgglomerativeClustering(n_clusters=4, linkage="ward").fit_predict(X)
+
+X_pca = PCA(n_components=2, random_state=42).fit_transform(X)
+X_tsne = TSNE(n_components=2, perplexity=30, learning_rate="auto", init="pca", random_state=42).fit_transform(X)
+
+print("KMeans clusters:", np.unique(kmeans_labels))
+print("DBSCAN clusters/noise labels:", np.unique(dbscan_labels))
+print("Hierarchical clusters:", np.unique(hier_labels))
+print("PCA shape:", X_pca.shape)
+print("t-SNE shape:", X_tsne.shape)
 ```
 
-## Câu hỏi phỏng vấn
+---
 
-### 1. Sự khác nhau giữa Bias và Variance?
+## Feature Engineering và Chuẩn bị Dữ liệu
 
-**Bias** là lỗi từ model quá đơn giản — underfitting. **Variance** là lỗi từ model quá phức tạp — overfitting. Mục tiêu là tìm sweet spot giữa hai cái (bias-variance tradeoff).
+Các thực hành có tác động cao:
 
-### 2. Khi nào dùng Random Forest vs Gradient Boosting?
+- Xử lý missing values có chủ đích (median/mode/model-based)
+- Encode các biến categorical (one-hot, target encoding)
+- Tạo các đặc trưng theo domain (tỷ lệ, tương tác, cửa sổ thời gian)
+- Phát hiện leakage features trước khi huấn luyện
 
-Random Forest: parallel, ít overfitting, ít hyperparameter tuning. Gradient Boosting: sequential, cao hơn accuracy, dễ overfitting, cần careful tuning. Gradient Boosting thường tốt hơn với structured data.
+### Normalization vs Standardization
 
-### 3. Regularization hoạt động như thế nào?
+| Kỹ thuật | Công thức | Sử dụng phổ biến |
+|---|---|---|
+| **Normalization (Min-Max)** | `(x - min) / (max - min)` | Neural nets, bounded ranges |
+| **Standardization (Z-score)** | `(x - μ) / σ` | Linear models, SVM, KNN |
 
-L1 (Lasso) và L2 (Ridge) thêm penalty term vào loss function. L1 khuyến khích sparsity (feature selection tự động). L2 giảm weights về gần 0 nhưng không bằng 0.
+---
 
-### 4. Cross-validation tại sao quan trọng?
+## Các Metrics Đánh giá
 
-Data splitting ngẫu nhiên có thể không đại diện. K-fold CV đảm bảo mỗi sample được validate đúng 1 lần, cho ước lượng generalization accuracy đáng tin cậy hơn.
+## Phân loại
+
+- **Accuracy:** `(TP + TN) / Total`
+- **Precision:** `TP / (TP + FP)`
+- **Recall:** `TP / (TP + FN)`
+- **F1:** trung bình điều hòa của precision và recall
+- **AUC-ROC:** chất lượng xếp hạng qua các ngưỡng
+
+## Hồi quy
+
+- **MSE:** mean squared error (phạt nặng lỗi lớn)
+- **MAE:** mean absolute error (ổn định với outliers)
+- **R²:** tỷ lệ phương sai được giải thích
+
+Lựa chọn metric cần phù hợp với chi phí kinh doanh. Ví dụ, trong sàng lọc y tế, recall thường quan trọng hơn accuracy tổng thể.
+
+---
+
+## Cross-validation và Bias-Variance Tradeoff
+
+## Cross-validation
+
+Dùng K-fold hoặc stratified K-fold để ước lượng khả năng tổng quát hóa và giảm tính ngẫu nhiên của việc chia dữ liệu.
+
+## Bias-Variance Tradeoff
+
+- High bias: underfitting (mô hình quá đơn giản)
+- High variance: overfitting (mô hình quá phức tạp)
+- Mô hình tốt nhất tối thiểu hóa expected generalization error
+
+---
+
+## Overfitting, Underfitting, và Regularization
+
+| Vấn đề | Triệu chứng | Cách xử lý |
+|---|---|---|
+| Underfitting | Cả train và validation đều kém | Mô hình biểu hiện hơn, features tốt hơn |
+| Overfitting | Train tốt nhưng validation yếu | Regularization, early stopping, mô hình đơn giản hơn |
+
+Regularization:
+
+- **L1 (Lasso):** đẩy một số hệ số về đúng 0 (tác dụng chọn đặc trưng)
+- **L2 (Ridge):** thu nhỏ các hệ số một cách mượt mà
+- **Elastic Net:** kết hợp L1 + L2
+
+---
+
+## Model Selection và Hyperparameter Tuning
+
+- Bắt đầu với baseline mạnh
+- Sử dụng setup CV có thể reproduce
+- Tune bằng Grid Search / Random Search / Bayesian optimization
+- Theo dõi cả mean và variance của metric
+- Cân bằng hiệu suất với độ trễ và khả năng diễn giải
+
+### Ví dụ: grid search với cross-validation
+
+```python
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import GridSearchCV, StratifiedKFold
+
+rf = RandomForestClassifier(random_state=42, n_jobs=-1)
+
+param_grid = {
+    "n_estimators": [100, 300],
+    "max_depth": [None, 8, 16],
+    "min_samples_split": [2, 10],
+    "min_samples_leaf": [1, 4],
+}
+
+cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
+search = GridSearchCV(
+    estimator=rf,
+    param_grid=param_grid,
+    scoring="f1",
+    cv=cv,
+    n_jobs=-1,
+    verbose=1,
+)
+
+search.fit(X_train, y_train)
+print("Best params:", search.best_params_)
+print("Best CV F1:", search.best_score_)
+```
+
+---
+
+## Câu hỏi Phỏng vấn
+
+### 1) Tại sao accuracy có thể gây hiểu nhầm?
+
+Accuracy thất bại trên các dataset mất cân bằng. Nếu tỷ lệ positive là 1%, một classifier "ngu" luôn dự đoán negative sẽ cho 99% accuracy nhưng recall bằng 0 cho minority class.
+
+### 2) Random Forest vs Gradient Boosting: khi nào chọn cái nào?
+
+Random Forest là baseline mạnh mẽ, ít cần bảo trì. Gradient boosting thường cho kết quả tốt hơn trên dữ liệu dạng bảng sau khi tinh chỉnh cẩn thận, nhưng nhạy cảm hơn với hyperparameters.
+
+### 3) Khác biệt thực tế giữa L1 và L2 là gì?
+
+L1 có thể tạo mô hình thưa bằng cách đưa hệ số về 0. L2 phân bổ sự thu nhỏ đều qua các đặc trưng và thường ổn định hơn với các biến tương quan.
+
+### 4) Tại sao feature scaling cần thiết cho SVM và KNN?
+
+Các phép tính khoảng cách và margin nhạy cảm với scale. Nếu không scale, các đặc trưng có giá trị lớn sẽ chi phối và làm sai lệch ranh giới quyết định.
+
+### 5) Làm sao tránh data leakage trong model validation?
+
+Áp dụng tất cả các bước tiền xử lý (imputation, scaling, encoding, selection) **bên trong một pipeline** và chỉ fit chúng trên các training folds trong cross-validation.
+
+### 6) Một ML baseline tốt trông như thế nào?
+
+Một pipeline có thể reproduce với các mô hình đơn giản, metrics rõ ràng, stratified split/CV, và phân tích lỗi có tài liệu trước khi chuyển sang các kiến trúc phức tạp.

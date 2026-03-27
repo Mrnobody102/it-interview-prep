@@ -142,6 +142,11 @@ export const backend: Category = {
     {
       id: "erlang-backend",
       name: { vi: "Erlang / Elixir", en: "Erlang / Elixir" },
+      subtopics: [
+        { id: "elixir-syntax", name: { vi: "Elixir Syntax", en: "Elixir Syntax" } },
+        { id: "concurrency-otp", name: { vi: "Concurrency & OTP", en: "Concurrency & OTP" } },
+        { id: "phoenix-framework", name: { vi: "Phoenix Framework", en: "Phoenix Framework" } },
+      ],
     },
   ],
 };
