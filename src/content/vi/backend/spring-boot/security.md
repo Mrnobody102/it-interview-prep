@@ -183,10 +183,10 @@ Mỗi phần được mã hóa Base64URL.
 ```mermaid
 flowchart LR
     A["Header<br>{ alg: HS256,<br>  typ: JWT }"] --> B["Base64URL(A)"]
-    C["Payload<br>{ sub: user123,<br>  roles: USER,<br>  exp: 1699999999 }"] --> D["Base64URL(C)"]
+    C["Payload<br>{ sub: user123,<br>  roles: USER,<br>  exp: exp_time }"] --> D["Base64URL(C)"]
     B --> E["Header.Payload.Signature"]
     D --> E
-    F["Secret Key<br>(chỉ server biết)"] --> G["HMAC-SHA256<br>(Header.Payload, key)"]
+    F["Secret Key<br>(server-only)"] --> G["HMAC-SHA256<br>(Header.Payload, key)"]
     G --> E
 ```
 
@@ -301,19 +301,19 @@ Dùng chỉ một token có thời hạn dài rất nguy hiểm — nếu bị l
 ```mermaid
 flowchart TD
     subgraph Tokens["Hai loại Token"]
-        AT["Access Token<br>Ngắn hạn: 5-15 phút<br>Lưu: memory / localStorage"]
-        RT["Refresh Token<br>Dài hạn: 7-30 ngày<br>Lưu: HttpOnly cookie / Redis"]
+        AT["Access Token<br>Ngắn hạn: 5-15 phút"]
+        RT["Refresh Token<br>Dài hạn: 7-30 ngày"]
     end
 
     subgraph Flow["Luồng xác thực"]
         L1["User Login"]
-        L2["Server trả về cả hai token"]
-        L3["Gửi request kèm access token"]
+        L2["Server trả về 2 token"]
+        L3["Gửi request + access token"]
         L4["Token đã hết hạn?"]
-        L5["Gọi /refresh với refresh token"]
-        L6["Trả về access token mới + xoay refresh token"]
+        L5["Gọi /refresh"]
+        L6["Trả về token mới"]
         L7["Cấp quyền truy cập mới"]
-        L8["Tiếp tục luồng bình thường"]
+        L8["Tiếp tục bình thường"]
     end
 
     L1 --> L2 --> L3 --> L4

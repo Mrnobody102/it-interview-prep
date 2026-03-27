@@ -135,5 +135,13 @@ export const backend: Category = {
       id: "golang-backend",
       name: { vi: "Golang Backend", en: "Golang Backend" },
     },
+    {
+      id: "cpp-backend",
+      name: { vi: "C++ Backend", en: "C++ Backend" },
+    },
+    {
+      id: "erlang-backend",
+      name: { vi: "Erlang / Elixir", en: "Erlang / Elixir" },
+    },
   ],
 };

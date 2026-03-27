@@ -125,7 +125,12 @@ export function Sidebar({
         <button
           onClick={() => {
             if (hasSubtopics) {
-              toggleTopic(topic.id, parentKey);
+              // Expand and auto-select first subtopic
+              const firstSub = topic.subtopics![0];
+              if (!expandedKeys.has(key)) {
+                toggleTopic(topic.id, parentKey);
+              }
+              onTopicSelect(firstSub);
             } else {
               onTopicSelect(topic);
             }

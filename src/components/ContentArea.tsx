@@ -67,7 +67,9 @@ export function ContentArea({
       selectedCategory.id,
       selectedTopic.id,
       selectedCategory.topics
-    ).then(setContent);
+    ).then((c) => {
+      setContent(c);
+    });
   }, [selectedCategory, selectedTopic, language]);
 
   if (!selectedCategory) {

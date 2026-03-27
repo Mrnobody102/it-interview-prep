@@ -183,7 +183,7 @@ Each part is Base64URL-encoded.
 ```mermaid
 flowchart LR
     A["Header<br>{ alg: HS256,<br>  typ: JWT }"] --> B["Base64URL(A)"]
-    C["Payload<br>{ sub: user123,<br>  roles: USER,<br>  exp: 1699999999 }"] --> D["Base64URL(C)"]
+    C["Payload<br>{ sub: user123,<br>  roles: USER,<br>  exp: exp_time }"] --> D["Base64URL(C)"]
     B --> E["Header.Payload.Signature"]
     D --> E
     F["Secret Key<br>(server-only)"] --> G["HMAC-SHA256<br>(Header.Payload, key)"]
@@ -628,11 +628,11 @@ The Security Filter Chain is the heart of Spring Security. Every HTTP request pa
 ```mermaid
 flowchart LR
     A["HTTP Request"] --> B["Security Filter Chain"]
-    B --> C["CsrfFilter<br>CSRF protection"]
-    B --> D["CorsFilter<br>CORS handling"]
-    B --> E["UsernamePasswordAuthenticationFilter<br>Extract credentials"]
-    B --> F["JwtAuthenticationFilter<br>Extract & validate JWT"]
-    B --> G["AuthorizationFilter<br>Check permissions"]
+    B --> C["CsrfFilter"]
+    B --> D["CorsFilter"]
+    B --> E["UserPassAuthFilter"]
+    B --> F["JwtAuthFilter"]
+    B --> G["AuthorizationFilter"]
     G -->|Authorized| H["Controller"]
     G -->|Not Authorized| I["403 Forbidden"]
     E -->|Invalid credentials| J["401 Unauthorized"]
