@@ -18,6 +18,18 @@ interface SearchResult {
   snippet?: string;
 }
 
+function findTopicById(topics: Topic[], id: string): Topic | null {
+  for (const topic of topics) {
+    if (topic.id === id) return topic;
+    if (topic.subtopics) {
+      const found = findTopicById(topic.subtopics, id);
+      if (found) return found;
+    }
+  }
+
+  return null;
+}
+
 function buildTopicMap() {
   const topicMap = new Map<string, { topicId: string; topicName: string; categoryId: string; categoryName: string }>();
 
@@ -40,8 +52,9 @@ function buildTopicMap() {
       const filenames = resolveFilename(t.id, parentId);
       // Register all candidate filenames pointing to this topic
       for (const filename of filenames) {
-        if (!topicMap.has(`${lang}:${filename}`)) {
-          topicMap.set(`${lang}:${filename}`, {
+        const key = `${lang}:${catId}:${filename}`;
+        if (!topicMap.has(key)) {
+          topicMap.set(key, {
             topicId: t.id,
             topicName: t.name[lang],
             categoryId: catId,
@@ -65,15 +78,19 @@ export function SearchModal({ isOpen, onClose, language, onTopicSelect }: Search
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<SearchResult[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
+  const topicMapRef = useRef<Map<string, { topicId: string; topicName: string; categoryId: string; categoryName: string }> | null>(null);
 
   // Initialize search index once
   const searchIndexRef = useRef<ReturnType<typeof initSearchIndex> | null>(null);
-  if (!searchIndexRef.current) {
-    searchIndexRef.current = initSearchIndex(buildTopicMap());
-  }
 
   useEffect(() => {
     if (isOpen) {
+      if (!topicMapRef.current) {
+        topicMapRef.current = buildTopicMap();
+      }
+      if (!searchIndexRef.current && topicMapRef.current) {
+        searchIndexRef.current = initSearchIndex(topicMapRef.current);
+      }
       inputRef.current?.focus();
       setQuery('');
       setResults([]);
@@ -86,66 +103,67 @@ export function SearchModal({ isOpen, onClose, language, onTopicSelect }: Search
       return;
     }
 
-    const combinedResults: SearchResult[] = [];
-    const seen = new Set<string>();
-    const lowerQuery = query.toLowerCase();
+    let cancelled = false;
 
-    // 1. Search by topic name
-    const searchTopic = (topic: Topic, category: Category, path: string[]) => {
-      const topicName = topic.name[language].toLowerCase();
-      if (topicName.includes(lowerQuery)) {
-        const key = `${category.id}:${topic.id}`;
-        if (!seen.has(key)) {
-          seen.add(key);
-          combinedResults.push({ type: 'topic', topic, category, path: [...path, topic.name[language]] });
+    const runSearch = async () => {
+      const combinedResults: SearchResult[] = [];
+      const seen = new Set<string>();
+      const lowerQuery = query.toLowerCase();
+
+      // 1. Search by topic name
+      const searchTopic = (topic: Topic, category: Category, path: string[]) => {
+        const topicName = topic.name[language].toLowerCase();
+        if (topicName.includes(lowerQuery)) {
+          const key = `${category.id}:${topic.id}`;
+          if (!seen.has(key)) {
+            seen.add(key);
+            combinedResults.push({ type: 'topic', topic, category, path: [...path, topic.name[language]] });
+          }
+        }
+        if (topic.subtopics) {
+          topic.subtopics.forEach((subtopic) =>
+            searchTopic(subtopic, category, [...path, topic.name[language]])
+          );
+        }
+      };
+
+      for (const category of categories) {
+        for (const topic of category.topics) {
+          searchTopic(topic, category, [category.name[language]]);
         }
       }
-      if (topic.subtopics) {
-        topic.subtopics.forEach((subtopic) =>
-          searchTopic(subtopic, category, [...path, topic.name[language]])
-        );
+
+      // 2. Search by content
+      const contentResults: ContentSearchResult[] = await searchContent(query, language, 10);
+      for (const cr of contentResults) {
+        const key = `${cr.categoryId}:${cr.topicId}`;
+        if (!seen.has(key)) {
+          seen.add(key);
+          const cat = categories.find((c) => c.id === cr.categoryId);
+          if (!cat) continue;
+          const topic = findTopicById(cat.topics, cr.topicId);
+          if (!topic) continue;
+          combinedResults.push({
+            type: 'content',
+            topic,
+            category: cat,
+            path: [cat.name[language]],
+            snippet: cr.snippet,
+          });
+        }
+      }
+
+      if (!cancelled) {
+        setResults(combinedResults.slice(0, 15));
       }
     };
 
-    for (const category of categories) {
-      for (const topic of category.topics) {
-        searchTopic(topic, category, [category.name[language]]);
-      }
-    }
+    runSearch();
 
-    // 2. Search by content
-    const contentResults: ContentSearchResult[] = searchContent(query, language, 10);
-    for (const cr of contentResults) {
-      const key = `${cr.categoryId}:${cr.topicId}`;
-      if (!seen.has(key)) {
-        seen.add(key);
-        const cat = categories.find((c) => c.id === cr.categoryId);
-        if (!cat) continue;
-        const topic = findTopicById(cat.topics, cr.topicId);
-        if (!topic) continue;
-        combinedResults.push({
-          type: 'content',
-          topic,
-          category: cat,
-          path: [cat.name[language]],
-          snippet: cr.snippet,
-        });
-      }
-    }
-
-    setResults(combinedResults.slice(0, 15));
+    return () => {
+      cancelled = true;
+    };
   }, [query, language]);
-
-  function findTopicById(topics: Topic[], id: string): Topic | null {
-    for (const t of topics) {
-      if (t.id === id) return t;
-      if (t.subtopics) {
-        const found = findTopicById(t.subtopics, id);
-        if (found) return found;
-      }
-    }
-    return null;
-  }
 
   if (!isOpen) return null;
 

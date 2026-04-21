@@ -1,455 +1,296 @@
 # Database -> Replication & High Availability
 
-## Cac loai Replication
+## Replication là gì?
 
-### Master-Slave (Primary-Replica)
+Replication là cơ chế sao chép dữ liệu từ một node chính sang một hoặc nhiều node phụ để tăng khả năng đọc, cải thiện tính sẵn sàng và hỗ trợ disaster recovery.
 
-Mot node (primary/master) chap nhan writes. Mot hoac nhieu replica nodes replicate data tu primary. Cac read queries co the duoc phan phoi den replicas.
+Mục tiêu phổ biến:
 
-```
-Write ──► Primary (RW)
-                │
-                ├──► Replica 1 (RO)
-                ├──► Replica 2 (RO)
-                └──► Replica N (RO)
-```
-
-**Cau hinh MySQL:**
-```ini
-# Primary (my.cnf)
-server-id = 1
-log_bin = /var/log/mysql/mysql-bin
-binlog_format = ROW
-
-# Replica (my.cnf)
-server-id = 2
-relay_log = /var/log/mysql/mysql-relay-bin
-log_slave_updates = 1
-read_only = 1
-```
-
-```sql
--- Tren Primary: tao replication user
-CREATE USER 'repl'@'%' IDENTIFIED WITH mysql_native_password BY 'password';
-GRANT REPLICATION SLAVE ON *.* TO 'repl'@'%';
-
--- Tren Replica: bat dau replication
-CHANGE MASTER TO
-    MASTER_HOST = 'primary-host',
-    MASTER_USER = 'repl',
-    MASTER_PASSWORD = 'password',
-    MASTER_LOG_FILE = 'mysql-bin.000001',
-    MASTER_LOG_POS = 157;
-
-START SLAVE;
-SHOW SLAVE STATUS\G
-```
-
-### Master-Master (Multi-Primary)
-
-Hai hoac nhieu nodes chap nhan writes. Moi node vua la primary vua la replica cua node khac. Writes co the di den bat ky node nao.
-
-```
-        ◄───────────────────►
-        │                   │
-        ▼                   ▼
-  ┌─────────┐         ┌─────────┐
-  │ Node A  │◄───────►│ Node B  │
-  │  (RW)   │         │  (RW)   │
-  └─────────┘         └─────────┘
-```
-
-| Khia canh | Master-Slave | Master-Master |
-|-----------|-------------|---------------|
-| **Write nodes** | 1 (chi primary) | Nhieu (tat ca nodes) |
-| **Risk conflict** | Khong co (writes di mot noi) | Cao (writes dong thoi cung rows) |
-| **Failover** | Don gian (promote replica) | Phuc tap (can conflict resolution) |
-| **Use case** | Doc scaling, DR | Active-active cho nhieu sites |
-
-### Slave Replication (Replica Only)
-
-Read replicas phuc vu cac read-only queries, giam tai load tren primary. Day la setup replication pho bien nhat.
-
-```sql
--- Application routing strategy
-public DataSource selectDataSource() {
-    // 80% reads di den replica pool
-    if (Math.random() < 0.8) {
-        return replicaDataSource;
-    }
-    // 20% + tat ca writes di den primary
-    return primaryDataSource;
-}
-```
+- scale read traffic
+- giảm downtime khi primary lỗi
+- có bản sao dữ liệu ở vùng hoặc máy khác
 
 ---
 
-## Synchronous vs Asynchronous Replication
+## Mô hình replication phổ biến
 
-### Asynchronous Replication
+### Primary - Replica
 
-Primary write noi bo, gui event den replicas, va xac nhan write cho client ma khong cho replicas xac nhan.
+Một node **primary** nhận ghi, các node **replica** sao chép dữ liệu từ primary và thường phục vụ đọc.
 
-- **Pros**: Primary write nhanh, khong choi replica network latency.
-- **Cons**: Co the mat data neu primary fail truoc khi replicas nhan duoc update (replication lag).
-
-Hầu hết databases su dung asynchronous replication mac dinh.
-
-### Synchronous Replication
-
-Primary choi cho den khi tat ca (hoac quorum cua) replicas xac nhan write truoc khi xac nhan cho client.
-
-- **Pros**: Khong mat data.
-- **Cons**: Write latency bang network round-trip den slowest replica.
-
-```sql
--- PostgreSQL: synchronous replication config
-synchronous_commit = on  # choi cho all
-synchronous_commit = remote_apply  # choi cho den khi applied
-synchronous_standby_names = 'replica1,replica2'
+```text
+Application
+  |- write -> Primary
+  |- read  -> Replica 1
+  |- read  -> Replica 2
 ```
 
-```ini
-# MySQL: semi-synchronous replication
-plugin-load = "rpl_semi_sync_master=semisync_master.so;rpl_semi_sync_slave=semisync_slave.so"
-rpl-semi-sync-master-wait-for-slave-count = 1
-```
+Ưu điểm:
 
-### Semi-Synchronous Replication
+- dễ hiểu
+- read scaling tốt
+- failover đơn giản hơn multi-primary
 
-Mot giai phap trung gian: primary choi cho it nhat mot replica xac nhan nhan duoc (nhung khong nhat thiet apply) truoc khi xac nhan cho client.
+Nhược điểm:
+
+- primary vẫn là điểm tập trung cho write
+- có replication lag
+
+### Multi-Primary
+
+Nhiều node cùng nhận write. Mô hình này phức tạp hơn vì phải xử lý conflict, ordering và consistency.
+
+Chỉ nên dùng khi có nhu cầu thật rõ ràng như:
+
+- active-active đa region
+- workload yêu cầu nhiều điểm ghi độc lập
 
 ---
 
-## Replication Lag
+## Asynchronous, Semi-Synchronous, Synchronous
 
-Replication lag la thoi gian tre giua mot write tren primary va su phan anh cua no tren replica.
+### Asynchronous replication
 
-### Nguyen nhan
+Primary xác nhận transaction cho client trước, rồi replica mới nhận hoặc áp dụng thay đổi sau.
 
-- Network latency giua primary va replica.
-- Replica dang bi nang doc nang (khong the theo kip replication).
-- Large transactions tren primary.
-- Replica hardware cham hon primary (I/O, CPU, disk throughput).
+- **Ưu điểm**: write latency thấp
+- **Nhược điểm**: có thể mất dữ liệu mới nhất nếu primary chết trước khi replica nhận kịp
 
-### Tac dong
+### Semi-synchronous replication
+
+Primary đợi ít nhất một replica xác nhận đã nhận event rồi mới trả kết quả cho client.
+
+- **Ưu điểm**: giảm nguy cơ mất dữ liệu so với async thuần
+- **Nhược điểm**: latency cao hơn async
+
+### Synchronous replication
+
+Primary đợi replica xác nhận đầy đủ trước khi commit trả về client.
+
+- **Ưu điểm**: nhất quán mạnh hơn, giảm nguy cơ mất dữ liệu
+- **Nhược điểm**: write chậm hơn đáng kể, phụ thuộc network và replica chậm nhất
+
+---
+
+## Replication lag
+
+Replication lag là độ trễ giữa thời điểm dữ liệu được ghi ở primary và thời điểm replica nhìn thấy thay đổi đó.
+
+Ví dụ:
+
+1. User tạo comment.
+2. API ghi thành công vào primary.
+3. Request kế tiếp đọc từ replica ngay lập tức.
+4. Comment có thể chưa xuất hiện nếu replica chưa apply xong.
+
+Nguyên nhân thường gặp:
+
+- network chậm
+- replica bị quá tải I/O hoặc CPU
+- transaction lớn
+- index maintenance hoặc vacuum/checkpoint nặng
+
+Hệ quả:
+
+- mất read-after-write consistency
+- dashboard/reporting hiển thị dữ liệu cũ
+- failover có thể mất một phần dữ liệu mới nhất
+
+---
+
+## Theo dõi replication
+
+### PostgreSQL
 
 ```sql
--- User dang mot comment
-INSERT INTO comments (user_id, content) VALUES (1, 'Hello');
-
--- Ngay lap tuc doc lai (tren replica)
-SELECT * FROM comments WHERE user_id = 1;
--- Comment co the chua thay vi (replication lag)
+SELECT
+  application_name,
+  client_addr,
+  state,
+  sync_state,
+  write_lag,
+  flush_lag,
+  replay_lag
+FROM pg_stat_replication;
 ```
 
-### Do lag
+### MySQL 8+
+
+MySQL 8 dùng terminology mới là **source/replica** thay cho `master/slave`.
 
 ```sql
--- MySQL
-SHOW SLAVE STATUS\G
--- Cac cot quan trong:
---   Seconds_Behind_Master: lag tinh bang giay
---   Slave_IO_Running: YES neu IO thread dang chay
---   Slave_SQL_Running: YES neu SQL thread dang chay
-
--- PostgreSQL
-SELECT * FROM pg_stat_replication;
---   client_addr: replica IP
---   sent_lsn: last WAL da gui
---   write_lsn: last WAL da viet tren replica
---   flush_lsn: last WAL da flush ra disk tren replica
---   replay_lsn: last WAL da apply tren replica
---   lag: thoi gian chay sau primary
+SHOW REPLICA STATUS\G
 ```
 
-### Giai quyet Lag
+Các trường cần theo dõi:
 
-- Dinh tuyen reads den primary khi can do dai.
-- Monitor lag va alert khi no vuot nguong.
-- Su dung connection poolers (PgBouncer) voi replication-aware routing.
-- Toi uu hoa replica hardware de khop voi primary.
+- `Seconds_Behind_Source`
+- `Replica_IO_Running`
+- `Replica_SQL_Running`
+- trạng thái error của replication threads
+
+> Lưu ý: `START SLAVE`, `SHOW SLAVE STATUS`, `CHANGE MASTER TO` là cú pháp cũ. Với MySQL 8 hiện đại nên ưu tiên `START REPLICA`, `SHOW REPLICA STATUS`, `CHANGE REPLICATION SOURCE TO`.
+
+---
+
+## Cấu hình cơ bản
+
+### MySQL 8 replica setup
+
+```sql
+CHANGE REPLICATION SOURCE TO
+  SOURCE_HOST = 'primary-host',
+  SOURCE_USER = 'repl',
+  SOURCE_PASSWORD = 'password',
+  SOURCE_LOG_FILE = 'binlog.000001',
+  SOURCE_LOG_POS = 157;
+
+START REPLICA;
+SHOW REPLICA STATUS\G
+```
+
+### PostgreSQL synchronous replication
+
+```conf
+synchronous_commit = on
+synchronous_standby_names = 'FIRST 1 (replica1, replica2)'
+```
 
 ---
 
 ## Failover
 
-Failover la qua trinh tu dong hoac thu cong promote mot replica thanh primary khi primary fail.
+Failover là quá trình promote replica thành primary khi primary cũ bị lỗi.
 
-### Tu dong vs Thu cong
+Các bước thường có:
 
-| Loai | Mo ta | Pros | Cons |
-|------|-------|------|------|
-| **Thu cong** | Admin thu cong promote replica | Toan quyen kiem soat | Cham, nguy co loi nhan suat |
-| **Tu dong** | Cluster manager phat hien fail va promote | Nhanh, khong co delay nhan suat | Co the promote sai |
+1. phát hiện primary lỗi
+2. xác minh không phải chỉ là network glitch
+3. chọn replica tốt nhất để promote
+4. chuyển traffic ứng dụng sang primary mới
+5. cấu hình lại các replica còn lại
 
-### Qua trinh Failover
+### Manual failover
 
-```
-1. Phat hien: Primary fail duoc phat hien (heartbeat timeout)
-2. Xac nhan: Xac nhan primary that su down (khong phai chi la network blip)
-3. Promote: Chon replica tot nhat (cao nhat) va promote
-4. Routing: Cap nhat connection strings / VIP / DNS
-5. Tich hop lai: Cac replicas con lai tro den primary moi
-```
+Ưu điểm:
 
-### VIP (Virtual IP) Migration
+- kiểm soát tốt hơn
+- giảm nguy cơ failover nhầm
 
-```bash
-# Cau hinh keepalived cho VIP failover
-vrrp_instance VI_1 {
-    state BACKUP           # ca hai nodes bat dau la BACKUP
-    interface eth0
-    virtual_router_id 51
-    priority 100           # primary co 100, replica co 90
-    advert_int 1
-    virtual_ipaddress {
-        192.168.1.100/24   # Virtual IP
-    }
-    notify_master "/usr/local/bin/promote.sh"
-}
-```
+Nhược điểm:
 
-### DNS Switching
+- chậm
+- phụ thuộc con người
 
-```
-Truoc failover:
-  db.example.com -> 192.168.1.10 (Primary)
+### Automatic failover
 
-Sau failover:
-  db.example.com -> 192.168.1.11 (New Primary)
-  # TTL nen thap (60 seconds) de switchover nhanh
-```
+Ưu điểm:
 
-### Switchover vs Failover
+- giảm downtime
+- phản ứng nhanh hơn
 
-- **Failover**: Khong du ke hoach, tu dong hoac thu cong (primary crash).
-- **Switchover**: Du ke hoach, thu cong (primary xuong bao tri).
+Nhược điểm:
+
+- dễ gây split-brain nếu health check hoặc quorum thiết kế kém
 
 ---
 
-## Cac giai phap HA
+## Split-brain
 
-### Pacemaker + Corosync
+Split-brain xảy ra khi hai node cùng tin rằng mình là primary và đều nhận write. Đây là một trong những lỗi nguy hiểm nhất của hệ HA.
 
-Cluster resource manager open-source cho Linux. Quan ly VIP, filesystem, va database failover.
+Cách giảm rủi ro:
 
-```bash
-# Install
-yum install pacemaker pcs corosync
-
-# Cau hinh cluster
-pcs cluster setup --name mycluster node1 node2
-pcs cluster start --all
-
-# Tao VIP resource
-pcs resource create db_vip ocf:heartbeat:IPaddr2 \
-    ip=192.168.1.100 cidr_netmask=24 \
-    op monitor interval=30s
-
-# Tao database resource (Vi du PostgreSQL)
-pcs resource create pgsql ocf:heartbeat:pgsqlms \
-    pgdata=/var/lib/pgsql/data \
-    op monitor interval=30s
-
-# Colocation: VIP va DB tren cung mot node
-pcs constraint colocation add db_vip pgsql INFINITY
-
-# Ordering: DB truoc, sau do VIP
-pcs constraint order pgsql then db_vip
-```
-
-### PgBouncer
-
-Connection pooler cho PostgreSQL nam giua application va database. Giam connection overhead va co the dinh tuyen queries den replicas.
-
-```ini
-[databases]
-mydb = host=primary port=5432 dbname=mydb
-mydb_readonly = host=replica port=5432 dbname=mydb
-
-[pgbouncer]
-listen_addr = 0.0.0.0
-listen_port = 6432
-auth_type = md5
-auth_file = userlist.txt
-pool_mode = transaction
-max_client_conn = 1000
-default_pool_size = 20
-server_idle_timeout = 600
-```
-
-```java
-// Application ket noi PgBouncer thay vi truc tiep vao DB
-// PgBouncer xu ly connection pooling va routing
-String url = "jdbc:postgresql://pgbouncer:6432/mydb";
-```
-
-### Keepalived
-
-Dung cho VIP failover o muc network:
-
-```bash
-# keepalived.conf
-vrrp_instance VI_1 {
-    state BACKUP
-    interface ens33
-    virtual_router_id 51
-    priority 100
-    advert_int 1
-    authentication {
-        auth_type PASS
-        auth_pass 1111
-    }
-    virtual_ipaddress {
-        192.168.1.100
-    }
-    notify_master /opt/scripts/become_master.sh
-    notify_backup /opt/scripts/become_backup.sh
-}
-```
-
-### Orchestrator (MySQL)
-
-Cong cu quan ly MySQL replication va failover:
-
-```bash
-# Kiem tra topology
-orchestrator -c discover -i myhost:3306
-
-# Hien thi topology
-orchestrator -c topology -i myhost:3306
-
-# Failover thu cong
-orchestrator -c graceful-master-takeover -i myhost:3306 -d mydb
-```
+- quorum-based election
+- fencing token
+- witness node / odd number of nodes
+- network redundancy
 
 ---
 
-## Read Replicas cho Scaling
+## Read scaling
 
-Read replicas cho phep ban scale read-heavy workloads bang cach phan phoi reads qua nhieu replicas.
+Read replicas phù hợp cho:
 
-```mermaid
-flowchart LR
-    App["Application"]
-    LB["Load Balancer"]
-    P["Primary<br>(Writes)"]
-    R1["Replica 1<br>(Reads)"]
-    R2["Replica 2<br>(Reads)"]
-    R3["Replica 3<br>(Reads)"]
+- reporting
+- analytics
+- truy vấn đọc nhiều
+- API đọc có thể chấp nhận dữ liệu hơi cũ
 
-    App --> LB
-    LB --> P
-    LB --> R1
-    LB --> R2
-    LB --> R3
+Không nên dùng replica cho:
 
-    P --> R1
-    P --> R2
-    P --> R3
-```
+- luồng cần read-after-write consistency mạnh
+- nghiệp vụ tài chính nhạy với dữ liệu stale
 
-```java
-// Read-write splitting voi Spring
-@Bean
-public DataSource routingDataSource(
-        DataSource primary,
-        DataSource replica1,
-        DataSource replica2) {
+Giải pháp hay dùng:
 
-    Map<Object, Object> dataSources = new HashMap<>();
-    dataSources.put("primary", primary);
-    dataSources.put("replica1", replica1);
-    dataSources.put("replica2", replica2);
-
-    RoutingDataSource rds = new RoutingDataSource();
-    rds.setDefaultTargetDataSource(primary);
-    rds.setTargetDataSources(dataSources);
-    return rds;
-}
-
-// Trong service layer
-@Transactional(readOnly = true)  // dinh tuyen den replica
-public List<User> getUsers() { ... }
-
-@Transactional(readOnly = false)  // dinh tuyen den primary
-public void updateUser(Long id, String name) { ... }
-```
+- route read quan trọng về primary
+- route reporting sang replica
+- thêm cache cho query đọc nặng
 
 ---
 
-## Consensus Protocols: Raft & Paxos
+## Công cụ HA thường gặp
 
-### Raft
+### PostgreSQL
 
-Raft la mot consensus algorithm thiet ke de de hieu. No bat dau mot leader de quan ly log replication.
+- **Patroni**: orchestration/failover phổ biến
+- **PgBouncer**: connection pooling
+- **Keepalived**: VIP failover
 
-```
-Raft Leader Election:
+### MySQL
 
-Term 1:  Node A (votes: A)      Node B (votes: A)      Node C (votes: A)
-        ┌─────────┐              ┌─────────┐              ┌─────────┐
-        │  Node   │              │  Node   │              │  Node   │
-        │    A    │              │    B    │              │    C    │
-        │  LEADER │              │FOLLOWER │              │FOLLOWER │
-        └─────────┘              └─────────┘              └─────────┘
+- **Orchestrator**: topology management và failover
+- **MHA** hoặc giải pháp managed cloud
 
-        A nhan duoc votes tu B va C → tro thanh Leader
-```
+### Cloud managed
 
-Raft dam bao: **Leader election**, **Log replication** (majority writes), va **Safety** (chi mot leader moi term).
+- Amazon RDS / Aurora
+- Cloud SQL
+- Azure Database
 
-### Paxos
-
-Paxos la nen tang ly thuyet cua distributed consensus. Hai phases:
-
-1. **Prepare**: Leader (proposer) hoi majority de prepare.
-2. **Accept**: Leader de xuat gia tri, majority phai accept.
-
-Ca Raft va Paxos deu yeu cau **majority (quorum)** cua nodes dong y. Voi 3 nodes, co the chiu 1 fail. Voi 5 nodes, co the chiu 2 fails.
-
-### Van de Split-Brain
-
-Split-brain xay ra khi mot network partition chia cluster thanh hai hoac nhieu phan, moi phan tin rang phan kia da chet. Ca hai ben co the thu tro thanh primary.
-
-```
-Network Partition:
-
-  Side A                      Side B
-┌─────────┐                ┌─────────┐
-│ Node A  │ ── X ─ X ─ X ─ │ Node B  │
-│(thinks B│                │(thinks A│
-│ is down)│                │ is down)│
-└─────────┘                └─────────┘
-
-Ket qua: Ca A va B co the thu accept writes
-→ Data inconsistency (split-brain)
-```
-
-### Phong chong Split-Brain
-
-- **Quorum**: Yeu cau majority cho writes (Raft/Paxos). Neu mot node khong the dat duoc majority, no ngung chap nhan writes.
-- **Fencing**: Khi mot leader moi duoc bat dau, no phat hanh mot fencing token ma leader cu phai trinh bay de chap nhan writes.
-- **Witness/Sidecar**: Mot so le nodes dam bao quorum luon co the dat duoc.
-- **Redundant networking**: Nhieu network paths giua cac nodes.
+Ưu điểm của managed service là giảm vận hành nhưng đánh đổi quyền kiểm soát thấp hơn.
 
 ---
 
-## Cau hoi phong van thuong gap
+## Best Practices
 
-> **Replication lag la gi va xu ly nhu the nao?**
->
-> Replication lag la do tre giua mot write tren primary va su xuat hien cua no tren replica. Cho cac ung dung can read-after-write consistency, dinh tuyen reads den primary. Cho reporting/analytics co the chap nhan data hoi cu, replicas la ok. Monitor lag voi `SHOW SLAVE STATUS` (MySQL) hoac `pg_stat_replication` (PostgreSQL) va alert khi no vuot nguong.
+### 1. Tách rõ write path và read path
 
-> **Synchronous va asynchronous replication khac nhau the nao?**
->
-> Asynchronous: primary write noi bo va xac nhan ngay lap tuc, replicate den replicas o background. Writes nhanh nhung data co the mat neu primary fail. Synchronous: primary choi cho replica xac nhan truoc khi xac nhan cho client. Khong mat data nhung write latency cao hon. Semi-synchronous la mot compromise: choi cho it nhat mot replica nhan duoc, nhung khong nhat thiet apply, write.
+Ứng dụng cần biết request nào bắt buộc đi primary, request nào có thể đi replica.
 
-> **Split-brain la gi va phong chong nhu the nao?**
->
-> Split-brain xay ra khi network partition chia cluster sao cho ca hai ben deu nghi ben kia da chet va ca hai deu thu accept writes, gay ra data inconsistency. Phong chong: quorum-based writes (majority phai dong y), fencing tokens (leader moi vo hieu hoa leader cu), va witness nodes cho cluster voi so chan.
+### 2. Luôn monitor lag
 
-> **Thiet ke HA cho PostgreSQL nhu the nao?**
+Không monitor replication lag thì read replica rất dễ trở thành nguồn bug khó đoán.
+
+### 3. Test failover định kỳ
+
+Nếu chưa diễn tập failover, gần như chắc chắn runbook của bạn còn thiếu.
+
+### 4. Chấp nhận trade-off rõ ràng
+
+HA không miễn phí:
+
+- thêm độ phức tạp
+- tăng chi phí
+- tăng latency nếu dùng sync
+
+### 5. Tránh multi-primary nếu chưa thật cần
+
+Primary-replica thường là điểm bắt đầu an toàn hơn và đơn giản hơn nhiều.
+
+---
+
+## Câu hỏi phỏng vấn thường gặp
+
+> **Replication lag là gì và xử lý thế nào?**
 >
-> Su dung streaming replication de tao hot standbys. Su dung PgBouncer nhu connection pooler. Deploy voi Pacemaker+Corosync cho automatic failover cua VIP va database promotion. Dat `synchronous_commit = on` neu yeu cau khong mat data. Su dung replication slots de dam bao WAL khong bi discard truoc khi replicas nhan duoc. Test failover deu deu.
+> Đó là độ trễ giữa primary và replica. Cách xử lý là monitor lag, route các read cần dữ liệu mới nhất về primary, tối ưu replica, và tránh transaction quá lớn.
+
+> **Asynchronous và synchronous replication khác gì nhau?**
+>
+> Async cho write nhanh hơn nhưng có nguy cơ mất dữ liệu mới nhất khi primary chết. Sync an toàn hơn nhưng write latency cao hơn vì phải đợi replica xác nhận.
+
+> **Làm sao thiết kế HA cho PostgreSQL?**
+>
+> Có primary, một hoặc nhiều standby, dùng Patroni hoặc giải pháp tương đương để election/failover, dùng PgBouncer cho pooling, monitor lag và rehearsed failover định kỳ.

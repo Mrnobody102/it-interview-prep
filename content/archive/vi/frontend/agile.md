@@ -26,9 +26,9 @@
 5. Xây dựng projects quanh **motivated individuals**.
 6. **Face-to-face conversation** là cách hiệu quả nhất để truyền đạt.
 7. **Working software** là thước đo chính của tiến độ.
-8. Promote **sustainable development** — team có thể duy trì pace vô hạn.
+8. Promote **sustainable development**: team có thể duy trì pace vô hạn.
 9. **Technical excellence** và good design tăng agility.
-10. **Simplicity** — minimize amount of work không cần thiết.
+10. **Simplicity**: minimize amount of work không cần thiết.
 11. Self-organizing teams tạo ra **best architectures** và designs.
 12. Regular **reflection and adjustment** để become more effective.
 
@@ -58,7 +58,7 @@ Scrum là một **Agile framework** dựa trên fixed-length iterations gọi l�
 ┌────────┐    ┌──────────┐    ┌──────────┐
 │ Daily  │    │ SPRINT    │    │ SPRINT   │
 │ Standup│    │ PLANNING  │    │ REVIEW   │
-│ (15min)│   │ (2-4 hrs) │    │ (1-4 hrs)│
+│ (15min)│    │ (2-4 hrs) │    │ (1-4 hrs)│
 └────────┘    └──────────┘    └──────────┘
                               │
                               ▼
@@ -92,7 +92,7 @@ Scrum là một **Agile framework** dựa trên fixed-length iterations gọi l�
 **Phần 1: Sprint Goal (1-2 giờ)**
 - [ ] PO present highest priority items
 - [ ] Team discuss và understand requirements
-- [ ] Define Sprint Goal — what we want to achieve
+- [ ] Define Sprint Goal: what we want to achieve
 
 **Phần 2: Sprint Backlog (1-2 giờ)**
 - [ ] Team chọn items có thể complete
@@ -146,8 +146,8 @@ Team reflection để **continuous improvement**.
 ### Start-Stop-Continue
 | Start (bắt đầu làm) | Stop (ngừng làm) | Continue (tiếp tục) |
 |---------------------|------------------|---------------------|
-| Daily async updates  | Long meetings     | Daily standups      |
-| Pair programming    | Context switching | Sprint reviews     |
+| Daily async updates | Long meetings | Daily standups |
+| Pair programming | Context switching | Sprint reviews |
 
 ### 4Ls
 - **Liked:** Gì team thích?
@@ -193,13 +193,13 @@ Team reflection để **continuous improvement**.
 
 ```
 ┌─────────────┬─────────────┬─────────────┬─────────────┐
-│   BACKLOG   │     TO DO   │  IN PROGRESS│    DONE    │
+│   BACKLOG   │    TO DO    │ IN PROGRESS │    DONE     │
 ├─────────────┼─────────────┼─────────────┼─────────────┤
 │ ┌─────────┐ │ ┌─────────┐ │ ┌─────────┐ │ ┌─────────┐ │
-│ │ Feature A│ │ │ Feature B│ │ │ Feature C│ │ │ Feature D│ │
+│ │Feature A│ │ │Feature B│ │ │Feature C│ │ │Feature D│ │
 │ └─────────┘ │ └─────────┘ │ └─────────┘ │ └─────────┘ │
 │ ┌─────────┐ │ ┌─────────┐ │             │             │
-│ │ Feature E│ │ │ Bug Fix │ │             │             │
+│ │Feature E│ │ │ Bug Fix │ │             │             │
 │ └─────────┘ │ └─────────┘ │             │             │
 └─────────────┴─────────────┴─────────────┴─────────────┘
 ```
@@ -221,12 +221,12 @@ Team reflection để **continuous improvement**.
 ┌──────────────────────────────────────────────────┐
 │  WITHOUT WIP LIMIT           │  WITH WIP LIMIT   │
 ├──────────────────────────────┼───────────────────┤
-│ To Do: 10 items             │ To Do: 10 items   │
-│ In Progress: 8 items        │ In Progress: 3 ⚠️ │
-│ Done: 2 items               │ Done: 7 items     │
+│ To Do: 10 items              │ To Do: 10 items   │
+│ In Progress: 8 items         │ In Progress: 3    │
+│ Done: 2 items                │ Done: 7 items     │
 │                              │                   │
 │ Result: Context switching    │ Result: Focus,    │
-│ Bottoleneck at "Done"       │ faster delivery   │
+│ Bottleneck at "Done"         │ faster delivery   │
 └──────────────────────────────┴───────────────────┘
 ```
 
@@ -298,9 +298,9 @@ So that **I can regain access if I forget my password**.
 6. Re-vote until consensus
 
 ## Example Conversation
-Dev1: "I think this is a 5 — straightforward API call."
-Dev2: "I'd say 8 — we need error handling và retries."
-Dev3: "I agree with 8 — what about rate limiting edge cases?"
+Dev1: "I think this is a 5 - straightforward API call."
+Dev2: "I'd say 8 - we need error handling và retries."
+Dev3: "I agree with 8 - what about rate limiting edge cases?"
 [Re-vote]
 All: "8"
 ```
@@ -308,14 +308,14 @@ All: "8"
 ### 6.2. T-Shirt Sizing
 
 ```markdown
-| Size  | Relative Effort | Story Points |
-|-------|-----------------|--------------|
-| XS    | Very easy       | 1            |
-| S     | Easy            | 2            |
-| M     | Medium          | 3-5          |
-| L     | Large           | 8            |
-| XL    | Very large      | 13           |
-| XXL   | Epic            | 21+          |
+| Size | Relative Effort | Story Points |
+|------|-----------------|--------------|
+| XS | Very easy | 1 |
+| S | Easy | 2 |
+| M | Medium | 3-5 |
+| L | Large | 8 |
+| XL | Very large | 13 |
+| XXL | Epic | 21+ |
 ```
 
 ---
@@ -344,10 +344,10 @@ Points │                              ● Sprint End
 
 | Sprint | Committed | Completed | Velocity |
 |--------|-----------|-----------|----------|
-| 1      | 34 pts    | 28 pts    | 28       |
-| 2      | 30 pts    | 31 pts    | 31       |
-| 3      | 32 pts    | 29 pts    | 29       |
-| 4      | 31 pts    | 30 pts    | 30       |
+| 1 | 34 pts | 28 pts | 28 |
+| 2 | 30 pts | 31 pts | 31 |
+| 3 | 32 pts | 29 pts | 29 |
+| 4 | 31 pts | 30 pts | 30 |
 
 Average Velocity = (28 + 31 + 29 + 30) / 4 = 29.5 points
 
@@ -369,7 +369,7 @@ Average Velocity = (28 + 31 + 29 + 30) / 4 = 29.5 points
 | **Roles** | Defined (PO, SM, Team) | No required roles |
 | **Ceremonies** | Defined (Planning, Review, Retro) | Optional |
 | **Sprints** | Time-boxed iterations | No time-boxing |
-| **WIP** | Not explicitly limited | **Key practice** — WIP limits |
+| **WIP** | Not explicitly limited | **Key practice**: WIP limits |
 | **Planning** | Sprint planning (commit to sprint) | Continuous |
 | **Changes** | Typically not during sprint | Welcome anytime |
 | **Metrics** | Velocity, burndown | Lead time, throughput |
@@ -386,7 +386,7 @@ Average Velocity = (28 + 31 + 29 + 30) / 4 = 29.5 points
 ### Q: Definition of Done (DoD)?
 
 ```markdown
-## Definition of Done — Frontend
+## Definition of Done - Frontend
 
 - [ ] Code follows coding standards (lint passing)
 - [ ] Unit tests written và passing (> 80% coverage)
@@ -413,8 +413,8 @@ Average Velocity = (28 + 31 + 29 + 30) / 4 = 29.5 points
 
 ### Q: Làm sao để handle scope creep?
 
-1. **Groom backlog regularly** — không để items unrefined quá lâu.
-2. **Protect sprint goal** — new items vào backlog, không phải sprint.
-3. **Negotiate scope** — với PO, có thể descope non-essential items.
-4. **Track velocity** — use velocity để set expectations.
-5. **Say no when needed** — team capacity có giới hạn.
+1. **Groom backlog regularly**: không để items unrefined quá lâu.
+2. **Protect sprint goal**: new items vào backlog, không phải sprint.
+3. **Negotiate scope**: với PO, có thể descope non-essential items.
+4. **Track velocity**: use velocity để set expectations.
+5. **Say no when needed**: team capacity có giới hạn.

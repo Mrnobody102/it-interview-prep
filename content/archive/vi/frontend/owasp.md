@@ -30,7 +30,7 @@ OWASP Top 10 là danh sách **10 lỗ hổng bảo mật nghiêm trọng nhất*
 ```typescript
 // BAD: Client-side only authorization
 function deleteUser(id: number) {
-  if (isAdmin()) {  // Chỉ check phía client!
+  if (isAdmin()) {
     fetch(`/api/users/${id}`, { method: 'DELETE' });
   }
 }
@@ -45,26 +45,26 @@ async function deleteUser(id: number) {
 }
 
 // BAD: IDOR (Insecure Direct Object Reference)
-fetch(`/api/orders/${orderId}`);  // orderId có thể là bất kỳ order nào
+fetch(`/api/orders/${orderId}`);
 
 // GOOD: Server-side enforce ownership
-fetch(`/api/my/orders/${orderId}`);  // Server biết user nào request
+fetch(`/api/my/orders/${orderId}`);
 ```
 
 ### 2.2. Prevention
 
 - [ ] **Server-side authorization** cho mọi request.
-- [ ] **Deny by default** — access control deny trước, allow sau.
-- [ ] **Principle of least privilege** — user chỉ có quyền cần thiết.
-- [ ] **Consistent access control logic** — đặt ở một chỗ, reuse.
-- [ ] **No obj IDs exposed** — dùng indirect references.
+- [ ] **Deny by default**: access control deny trước, allow sau.
+- [ ] **Principle of least privilege**: user chỉ có quyền cần thiết.
+- [ ] **Consistent access control logic**: đặt ở một chỗ, reuse.
+- [ ] **No obj IDs exposed**: dùng indirect references.
 - [ ] **Log access control failures** và alert khi có suspicious activity.
 
 ---
 
 ## 3. A02 - Cryptographic Failures
 
-**Cryptographic Failures** (trước đây là Sensitive Data Exposure) — data nhạy cảm bị expose do không mã hóa hoặc mã hóa sai.
+**Cryptographic Failures** (trước đây là Sensitive Data Exposure): data nhạy cảm bị expose do không mã hóa hoặc mã hóa sai.
 
 ### 3.1. Common Issues
 
@@ -84,7 +84,7 @@ import bcrypt from 'bcrypt';
 const hash = await bcrypt.hash(password, 12);
 
 // BAD: HTTP (non-SSL)
-fetch('http://api.example.com/data');  // Data transmitted in clear text!
+fetch('http://api.example.com/data');
 
 // GOOD: Always HTTPS
 fetch('https://api.example.com/data');
@@ -131,20 +131,18 @@ XSS cho phép attacker inject malicious scripts vào pages viewed bởi other us
 <p>Results for: <span id="search-term"></span></p>
 <script>
   document.getElementById('search-term').innerHTML = params.q;
-  // ← attacker-controlled HTML executed!
 </script>
 
 <!-- GOOD: Safe rendering -->
 <script>
   document.getElementById('search-term').textContent = params.q;
-  // ← textContent escapes HTML
 </script>
 ```
 
 #### React XSS Prevention
 
 ```tsx
-// BAD: dangerouslySetInnerHTML — AVOID unless necessary
+// BAD: dangerouslySetInnerHTML - AVOID unless necessary
 <div dangerouslySetInnerHTML={{ __html: userContent }} />
 
 // BAD: Using v-html in Vue with user input
@@ -173,7 +171,6 @@ const safe = DOMPurify.sanitize(html);
 ```typescript
 // BAD: SQL Injection
 const query = `SELECT * FROM users WHERE email = '${email}'`;
-// Attack: email = "' OR '1'='1" → returns all users
 
 // GOOD: Parameterized queries
 const query = 'SELECT * FROM users WHERE email = ?';
@@ -181,7 +178,6 @@ db.query(query, [email]);
 
 // BAD: NoSQL Injection (MongoDB)
 const user = await User.find({ email: userInput });
-// Attack: email = { $ne: null } → returns all users
 
 // GOOD: Validate input
 if (!isValidEmail(userInput)) throw new ValidationError('Invalid email');
@@ -194,7 +190,6 @@ const user = await User.findOne({ email });
 // BAD: Shell command injection
 const { execSync } = require('child_process');
 execSync(`grep "${query}" file.txt`);
-// Attack: query = "test" && rm -rf /
 
 // GOOD: Avoid shell commands, use libraries
 const fs = require('fs');
@@ -206,7 +201,7 @@ const results = content.split('\n').filter(line => line.includes(query));
 
 ## 5. A04 - Insecure Design
 
-**Insecure Design** là weaknesses trong design architecture — khác với implementation bugs.
+**Insecure Design** là weaknesses trong design architecture, khác với implementation bugs.
 
 ### 5.1. Threat Modeling
 
@@ -227,7 +222,7 @@ const results = content.split('\n').filter(line => line.includes(query));
 Threat: Attacker tries to brute force login
 Mitigation:
 - Rate limiting (5 attempts per minute)
-- Account lockout (5 failed attempts → 15 min lock)
+- Account lockout (5 failed attempts -> 15 min lock)
 - CAPTCHA after 3 attempts
 - Multi-factor authentication
 - Logging và monitoring
@@ -236,7 +231,7 @@ Mitigation:
 ### 5.2. Security by Design
 
 ```typescript
-// Defense in Depth — multiple layers of security
+// Defense in Depth - multiple layers of security
 // Layer 1: Input validation
 function validateInput(input: string): boolean {
   const schema = Joi.object({
@@ -263,25 +258,19 @@ function validateInput(input: string): boolean {
 
 ```yaml
 # BAD: Express security misconfigurations
-# app.js
 const express = require('express');
 const app = express();
-
-// Missing security headers
-// No rate limiting
-// No CORS configuration
-// Debug mode enabled in production
 
 # GOOD: Secure Express configuration
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const cors = require('cors');
 
-app.use(helmet());  // Security headers
-app.use(express.json({ limit: '10kb' }));  // Limit body size
+app.use(helmet());
+app.use(express.json({ limit: '10kb' }));
 app.use(rateLimit({
-  windowMs: 15 * 60 * 1000,  // 15 minutes
-  max: 100  // limit each IP to 100 requests per windowMs
+  windowMs: 15 * 60 * 1000,
+  max: 100
 }));
 
 app.use(cors({
@@ -306,7 +295,6 @@ if (process.env.NODE_ENV === 'production') {
 | **Referrer-Policy** | Control referrer info | `strict-origin-when-cross-origin` |
 
 ```html
-<!-- CSP header example -->
 <meta http-equiv="Content-Security-Policy"
   content="default-src 'self';
            script-src 'self' 'nonce-{random}';
@@ -320,29 +308,20 @@ if (process.env.NODE_ENV === 'production') {
 
 ## 7. A06 - Vulnerable and Outdated Components
 
-**Vulnerable and Outdated Components** — dùng dependencies có known vulnerabilities.
+**Vulnerable and Outdated Components**: dùng dependencies có known vulnerabilities.
 
 ### 7.1. Prevention
 
 ```bash
-# Check for vulnerabilities
-npm audit                    # Built-in audit
-npx npm-check-updates       # Check outdated packages
-
-# Security scanning
-npx snyk test               # Snyk vulnerability scanner
-npx retire                  # Find vulnerable JS libraries
-
-# Dependency tree
-npm ls                      # Show dependency tree
-npm audit --production     # Audit production deps only
-
-# Automated: Dependabot (GitHub)
-# Automatically creates PRs for outdated/vulnerable dependencies
+npm audit
+npx npm-check-updates
+npx snyk test
+npx retire
+npm ls
+npm audit --production
 ```
 
 ```json
-// package.json scripts
 {
   "scripts": {
     "security:audit": "npm audit",
@@ -358,24 +337,24 @@ npm audit --production     # Audit production deps only
 - [ ] **Audit dependencies** regularly (`npm audit`).
 - [ ] **Remove unused dependencies** (`npm prune`).
 - [ ] **Use tools**: Snyk, Dependabot, Renovate.
-- [ ] **Monitor**: Sử dụng Snyk/GitHub Advisory Database để track vulnerabilities.
+- [ ] **Monitor**: dùng Snyk/GitHub Advisory Database để track vulnerabilities.
 - [ ] **Don't use**: packages với no maintenance, untrusted sources, known vulnerabilities.
 
 ---
 
 ## 8. A07 - Identification and Authentication Failures
 
-**Identification and Authentication Failures** — weaknesses trong authentication và session management.
+**Identification and Authentication Failures** là weaknesses trong authentication và session management.
 
 ### 8.1. Secure Authentication
 
 ```typescript
 // BAD: Weak password storage
-const hash = password.split('').reverse().join('');  // Trivial!
+const hash = password.split('').reverse().join('');
 
 // GOOD: Strong password hashing
 import bcrypt from 'bcrypt';
-const hash = await bcrypt.hash(password, 12);  // Cost factor 12
+const hash = await bcrypt.hash(password, 12);
 
 // GOOD: Use Argon2 (recommended by OWASP)
 import argon2 from 'argon2';
@@ -401,34 +380,20 @@ const token = jwt.sign(payload, 'secret123');
 
 // GOOD: Strong secret + short expiry
 const token = jwt.sign(payload, process.env.JWT_SECRET, {
-  expiresIn: '15m',        // Short expiry
-  issuer: 'my-app',        // Issuer claim
-  audience: 'my-app-users' // Audience claim
+  expiresIn: '15m',
+  issuer: 'my-app',
+  audience: 'my-app-users'
 });
-
-// GOOD: Refresh token rotation
-// Access token: 15 minutes
-// Refresh token: 7 days (stored in httpOnly cookie, rotated on use)
 ```
 
 ### 8.3. Session Security
 
 ```typescript
-// Session cookies
 res.cookie('sessionId', sessionId, {
-  httpOnly: true,      // Prevent XSS access
-  secure: true,        // HTTPS only
-  sameSite: 'strict',  // CSRF protection
-  maxAge: 3600000     // 1 hour expiry
-});
-
-// Regenerate session ID after login (prevent session fixation)
-app.post('/login', async (req, res) => {
-  const user = await authenticate(req.body);
-  req.session.regenerate((err) => {
-    req.session.userId = user.id;
-    res.json({ success: true });
-  });
+  httpOnly: true,
+  secure: true,
+  sameSite: 'strict',
+  maxAge: 3600000
 });
 ```
 
@@ -436,52 +401,46 @@ app.post('/login', async (req, res) => {
 
 ## 9. A08 - Software and Data Integrity Failures
 
-**Software and Data Integrity Failures** — code và infrastructure không được verify, dẫn đến tampering.
+**Software and Data Integrity Failures**: code và infrastructure không được verify, dẫn đến tampering.
 
 ### 9.1. CI/CD Security
 
 ```yaml
-# BAD: No integrity checks
-# Build from untrusted sources
-
 # GOOD: Supply chain security
 # 1. Lock dependency versions (package-lock.json)
 # 2. Verify checksums
 # 3. Sign releases
 # 4. Use SLSA (Supply-chain Levels for Software Artifacts)
 
-# GitHub Actions: Pin actions to commit SHA
 jobs:
   deploy:
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88af53be09092aef#v4
-      # Use commit SHA, not version tag
 ```
 
 ### 9.2. Serialization
 
 ```typescript
 // BAD: Untrusted deserialization
-const data = JSON.parse(userInput);  // Safe, but...
-const obj = YAML.parse(userInput);   // YAML can execute code!
+const data = JSON.parse(userInput);
+const obj = YAML.parse(userInput);
 
 // BAD: eval() for deserialization
-const obj = eval(`(${userInput})`);  // RCE vulnerability!
+const obj = eval(`(${userInput})`);
 
 // GOOD: Use JSON only, no eval
-const obj = JSON.parse(userInput);
+const safe = JSON.parse(userInput);
 ```
 
 ---
 
 ## 10. A09 - Security Logging and Monitoring Failures
 
-**Security Logging and Monitoring Failures** — không có hoặc không đủ logging, không detect được attacks.
+**Security Logging and Monitoring Failures**: không có hoặc không đủ logging, không detect được attacks.
 
 ### 10.1. What to Log
 
 ```typescript
-// Log security-relevant events
 function logSecurityEvent(event: {
   type: 'login_success' | 'login_failure' | 'access_denied' | 'password_change';
   userId?: number;
@@ -495,20 +454,6 @@ function logSecurityEvent(event: {
     service: 'auth-service'
   });
 }
-
-// Usage
-app.post('/login', async (req, res) => {
-  const { email, password } = req.body;
-
-  try {
-    const user = await authenticate(email, password);
-    logSecurityEvent({ type: 'login_success', userId: user.id, ip: req.ip });
-    res.json({ token: user.token });
-  } catch (err) {
-    logSecurityEvent({ type: 'login_failure', email, ip: req.ip });
-    res.status(401).json({ error: 'Invalid credentials' });
-  }
-});
 ```
 
 ### 10.2. Loggable Events
@@ -537,8 +482,6 @@ app.post('/login', async (req, res) => {
 // BAD: URL from user input used in server request
 app.get('/fetch', async (req, res) => {
   const { url } = req.query;
-  // Attacker: /fetch?url=http://169.254.169.254/latest/meta-data/
-  // → Bypasses firewall, accesses cloud metadata
   const response = await fetch(url);
   res.json(await response.json());
 });
@@ -547,7 +490,6 @@ app.get('/fetch', async (req, res) => {
 app.get('/fetch', async (req, res) => {
   const { url } = req.query;
 
-  // 1. Validate URL format
   let parsed;
   try {
     parsed = new URL(url);
@@ -555,14 +497,13 @@ app.get('/fetch', async (req, res) => {
     return res.status(400).json({ error: 'Invalid URL' });
   }
 
-  // 2. Block private IPs and internal hosts
   const BLOCKED_HOSTS = [
     'localhost', '127.0.0.1', '0.0.0.0',
-    '169.254.169.254',  // AWS metadata
-    'metadata.google.internal',  // GCP metadata
-    '100.64.0.0/10',    // Carrier-grade NAT
-    '192.168.0.0/16',   // Private
-    '10.0.0.0/8'        // Private
+    '169.254.169.254',
+    'metadata.google.internal',
+    '100.64.0.0/10',
+    '192.168.0.0/16',
+    '10.0.0.0/8'
   ];
 
   const hostname = parsed.hostname.toLowerCase();
@@ -570,15 +511,13 @@ app.get('/fetch', async (req, res) => {
     return res.status(403).json({ error: 'Access denied' });
   }
 
-  // 3. Allowlist domains
   const ALLOWED_DOMAINS = ['api.example.com', 'cdn.example.com'];
   if (!ALLOWED_DOMAINS.includes(hostname)) {
     return res.status(403).json({ error: 'Domain not allowed' });
   }
 
-  // 4. Use safe fetch options
   const response = await fetch(parsed.toString(), {
-    redirect: 'error'  // Prevent open redirect
+    redirect: 'error'
   });
 
   res.json(await response.json());
@@ -591,34 +530,33 @@ app.get('/fetch', async (req, res) => {
 
 ### 12.1. Frontend Security Checklist
 
-- [ ] **Input validation** — validate tất cả user input.
-- [ ] **Output encoding** — escape HTML, JavaScript context.
-- [ ] **HTTPS everywhere** — force HTTPS, HSTS.
-- [ ] **Security headers** — CSP, X-Frame-Options, etc.
-- [ ] **XSS prevention** — never use innerHTML with user input.
-- [ ] **CSRF protection** — CSRF tokens for state-changing requests.
-- [ ] **Authentication tokens** — httpOnly cookies, short expiry.
-- [ ] **Dependencies** — regular audits, update dependencies.
-- [ ] **Secrets** — never hardcode secrets in frontend code.
-- [ ] **Error messages** — generic error messages, don't leak stack traces.
+- [ ] **Input validation**: validate tất cả user input.
+- [ ] **Output encoding**: escape HTML, JavaScript context.
+- [ ] **HTTPS everywhere**: force HTTPS, HSTS.
+- [ ] **Security headers**: CSP, X-Frame-Options, etc.
+- [ ] **XSS prevention**: never use innerHTML with user input.
+- [ ] **CSRF protection**: CSRF tokens for state-changing requests.
+- [ ] **Authentication tokens**: httpOnly cookies, short expiry.
+- [ ] **Dependencies**: regular audits, update dependencies.
+- [ ] **Secrets**: never hardcode secrets in frontend code.
+- [ ] **Error messages**: generic error messages, don't leak stack traces.
 
 ### 12.2. Rate Limiting
 
 ```typescript
-// Express rate limiting
 import rateLimit from 'express-rate-limit';
 
 const apiLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,  // 15 minutes
-  max: 100,  // 100 requests per window
+  windowMs: 15 * 60 * 1000,
+  max: 100,
   message: 'Too many requests, please try again later.',
   standardHeaders: true,
   legacyHeaders: false
 });
 
 const authLimiter = rateLimit({
-  windowMs: 60 * 1000,  // 1 minute
-  max: 5,  // 5 login attempts per minute
+  windowMs: 60 * 1000,
+  max: 5,
   message: 'Too many login attempts, please try again later.'
 });
 
@@ -651,23 +589,18 @@ app.use('/auth/login', authLimiter);
 ### Q: CSRF token implementation?
 
 ```typescript
-// 1. Generate token on form render (server-side)
 const csrfToken = crypto.randomBytes(32).toString('hex');
 
-// 2. Include in form
 <form action="/transfer" method="POST">
-  <input type="hidden" name="_csrf" value="${csrfToken}">
   <input type="hidden" name="_csrf" value="${csrfToken}">
   <!-- or: <meta name="csrf-token" content="${csrfToken}"> -->
 </form>
 
-// 3. Validate on server
 app.post('/transfer', (req, res) => {
   const token = req.body._csrf || req.headers['x-csrf-token'];
   if (token !== req.session.csrfToken) {
     return res.status(403).json({ error: 'Invalid CSRF token' });
   }
-  // Process transfer...
 });
 ```
 
@@ -676,7 +609,6 @@ app.post('/transfer', (req, res) => {
 CSP là HTTP header cho browser biết **sources nào được phép load content**.
 
 ```bash
-# CSP header
 Content-Security-Policy:
   default-src 'self';
   script-src 'self' 'nonce-r4nd0m';
@@ -694,10 +626,8 @@ Content-Security-Policy:
 Attacker embed victim site trong iframe trong suốt, trick user click vào invisible buttons.
 
 ```bash
-# Prevention: X-Frame-Options
-X-Frame-Options: DENY  # Block all framing
-X-Frame-Options: SAMEORIGIN  # Block cross-origin framing
+X-Frame-Options: DENY
+X-Frame-Options: SAMEORIGIN
 
-# CSP
 Content-Security-Policy: frame-ancestors 'none';
 ```

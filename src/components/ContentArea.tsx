@@ -1,42 +1,140 @@
-import { useState, useEffect, useRef } from "react";
+import {
+  useState,
+  useEffect,
+  useRef,
+  type CSSProperties,
+  type ReactNode,
+} from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeRaw from "rehype-raw";
-import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-import { vscDarkPlus, solarizedlight } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { type Category, type Topic } from "../data/categories/index";
 import { getContentForTopicAsync } from "../lib/content";
-import mermaid from "mermaid";
+
+interface SyntaxModule {
+  Highlighter: typeof import("react-syntax-highlighter")["Prism"];
+  darkStyle: Record<string, CSSProperties>;
+  lightStyle: Record<string, CSSProperties>;
+}
 
 // Mermaid diagram component
 function MermaidDiagram({ code, id, isDark }: { code: string; id: string; isDark: boolean }) {
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (ref.current) {
-      mermaid.initialize({
-        startOnLoad: false,
-        theme: isDark ? "dark" : "default",
-        securityLevel: "loose",
-        fontFamily: "inherit",
-      });
-      mermaid
-        .render(id, code)
-        .then(({ svg }) => {
-          if (ref.current) {
-            ref.current.innerHTML = svg;
-          }
-        })
-        .catch(() => {
-          if (ref.current) {
-            ref.current.innerHTML = `<pre>${code}</pre>`;
-          }
+    let cancelled = false;
+
+    const renderDiagram = async () => {
+      if (!ref.current) return;
+
+      try {
+        const mermaidModule = await import("mermaid");
+        const mermaid = mermaidModule.default;
+
+        mermaid.initialize({
+          startOnLoad: false,
+          theme: isDark ? "dark" : "default",
+          securityLevel: "loose",
+          fontFamily: "inherit",
         });
-    }
+
+        const { svg } = await mermaid.render(id, code);
+        if (!cancelled && ref.current) {
+          ref.current.innerHTML = svg;
+        }
+      } catch {
+        if (!cancelled && ref.current) {
+          ref.current.innerHTML = `<pre>${code}</pre>`;
+        }
+      }
+    };
+
+    renderDiagram();
+
+    return () => {
+      cancelled = true;
+    };
   }, [code, id, isDark]);
 
   return (
     <div className="mermaid" ref={ref} />
+  );
+}
+
+function CodeBlock({
+  className,
+  children,
+  isDarkMode,
+  ...props
+}: {
+  className?: string;
+  children?: ReactNode;
+  isDarkMode: boolean;
+}) {
+  const [syntaxModule, setSyntaxModule] = useState<SyntaxModule | null>(null);
+  const match = /language-(\w+)/.exec(className || "");
+
+  useEffect(() => {
+    if (!match || match[1] === "mermaid" || syntaxModule) return;
+
+    let cancelled = false;
+
+    const loadSyntaxModule = async () => {
+      const [syntaxHighlighterModule, prismStyleModule] = await Promise.all([
+        import("react-syntax-highlighter"),
+        import("react-syntax-highlighter/dist/esm/styles/prism"),
+      ]);
+
+      if (cancelled) return;
+
+      setSyntaxModule({
+        Highlighter: syntaxHighlighterModule.Prism,
+        darkStyle: prismStyleModule.vscDarkPlus,
+        lightStyle: prismStyleModule.solarizedlight,
+      });
+    };
+
+    loadSyntaxModule();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [match, syntaxModule]);
+
+  if (match && match[1] === "mermaid") {
+    const code = String(children).replace(/\n$/, "");
+    const id = `mermaid-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+    return <MermaidDiagram code={code} id={id} isDark={isDarkMode} />;
+  }
+
+  if (match && syntaxModule) {
+    const code = String(children).replace(/\n$/, "");
+    const Highlighter = syntaxModule.Highlighter;
+
+    return (
+      <Highlighter
+        language={match[1]}
+        style={isDarkMode ? syntaxModule.darkStyle : syntaxModule.lightStyle}
+        customStyle={{
+          margin: "1em 0",
+          borderRadius: "0.5rem",
+          fontSize: "0.875rem",
+          padding: "1rem 1.25rem",
+          background: isDarkMode ? "#1e1e1e" : "#fdf6e3",
+        }}
+        codeTagProps={{
+          style: { fontFamily: "inherit" },
+        }}
+      >
+        {code}
+      </Highlighter>
+    );
+  }
+
+  return (
+    <code className={className} {...props}>
+      {children}
+    </code>
   );
 }
 
@@ -58,18 +156,29 @@ export function ContentArea({
   const [content, setContent] = useState("");
 
   useEffect(() => {
+    let cancelled = false;
+
     if (!selectedCategory || !selectedTopic) {
       setContent("");
       return;
     }
+
+    setContent("");
+
     getContentForTopicAsync(
       language,
       selectedCategory.id,
       selectedTopic.id,
       selectedCategory.topics
     ).then((c) => {
-      setContent(c);
+      if (!cancelled) {
+        setContent(c);
+      }
     });
+
+    return () => {
+      cancelled = true;
+    };
   }, [selectedCategory, selectedTopic, language]);
 
   if (!selectedCategory) {
@@ -205,41 +314,14 @@ export function ContentArea({
             rehypePlugins={[rehypeRaw]}
             components={{
               code({ className, children, ...props }) {
-                const match = /language-(\w+)/.exec(className || "");
-
-                if (match && match[1] === "mermaid") {
-                  const codeStr = String(children).replace(/\n$/, "");
-                  const id = `mermaid-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
-                  return <MermaidDiagram code={codeStr} id={id} isDark={isDarkMode} />;
-                }
-
-                if (match) {
-                  const codeStr = String(children).replace(/\n$/, "");
-                  const isDark = isDarkMode;
-                  return (
-                    <SyntaxHighlighter
-                      language={match[1]}
-                      style={isDark ? vscDarkPlus : solarizedlight}
-                      customStyle={{
-                        margin: "1em 0",
-                        borderRadius: "0.5rem",
-                        fontSize: "0.875rem",
-                        padding: "1rem 1.25rem",
-                        background: isDark ? "#1e1e1e" : "#fdf6e3",
-                      }}
-                      codeTagProps={{
-                        style: { fontFamily: "inherit" },
-                      }}
-                    >
-                      {codeStr}
-                    </SyntaxHighlighter>
-                  );
-                }
-
                 return (
-                  <code className={className} {...props}>
+                  <CodeBlock
+                    className={className}
+                    isDarkMode={isDarkMode}
+                    {...props}
+                  >
                     {children}
-                  </code>
+                  </CodeBlock>
                 );
               },
             }}

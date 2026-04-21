@@ -1,109 +1,75 @@
-# IT Interview Prep — Development Guidelines
+# IT Interview Prep Development Guidelines
 
-## Local Dev
+## Local Development
 
 ```bash
-npm run dev      # Start dev server (http://localhost:5173)
-npm run build    # Production build
-npm run preview  # Preview production build locally
-npm run lint     # Lint code
+npm run dev
+npm run build
+npm run preview
+npm run lint
 ```
 
-## Tech Stack
+## Stack
 
-- **React 18 + TypeScript + Vite 6** — build tooling
-- **shadcn/ui + Radix UI + Tailwind CSS** — component library
-- **react-markdown + remark-gfm + rehype-raw** — markdown rendering
+- React 18 + TypeScript + Vite 6
+- Tailwind CSS + shadcn/ui + Radix UI
+- `react-markdown` + `remark-gfm` + `rehype-raw`
+- Markdown content stored under `src/content/{lang}/...`
 
-## Architecture
+## Content Architecture
 
-### Content Storage (Markdown Files per Topic)
+Each topic lives in a standalone Markdown file under `src/content/vi/` or `src/content/en/`.
 
-Nội dung được lưu trong các file `.md` riêng biệt theo cấu trúc cây thư mục.
+Examples:
 
-```
-src/content/
-├── vi/
-│   ├── backend/
-│   │   ├── dotnet/dotnet-backend.md
-│   │   ├── golang/golang-backend.md
-│   │   ├── java/java-core/
-│   │   │   ├── oop.md
-│   │   │   ├── collections.md
-│   │   │   └── ... (8 files)
-│   │   ├── spring-boot/
-│   │   │   ├── spring-core.md
-│   │   │   ├── spring-mvc.md
-│   │   │   └── ... (9 files)
-│   │   ├── nodejs/
-│   │   └── python/
-│   ├── database/ (12 files)
-│   ├── frontend/ (6 files)
-│   ├── system-design/ (12 files)
-│   ├── software-architecture-design/ (14 files)
-│   ├── devops/ (5 files)
-│   └── other-skills/ (5 files)
-└── en/
-    └── (same structure, ~144 files total)
+```text
+src/content/vi/backend/java/java-core/oop.md
+src/content/en/backend/spring-boot/security.md
+src/content/vi/he-thong/load-balancer.md
+src/content/en/other-skills/testing.md
 ```
 
-**Cache key = filename** (last segment of the path). Topic IDs uniquely identify content, so the filename alone is sufficient.
+The content loader resolves files by:
 
-### File Naming Convention
+1. Language
+2. Category
+3. Topic id plus parent-aware filename fallback
 
-**CRITICAL: Filename must match the topic ID.**
+Important: the loader no longer treats the bare filename as globally unique. Identical filenames in different categories are allowed, but duplicate filenames inside the same category should be avoided.
 
-- Topic `java-core-oop` (parent=`java-core`) → file `oop.md`
-- Topic `spring-mvc` (parent=`spring-boot`) → file `spring-mvc.md`
-- Topic `dotnet-backend` (flat) → file `dotnet-backend.md`
-- Topic `react` (flat) → file `react.md`
-- Topic `spring-boot-basics` (parent=`spring-boot`) → file `spring-boot-basics.md` (topic ID already has full prefix)
+## Naming Convention
 
-Rule: Strip parent prefix from topic ID to get filename. If topic ID already matches the full name, use topic ID as-is.
+- Flat topic: topic id `react` -> file `react.md`
+- Nested topic with stripped parent prefix: topic id `java-core-oop` under parent `java-core` -> file `oop.md`
+- Nested topic that already uses the full id: keep the full id as filename
 
-### Category Structure (`src/data/categories/`)
+Examples:
 
-Chỉ chứa cấu trúc navigation (id, name, subtopics). Không chứa content.
-
-### Content Loader (`src/lib/content.ts`)
-
-```typescript
-import { getContentForTopicAsync } from '../lib/content';
-
-// Inside a React component:
-const content = await getContentForTopicAsync(language, category.id, topic.id, category.topics);
-```
-
-Hàm tự động resolve hierarchy và tìm content trong cache.
+- `java-core-oop` -> `oop.md`
+- `spring-boot-intro` -> `intro.md`
+- `dotnet-backend` -> `dotnet-backend.md`
+- `cqrs-event-sourcing` -> `cqrs-event-sourcing.md`
 
 ## Adding New Content
 
-1. **Tạo file .md** trong `src/content/{lang}/{category}/{...}/{filename}.md`
-   - Filename phải khớp với topic ID (sau khi strip parent prefix)
-2. **Thêm topic** vào `src/data/categories/{category}.ts` (id, name, subtopics)
-3. **Build** để verify — Vite glob tự động nhặt file mới
+1. Create the Markdown file under the correct language and category path.
+2. Add or update the topic entry in `src/data/categories/*.ts`.
+3. Run `npm run lint` and `npm run build`.
+4. Verify the topic renders correctly and is searchable.
 
-## Content Format
+## Markdown Rules
 
-Markdown thuần — không inline HTML.
+- Start with exactly one `#` H1 title.
+- Use fenced code blocks with a language tag when possible.
+- Prefer Markdown tables/lists over inline HTML.
+- Keep EN and VI topic coverage aligned unless there is a clear reason not to.
+- Do not leave orphan files that are not referenced by category metadata.
 
-```markdown
-# Topic Title
+## Search Index
 
-## Section 1
+Search results are built from category metadata plus the content manifest.
 
-### Code Example
+- Topic-name search uses `src/data/categories/*.ts`
+- Content search loads Markdown on demand from `src/content/**`
 
-\`\`\`javascript
-const example = "hello";
-\`\`\`
-
-- List item 1
-- List item 2
-```
-
-## Migration từ RFG.docx
-
-1. Copy nội dung từng section trong RFG.docx
-2. Paste vào file .md tương ứng trong `src/content/vi/`
-3. Translate → file tương ứng trong `src/content/en/`
+If a topic is not appearing in search, check both the category metadata and the Markdown file path.

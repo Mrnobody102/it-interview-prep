@@ -38,24 +38,15 @@ npm install --save-dev jest @types/jest ts-jest
 npx jest --init
 
 # Chạy tests
-npm test                  # Chạy tất cả
-npm test -- --watch       # Watch mode
-npm test -- --coverage    # Coverage report
-npm test -- file.test.ts  # Test cụ thể
+npm test
+npm test -- --watch
+npm test -- --coverage
+npm test -- file.test.ts
 ```
 
 ```typescript
-// math.ts
 export function add(a: number, b: number): number {
   return a + b;
-}
-
-export function subtract(a: number, b: number): number {
-  return a - b;
-}
-
-export function multiply(a: number, b: number): number {
-  return a * b;
 }
 
 export function divide(a: number, b: number): number {
@@ -65,21 +56,12 @@ export function divide(a: number, b: number): number {
 ```
 
 ```typescript
-// math.test.ts
-import { add, subtract, multiply, divide } from './math';
+import { add, divide } from './math';
 
 describe('Math operations', () => {
   describe('add', () => {
     it('should add two positive numbers', () => {
       expect(add(2, 3)).toBe(5);
-    });
-
-    it('should handle negative numbers', () => {
-      expect(add(-1, -1)).toBe(-2);
-    });
-
-    it('should handle zero', () => {
-      expect(add(5, 0)).toBe(5);
     });
   });
 
@@ -98,74 +80,35 @@ describe('Math operations', () => {
 ### 2.2. Common Jest Matchers
 
 ```typescript
-// Equality
-expect(value).toBe(expected);       // exact equality (===)
-expect(value).toEqual(expected);    // deep equality (objects/arrays)
-
-// Truthiness
+expect(value).toBe(expected);
+expect(value).toEqual(expected);
 expect(value).toBeTruthy();
 expect(value).toBeFalsy();
 expect(value).toBeNull();
 expect(value).toBeUndefined();
-
-// Numbers
 expect(value).toBeGreaterThan(5);
 expect(value).toBeLessThan(10);
-expect(value).toBeGreaterThanOrEqual(5);
-
-// Strings
 expect(str).toMatch(/pattern/);
-expect(str).toContain('substring');
-
-// Arrays
 expect(arr).toContain(item);
-expect(arr).toHaveLength(3);
-
-// Objects
 expect(obj).toHaveProperty('name');
-expect(obj).toMatchObject({ name: 'Huy' });
-
-// Exceptions
 expect(() => { throw new Error(); }).toThrow();
-
-// Async
 await expect(promise).resolves.toBe(value);
 await expect(promise).rejects.toThrow();
-
-// Not
 expect(value).not.toBe(0);
 ```
 
 ### 2.3. Mocking
 
 ```typescript
-// Mock functions
 const mockFn = jest.fn();
 mockFn.mockReturnValue(42);
 mockFn.mockResolvedValue(42);
 mockFn.mockRejectedValue(new Error('Error'));
-mockFn('hello');  // call tracked
+mockFn('hello');
 
 expect(mockFn).toHaveBeenCalled();
 expect(mockFn).toHaveBeenCalledWith('hello');
 expect(mockFn).toHaveBeenCalledTimes(1);
-
-// Mock modules
-jest.mock('./api', () => ({
-  fetchUser: jest.fn().mockResolvedValue({ id: 1, name: 'Huy' })
-}));
-
-// Mock timers
-jest.useFakeTimers();
-setTimeout(() => console.log('delayed'), 1000);
-jest.runAllTimers();  // Execute all pending timers
-jest.useRealTimers();
-
-// Spy
-const obj = { method: () => 'real' };
-jest.spyOn(obj, 'method').mockReturnValue('mocked');
-expect(obj.method()).toBe('mocked');
-obj.method.mockRestore();  // Restore original
 ```
 
 ---
@@ -181,7 +124,6 @@ npm install --save-dev @testing-library/react @testing-library/jest-dom
 ```
 
 ```tsx
-// Button.tsx
 import { useState } from 'react';
 
 interface ButtonProps {
@@ -214,7 +156,6 @@ export function Button({ children, onClick, disabled, variant = 'primary' }: But
 ```
 
 ```tsx
-// Button.test.tsx
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { Button } from './Button';
 import '@testing-library/jest-dom';
@@ -228,29 +169,17 @@ describe('Button', () => {
   it('calls onClick when clicked', async () => {
     const handleClick = jest.fn();
     render(<Button onClick={handleClick}>Click me</Button>);
-
     fireEvent.click(screen.getByText('Click me'));
-
     expect(handleClick).toHaveBeenCalledTimes(1);
   });
 
   it('shows loading state', async () => {
     render(<Button>Click me</Button>);
-
     fireEvent.click(screen.getByText('Click me'));
 
     await waitFor(() => {
       expect(screen.getByText('Loading...')).toBeInTheDocument();
     });
-  });
-
-  it('is disabled when disabled prop is true', () => {
-    const handleClick = jest.fn();
-    render(<Button disabled onClick={handleClick}>Click me</Button>);
-
-    const button = screen.getByText('Click me');
-    expect(button).toBeDisabled();
-    expect(handleClick).not.toHaveBeenCalled();
   });
 });
 ```
@@ -258,29 +187,17 @@ describe('Button', () => {
 ### 3.2. Query Priority
 
 ```tsx
-// TỪ TỐT NHẤT đến ÍT TỐT NHẤT
-// 1. Accessible queries (ai dùng cũng thấy được)
 screen.getByRole('button', { name: /submit/i });
 screen.getByRole('textbox', { name: /email/i });
-
-// 2. Semantic queries
 screen.getByLabelText('Email');
 screen.getByPlaceholderText('Enter email');
 screen.getByText('Hello, World');
-
-// 3. Test IDs (last resort)
 screen.getByTestId('submit-button');
-
-// KHÔNG nên dùng:
-// - getByClassName
-// - getByTagName
-// - Snapshot testing (implementation detail)
 ```
 
 ### 3.3. Testing Form Components
 
 ```tsx
-// LoginForm.test.tsx
 import { render, screen, fireEvent } from '@testing-library/react';
 import { LoginForm } from './LoginForm';
 
@@ -294,24 +211,6 @@ describe('LoginForm', () => {
     fireEvent.click(screen.getByRole('button', { name: /login/i }));
 
     expect(await screen.findByText(/invalid email/i)).toBeInTheDocument();
-  });
-
-  it('submits form with valid data', async () => {
-    const onSubmit = jest.fn();
-    render(<LoginForm onSubmit={onSubmit} />);
-
-    fireEvent.change(screen.getByLabelText(/email/i), {
-      target: { value: 'huy@example.com' }
-    });
-    fireEvent.change(screen.getByLabelText(/password/i), {
-      target: { value: 'password123' }
-    });
-    fireEvent.click(screen.getByRole('button', { name: /login/i }));
-
-    expect(onSubmit).toHaveBeenCalledWith({
-      email: 'huy@example.com',
-      password: 'password123'
-    });
   });
 });
 ```
@@ -327,7 +226,6 @@ npm install --save-dev @vue/test-utils vitest jsdom
 ```
 
 ```vue
-<!-- Counter.vue -->
 <template>
   <div class="counter">
     <button @click="decrement">-</button>
@@ -351,32 +249,6 @@ function decrement(): void {
 </script>
 ```
 
-```typescript
-// Counter.test.ts
-import { describe, it, expect } from 'vitest';
-import { mount } from '@vue/test-utils';
-import Counter from './Counter.vue';
-
-describe('Counter', () => {
-  it('renders initial count', () => {
-    const wrapper = mount(Counter);
-    expect(wrapper.find('[data-testid="count"]').text()).toBe('0');
-  });
-
-  it('increments count', async () => {
-    const wrapper = mount(Counter);
-    await wrapper.find('button:nth-child(3)').trigger('click');
-    expect(wrapper.find('[data-testid="count"]').text()).toBe('1');
-  });
-
-  it('decrements count', async () => {
-    const wrapper = mount(Counter);
-    await wrapper.find('button:nth-child(1)').trigger('click');
-    expect(wrapper.find('[data-testid="count"]').text()).toBe('-1');
-  });
-});
-```
-
 ---
 
 ## 5. Integration Testing
@@ -386,12 +258,10 @@ Integration tests kiểm tra **nhiều components tương tác với nhau** ho�
 ### 5.1. React Integration Test
 
 ```tsx
-// UserList.test.tsx
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { UserList } from './UserList';
 import * as userService from '../services/userService';
 
-// Mock service
 jest.mock('../services/userService', () => ({
   getUsers: jest.fn(),
   deleteUser: jest.fn()
@@ -417,20 +287,6 @@ describe('UserList', () => {
       expect(screen.getByText('Hieu')).toBeInTheDocument();
     });
   });
-
-  it('deletes user when delete button is clicked', async () => {
-    (userService.getUsers as jest.Mock).mockResolvedValue(mockUsers);
-    (userService.deleteUser as jest.Mock).mockResolvedValue(undefined);
-
-    render(<UserList />);
-
-    await waitFor(() => screen.getByText('Huy'));
-    fireEvent.click(screen.getAllByText('Delete')[0]);
-
-    await waitFor(() => {
-      expect(userService.deleteUser).toHaveBeenCalledWith(1);
-    });
-  });
 });
 ```
 
@@ -448,7 +304,6 @@ npx cypress open
 ```
 
 ```typescript
-// cypress/e2e/login.cy.ts
 describe('Login Flow', () => {
   beforeEach(() => {
     cy.visit('/login');
@@ -462,21 +317,6 @@ describe('Login Flow', () => {
     cy.url().should('include', '/dashboard');
     cy.contains('Welcome').should('be.visible');
   });
-
-  it('should show error with invalid credentials', () => {
-    cy.get('[data-testid="email-input"]').type('invalid@example.com');
-    cy.get('[data-testid="password-input"]').type('wrongpassword');
-    cy.get('[data-testid="login-button"]').click();
-
-    cy.contains('Invalid credentials').should('be.visible');
-    cy.url().should('include', '/login');
-  });
-
-  it('should validate required fields', () => {
-    cy.get('[data-testid="login-button"]').click();
-    cy.contains('Email is required').should('be.visible');
-    cy.contains('Password is required').should('be.visible');
-  });
 });
 ```
 
@@ -488,7 +328,6 @@ npx playwright install
 ```
 
 ```typescript
-// tests/login.spec.ts
 import { test, expect } from '@playwright/test';
 
 test.describe('Login', () => {
@@ -503,14 +342,6 @@ test.describe('Login', () => {
 
     await expect(page).toHaveURL('/dashboard');
     await expect(page.getByText('Welcome')).toBeVisible();
-  });
-
-  test('failed login shows error', async ({ page }) => {
-    await page.getByTestId('email-input').fill('wrong@example.com');
-    await page.getByTestId('password-input').fill('wrong');
-    await page.getByTestId('login-button').click();
-
-    await expect(page.getByText('Invalid credentials')).toBeVisible();
   });
 });
 ```
@@ -538,13 +369,13 @@ npm test -- --coverage
 ----------|---------|----------|---------|---------|
 File      | % Stmts | % Branch | % Funcs | % Lines |
 ----------|---------|----------|---------|---------|
-math.ts  |   100.00|   100.00  |  100.00 |  100.00 |
-user.ts  |    85.71|    75.00  |   80.00 |   85.71 |
-app.ts   |    50.00|    33.33  |   50.00 |   50.00 |
+math.ts   | 100.00  | 100.00   | 100.00  | 100.00 |
+user.ts   | 85.71   | 75.00    | 80.00   | 85.71  |
+app.ts    | 50.00   | 33.33    | 50.00   | 50.00  |
 ----------|---------|----------|---------|---------|
 ```
 
-> **Tip:** 100% coverage không có nghĩa là code không có bug — coverage chỉ measure **execution**, không measure **correctness**.
+> **Tip:** 100% coverage không có nghĩa là code không có bug, coverage chỉ measure **execution**, không measure **correctness**.
 
 ---
 
@@ -554,19 +385,19 @@ app.ts   |    50.00|    33.33  |   50.00 |   50.00 |
 
 | | Jest | React Testing Library |
 |--|------|----------------------|
-| **Jest** | Testing framework — runs tests, assertions, mocking | Testing library — DOM querying, event simulation |
+| **Jest** | Testing framework: runs tests, assertions, mocking | Testing library: DOM querying, event simulation |
 | **Use** | Chạy tests, provide `describe`, `it`, `expect` | Query elements, simulate user interactions |
-| **Together** | Jest là engine, RTL là helper | RTL build on top of jest |
+| **Together** | Jest là engine, RTL là helper | RTL build on top of Jest |
 
 ### Q: Test-driven development (TDD) vs BDD?
 
-- **TDD:** Viết tests **trước** code. Red → Green → Refactor cycle.
+- **TDD:** Viết tests **trước** code. Red -> Green -> Refactor cycle.
 - **BDD:** Viết tests với ngôn ngữ **business-readable** (Gherkin: Given-When-Then).
 
 ### Q: Khi nào dùng mocking?
 
 - Khi test phụ thuộc vào external services (API, database).
-- Khi muốn isolate unit test — không test dependencies.
+- Khi muốn isolate unit test, không test dependencies.
 - Khi tạo deterministic test cases.
 
 ### Q: Smoke test vs Sanity test?
@@ -577,7 +408,7 @@ app.ts   |    50.00|    33.33  |   50.00 |   50.00 |
 | **When** | Sau mỗi build | Sau regression |
 | **Coverage** | Broad, shallow | Narrow, deep |
 
-### Q: Snapshot testing — ưu và nhược?
+### Q: Snapshot testing: ưu và nhược?
 
 - **Ưu:** Nhanh, detect unintended changes.
 - **Nhược:** Không test behavior, dễ bỏ qua changes, flaky với dynamic content.

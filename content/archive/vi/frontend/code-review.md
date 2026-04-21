@@ -10,10 +10,10 @@
 
 ### 2.1. Cho Author
 
-- **PR nhỏ, tập trung** — mỗi PR nên < 400 dòng thay đổi. PR lớn khó review kỹ.
-- **Viết description rõ ràng** — tại sao thay đổi, làm gì, test như thế nào.
-- **Tự review trước** — đọc lại code của mình trước khi gửi.
-- **Gắn ticket/issue liên quan** — để reviewer hiểu context.
+- **PR nhỏ, tập trung**: mỗi PR nên < 400 dòng thay đổi. PR lớn khó review kỹ.
+- **Viết description rõ ràng**: tại sao thay đổi, làm gì, test như thế nào.
+- **Tự review trước**: đọc lại code của mình trước khi gửi.
+- **Gắn ticket/issue liên quan**: để reviewer hiểu context.
 - **Self-review checklist:**
   - [ ] Code chạy và pass all tests?
   - [ ] Đã handle edge cases?
@@ -24,11 +24,11 @@
 
 ### 2.2. Cho Reviewer
 
-- **Review trong 24-48 giờ** — tránh block team.
-- **Be kind, be constructive** — focus vào code, không phải người.
-- **Explain the "why"** — không chỉ nói "đổi cái này", mà giải thích tại sao.
+- **Review trong 24-48 giờ**: tránh block team.
+- **Be kind, be constructive**: focus vào code, không phải người.
+- **Explain the "why"**: không chỉ nói "đổi cái này", mà giải thích tại sao.
 - **Nhiệm kỳ:** Approve, Request Changes, Comment.
-- **Prioritize** — critical issues trước, nitpicks cuối.
+- **Prioritize**: critical issues trước, nitpicks cuối.
 
 ### 2.3. Review Guidelines
 
@@ -48,7 +48,7 @@
 ### 3.1. Common Security Issues
 
 ```typescript
-// BAD: XSS — Cross-Site Scripting
+// BAD: XSS - Cross-Site Scripting
 // Không bao giờ dùng innerHTML với user input
 document.getElementById('content').innerHTML = userInput;
 
@@ -82,15 +82,15 @@ JSON.parse(userInput);
 
 ### 3.2. Security Checklist
 
-- [ ] **Input validation** — validate tất cả user input phía client và server.
-- [ ] **Output encoding** — escape output khi hiển thị.
-- [ ] **Authentication** — user đã authenticated và authorized đúng?
-- [ ] **Secrets** — không có hardcoded secrets trong code?
-- [ ] **Dependencies** — dependencies đã scan security?
-- [ ] **HTTPS** — sensitive data chỉ truyền qua HTTPS?
-- [ ] **CORS** — CORS configuration đúng?
-- [ ] **CSRF** — CSRF tokens cho state-changing operations?
-- [ ] **Rate limiting** — API có rate limiting?
+- [ ] **Input validation**: validate tất cả user input phía client và server.
+- [ ] **Output encoding**: escape output khi hiển thị.
+- [ ] **Authentication**: user đã authenticated và authorized đúng?
+- [ ] **Secrets**: không có hardcoded secrets trong code?
+- [ ] **Dependencies**: dependencies đã scan security?
+- [ ] **HTTPS**: sensitive data chỉ truyền qua HTTPS?
+- [ ] **CORS**: CORS configuration đúng?
+- [ ] **CSRF**: CSRF tokens cho state-changing operations?
+- [ ] **Rate limiting**: API có rate limiting?
 
 ---
 
@@ -194,7 +194,7 @@ class Parent extends React.Component {
 
 // GOOD: Stable callbacks
 class Parent extends React.Component {
-  handleClick = () => { ... };  // Arrow function trong class field
+  handleClick = () => { ... };
   render() {
     return <Child onClick={this.handleClick} />;
   }
@@ -231,7 +231,7 @@ useEffect(() => {
 
 // BAD: Infinite loop
 useEffect(() => {
-  setCount(count + 1);  // setCount trigger re-render → infinite loop
+  setCount(count + 1);  // setCount trigger re-render -> infinite loop
 }, [count]);
 
 // BAD: Missing cleanup
@@ -392,22 +392,22 @@ Feel free to merge after fixing these.
 
 ### Q: Review checklist thường gặp?
 
-1. **Correctness** — Code có hoạt động đúng không?
-2. **Security** — Có vulnerabilities không?
-3. **Performance** — Có bottlenecks không?
-4. **Readability** — Code có dễ đọc, maintain không?
-5. **Testing** — Có đủ tests không?
-6. **Error handling** — Edge cases đã handle chưa?
-7. **Naming** — Variables/functions có đặt tên rõ ràng không?
-8. **Dependencies** — Dependencies có cần thiết không?
+1. **Correctness**: Code có hoạt động đúng không?
+2. **Security**: Có vulnerabilities không?
+3. **Performance**: Có bottlenecks không?
+4. **Readability**: Code có dễ đọc, maintain không?
+5. **Testing**: Có đủ tests không?
+6. **Error handling**: Edge cases đã handle chưa?
+7. **Naming**: Variables/functions có đặt tên rõ ràng không?
+8. **Dependencies**: Dependencies có cần thiết không?
 
 ### Q: Làm sao để review hiệu quả?
 
-1. **Understand context** — đọc PR description và related issues.
-2. **Focus on essentials** — correctness, security, architecture, trước style.
-3. **Use tools** — linters, type checkers tự động bắt style issues.
-4. **Be timely** — review trong 24 giờ.
-5. **Be respectful** — construct feedback tích cực.
+1. **Understand context**: đọc PR description và related issues.
+2. **Focus on essentials**: correctness, security, architecture, trước style.
+3. **Use tools**: linters, type checkers tự động bắt style issues.
+4. **Be timely**: review trong 24 giờ.
+5. **Be respectful**: construct feedback tích cực.
 
 ### Q: Khi nào nên approve vs request changes?
 
@@ -416,17 +416,17 @@ Feel free to merge after fixing these.
 
 ### Q: Review không nên làm gì?
 
-- **Không bikeshedding** — không tranh luận về style issues khi có linter.
-- **Không micromanage** — trust teammate's judgment về minor choices.
-- **Không gatekeep** — nếu code đủ good, merge đi.
-- **Không personal** — "this code is bad" vs "this approach could be improved".
+- **Không bikeshedding**: không tranh luận về style issues khi có linter.
+- **Không micromanage**: trust teammate's judgment về minor choices.
+- **Không gatekeep**: nếu code đủ good, merge đi.
+- **Không personal**: "this code is bad" vs "this approach could be improved".
 
 ### Q: Security vulnerabilities thường gặp?
 
-1. **XSS** — Cross-Site Scripting (innerHTML, dangerouslySetInnerHTML)
-2. **SQL/NoSQL Injection** — raw queries
-3. **CSRF** — missing tokens for state-changing operations
-4. **Sensitive data exposure** — logging secrets, storing in localStorage
-5. **Dependency vulnerabilities** — outdated packages
-6. **Improper authentication** — missing auth checks
-7. **idor** — insecure direct object references (accessing others' data)
+1. **XSS**: Cross-Site Scripting (innerHTML, dangerouslySetInnerHTML)
+2. **SQL/NoSQL Injection**: raw queries
+3. **CSRF**: missing tokens for state-changing operations
+4. **Sensitive data exposure**: logging secrets, storing in localStorage
+5. **Dependency vulnerabilities**: outdated packages
+6. **Improper authentication**: missing auth checks
+7. **IDOR**: insecure direct object references (accessing others' data)

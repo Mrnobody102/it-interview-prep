@@ -12,7 +12,7 @@
 
 ```
 ┌─────────────────────────────────────────┐
-│           Red — Green — Refactor          │
+│         Red - Green - Refactor          │
 └─────────────────────────────────────────┘
         │            │            │
         ▼            ▼            ▼
@@ -21,14 +21,14 @@
    (đỏ)          PASS (xanh)  hơn
 ```
 
-1. **Red:** Viết test cho functionality chưa có — test phải **fail**.
+1. **Red:** Viết test cho functionality chưa có, test phải **fail**.
 2. **Green:** Viết code tối thiểu để test **pass**.
 3. **Refactor:** Cải thiện code mà **giữ nguyên behavior** (tests vẫn pass).
 
 ### 2.2. Ví dụ TDD với Jest
 
 ```typescript
-// TDD Step 1: RED — Viết test TRƯỚC, code chưa có
+// TDD Step 1: RED - Viết test TRƯỚC, code chưa có
 // calculator.test.ts
 
 describe('Calculator', () => {
@@ -49,23 +49,19 @@ describe('Calculator', () => {
     });
   });
 });
-
-// Test fail: "Calculator is not defined"
 ```
 
 ```typescript
-// TDD Step 2: GREEN — Viết code tối thiểu để test pass
+// TDD Step 2: GREEN - Viết code tối thiểu để test pass
 class Calculator {
   add(a: number, b: number): number {
     return a + b;
   }
 }
-
-// Tests pass!
 ```
 
 ```typescript
-// TDD Step 3: REFACTOR — Cải thiện code
+// TDD Step 3: REFACTOR - Cải thiện code
 class Calculator {
   add(a: number, b: number): number {
     if (typeof a !== 'number' || typeof b !== 'number') {
@@ -74,7 +70,6 @@ class Calculator {
     return a + b;
   }
 
-  // Thêm methods khác sau khi viết tests
   subtract(a: number, b: number): number {
     return a - b;
   }
@@ -84,7 +79,6 @@ class Calculator {
 ### 2.3. Calculator TDD Example (Full)
 
 ```typescript
-// calculator.test.ts
 import { Calculator } from './calculator';
 
 describe('Calculator', () => {
@@ -94,7 +88,6 @@ describe('Calculator', () => {
     calc = new Calculator();
   });
 
-  // ─── ADD ───────────────────────────────────
   describe('add', () => {
     it('should add two positive numbers', () => {
       expect(calc.add(1, 2)).toBe(3);
@@ -109,7 +102,6 @@ describe('Calculator', () => {
     });
   });
 
-  // ─── SUBTRACT ───────────────────────────────
   describe('subtract', () => {
     it('should subtract two numbers', () => {
       expect(calc.subtract(5, 3)).toBe(2);
@@ -120,7 +112,6 @@ describe('Calculator', () => {
     });
   });
 
-  // ─── MULTIPLY ───────────────────────────────
   describe('multiply', () => {
     it('should multiply two numbers', () => {
       expect(calc.multiply(3, 4)).toBe(12);
@@ -131,7 +122,6 @@ describe('Calculator', () => {
     });
   });
 
-  // ─── DIVIDE ─────────────────────────────────
   describe('divide', () => {
     it('should divide two numbers', () => {
       expect(calc.divide(10, 2)).toBe(5);
@@ -150,7 +140,7 @@ describe('Calculator', () => {
 
 ### 3.1. Gherkin Syntax (Given-When-Then)
 
-BDD sử dụng **Gherkin** — ngôn ngữ business-readable để viết specifications.
+BDD sử dụng **Gherkin**, ngôn ngữ business-readable để viết specifications.
 
 ```gherkin
 Feature: User Login
@@ -164,21 +154,6 @@ Feature: User Login
     And I click the "Login" button
     Then I should be redirected to the dashboard
     And I should see "Welcome, Huy" message
-
-  Scenario: Login with invalid credentials
-    Given I am on the login page
-    When I enter "wrong@example.com" as email
-    And I enter "wrongpassword" as password
-    And I click the "Login" button
-    Then I should see "Invalid email or password" error
-    And I should remain on the login page
-
-  Scenario: Login without email
-    Given I am on the login page
-    When I enter "" as email
-    And I enter "password123" as password
-    And I click the "Login" button
-    Then I should see "Email is required" error
 ```
 
 ### 3.2. Cucumber (JS/TS)
@@ -200,7 +175,6 @@ Feature: User Login
 ```
 
 ```typescript
-// step_definitions/login.steps.ts
 import { Given, When, Then } from '@cucumber/cucumber';
 import { expect } from 'chai';
 import { loginPage } from '../pages/LoginPage';
@@ -231,42 +205,19 @@ Then('I should see {string}', async function(message: string) {
 ### 3.3. BDD với React Testing Library
 
 ```typescript
-// TodoApp.bdd.test.tsx
 import { render, screen, fireEvent } from '@testing-library/react';
 import { TodoApp } from './TodoApp';
 
 describe('TodoApp - BDD Style', () => {
   describe('Adding todos', () => {
     it('should allow user to add a new todo', () => {
-      // Given: I am on the todo page
       render(<TodoApp />);
 
-      // When: I type "Buy groceries" in the input
       const input = screen.getByPlaceholderText('What needs to be done?');
       fireEvent.change(input, { target: { value: 'Buy groceries' } });
-
-      // And: I press Enter
       fireEvent.keyDown(input, { key: 'Enter' });
 
-      // Then: I should see "Buy groceries" in the list
       expect(screen.getByText('Buy groceries')).toBeInTheDocument();
-    });
-  });
-
-  describe('Completing todos', () => {
-    it('should allow user to mark a todo as complete', () => {
-      // Given: I have a todo "Buy groceries"
-      render(<TodoApp />);
-      const input = screen.getByPlaceholderText('What needs to be done?');
-      fireEvent.change(input, { target: { value: 'Buy groceries' } });
-      fireEvent.keyDown(input, { key: 'Enter' });
-
-      // When: I click the checkbox
-      const checkbox = screen.getByRole('checkbox');
-      fireEvent.click(checkbox);
-
-      // Then: the todo should be marked as complete
-      expect(screen.getByText('Buy groceries')).toHaveStyle({ textDecoration: 'line-through' });
     });
   });
 });
@@ -291,14 +242,11 @@ describe('TodoApp - BDD Style', () => {
 ```typescript
 describe('User registration', () => {
   it('should register a new user', () => {
-    // Arrange — Setup
     const userData = { email: 'huy@example.com', password: 'password123' };
     const userService = new UserService();
 
-    // Act — Execute
     const result = userService.register(userData);
 
-    // Assert — Verify
     expect(result.success).toBe(true);
     expect(result.user.email).toBe('huy@example.com');
   });
@@ -325,23 +273,6 @@ describe('Registration Form', () => {
       expect(isValidEmail('user.name@domain.co.uk')).toBe(true);
     });
   });
-
-  describe('Password validation', () => {
-    it('should require minimum 8 characters', () => {
-      expect(isValidPassword('1234567')).toBe(false);
-      expect(isValidPassword('12345678')).toBe(true);
-    });
-
-    it('should require at least one uppercase letter', () => {
-      expect(isValidPassword('password123')).toBe(false);
-      expect(isValidPassword('Password123')).toBe(true);
-    });
-
-    it('should require at least one number', () => {
-      expect(isValidPassword('Password')).toBe(false);
-      expect(isValidPassword('Password123')).toBe(true);
-    });
-  });
 });
 ```
 
@@ -366,26 +297,6 @@ describe('Shopping Cart', () => {
     expect(cart.items[0].quantity).toBe(2);
     expect(cart.total).toBe(2000);
   });
-
-  it('should remove item from cart', () => {
-    const cart = new ShoppingCart();
-    cart.addItem({ id: 1, name: 'Laptop', price: 1000, quantity: 1 });
-    cart.addItem({ id: 2, name: 'Mouse', price: 50, quantity: 1 });
-
-    cart.removeItem(1);
-
-    expect(cart.items).toHaveLength(1);
-    expect(cart.items[0].name).toBe('Mouse');
-  });
-
-  it('should calculate correct total with discount', () => {
-    const cart = new ShoppingCart();
-    cart.addItem({ id: 1, name: 'Laptop', price: 1000, quantity: 2 });
-
-    cart.applyDiscount('SAVE10');  // 10% off
-
-    expect(cart.total).toBe(1800);  // 2000 - 10%
-  });
 });
 ```
 
@@ -395,32 +306,32 @@ describe('Shopping Cart', () => {
 
 ### Q: Lợi ích của TDD?
 
-1. **Chất lượng code cao hơn** — code luôn có tests.
-2. **Phát hiện bug sớm** — fix ngay khi viết code.
-3. **Refactoring tự tin** — có tests cover nên refactor không sợ break.
-4. **Documentation** — tests là documentation cho code behavior.
-5. **Thiết kế tốt hơn** — phải think about interface trước khi implement.
+1. **Chất lượng code cao hơn**: code luôn có tests.
+2. **Phát hiện bug sớm**: fix ngay khi viết code.
+3. **Refactoring tự tin**: có tests cover nên refactor không sợ break.
+4. **Documentation**: tests là documentation cho code behavior.
+5. **Thiết kế tốt hơn**: phải think about interface trước khi implement.
 
 ### Q: Nhược điểm của TDD?
 
-1. **Learning curve cao** — cần practice nhiều.
-2. **Chậm ban đầu** — viết thêm code (tests) trước khi code chính.
-3. **Không phù hợp cho prototype/ spikes** — rapid exploration.
-4. **Over-testing** — có thể viết quá nhiều tests không cần thiết.
+1. **Learning curve cao**: cần practice nhiều.
+2. **Chậm ban đầu**: viết thêm code (tests) trước khi code chính.
+3. **Không phù hợp cho prototype/spikes**: rapid exploration.
+4. **Over-testing**: có thể viết quá nhiều tests không cần thiết.
 
 ### Q: Khi nào không nên dùng TDD?
 
-- **Prototypes** — code thay đổi liên tục, tests không kịp update.
-- **Simple utilities** — code đơn giản, rõ ràng.
-- **One-time scripts** — không cần maintain.
-- **Legacy code không có tests** — refactor code đã có trước.
+- **Prototypes**: code thay đổi liên tục, tests không kịp update.
+- **Simple utilities**: code đơn giản, rõ ràng.
+- **One-time scripts**: không cần maintain.
+- **Legacy code không có tests**: refactor code đã có trước.
 
 ### Q: BDD benefits over TDD?
 
-1. **Team alignment** — business và developers cùng hiểu specs.
-2. **Living documentation** — specs tự động được test.
-3. **Reduces misunderstanding** — ngôn ngữ chung giữa technical và non-technical.
-4. **Better requirements** — Given-When-Then buộc phải define scenarios rõ ràng.
+1. **Team alignment**: business và developers cùng hiểu specs.
+2. **Living documentation**: specs tự động được test.
+3. **Reduces misunderstanding**: ngôn ngữ chung giữa technical và non-technical.
+4. **Better requirements**: Given-When-Then buộc phải define scenarios rõ ràng.
 
 ### Q: Sự khác biệt giữa Mock, Stub, Spy?
 
