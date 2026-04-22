@@ -1,10 +1,10 @@
 # Elixir Syntax
 
-## Tổng quan
+## 1. Tổng quan
 
 Erlang và Elixir là ngôn ngữ lập trình được thiết kế cho các hệ thống phân tán, fault-tolerant, real-time với uptime cao. Erlang VM (BEAM) là runtime nền tảng cho cả hai ngôn ngữ.
 
-### Đặc điểm cốt lõi
+### 1.1. Đặc điểm cốt lõi
 
 | Đặc điểm | Mô tả |
 |-----------|--------|
@@ -14,7 +14,7 @@ Erlang và Elixir là ngôn ngữ lập trình được thiết kế cho các h�
 | **Hot Code Reloading** | Deploy code không downtime |
 | **Distributed** | Native hỗ trợ cluster qua Erlang distribution |
 
-## Module và Functions
+## 2. Module và functions
 
 ```elixir
 # Module định nghĩa behavior
@@ -45,7 +45,7 @@ defmodule UserService do
 end
 ```
 
-### Guards và Pattern Matching
+### 2.1. Guards và pattern matching
 
 ```elixir
 # Guard clauses
@@ -65,9 +65,9 @@ def parse_ip(<<a, b, c, d, rest::binary>>) do
 end
 ```
 
-## Data Structures
+## 3. Data structures
 
-### Lists
+### 3.1. Lists
 
 ```elixir
 # List (linked list)
@@ -84,7 +84,7 @@ List.flatten([[1, 2], [3, 4]])  # Flatten nested lists
 for x <- 1..5, x > 2, do: x * 2  # [6, 8, 10]
 ```
 
-### Tuples
+### 3.2. Tuples
 
 ```elixir
 # Tuple (fixed-size, fast access by index)
@@ -101,7 +101,7 @@ def divide(a, b) do
 end
 ```
 
-### Maps
+### 3.3. Maps
 
 ```elixir
 # Map (key-value)
@@ -121,7 +121,7 @@ put_in(users, [:user, :email], "new_email@example.com")
 update_in(users, [:user, :age], &(&1 + 1))
 ```
 
-### Structs
+### 3.4. Structs
 
 ```elixir
 # Struct (typed map)
@@ -140,7 +140,7 @@ end
 %Config{}  # %Config{port: 8080, host: "localhost", timeout: 5000}
 ```
 
-### Keyword Lists
+### 3.5. Keyword lists
 
 ```elixir
 # Keyword list (list of 2-tuples, keys are atoms)
@@ -154,7 +154,7 @@ def connect(url, opts \\ []) do
 end
 ```
 
-## Comprehensions và Enum
+## 4. Comprehensions và `Enum`
 
 ```elixir
 # Transform data
@@ -179,9 +179,9 @@ map = for x <- 1..3, into: %{}, do: {x, x * x}
 |> Enum.sum()
 ```
 
-## Protocols và Behaviours
+## 5. Protocols và behaviours
 
-### Protocols (polymorphism)
+### 5.1. Protocols (polymorphism)
 
 ```elixir
 # Define a protocol
@@ -198,7 +198,7 @@ defimpl Size, for: User do
 end
 ```
 
-### Aliases và Imports
+### 5.2. Aliases và imports
 
 ```elixir
 # Alias
@@ -219,24 +219,24 @@ require Logger
 Logger.info("Hello")
 ```
 
-## Câu hỏi phỏng vấn thường gặp
+## 6. Câu hỏi phỏng vấn thường gặp
 
-### 1. Elixir và Erlang khác nhau thế nào?
+### 6.1. Elixir và Erlang khác nhau thế nào?
 
 Elixir chạy trên BEAM (Erlang VM), compile xuống bytecode Erlang. Elixir cung cấp syntax hiện đại hơn, macro system mạnh, và tooling tốt hơn (Mix, ExUnit, Phoenix). Erlang cung cấp ngữ pháp truyền thống, otpstdlib sẵn có. Logic runtime hoàn toàn tương thích.
 
-### 2. Elixir dùng `=` là assignment hay pattern matching?
+### 6.2. Elixir dùng `=` là assignment hay pattern matching?
 
 `=` trong Elixir là **pattern matching**, không phải assignment. Khi `x = 1`, Elixir cố gắng match `x` với `1` và thành công, tạo ra biến `x` = 1. Khi `1 = x`, nó cũng thành công vì `1` match với giá trị hiện tại của `x`. Nếu match thất bại (ví dụ `2 = x`), sẽ raise `MatchError`.
 
-### 3. Sự khác biệt giữa `list`, `tuple`, `map`, `struct`?
+### 6.3. Sự khác biệt giữa `list`, `tuple`, `map`, `struct`?
 
 - **List**: Linked list, fast at prepending, slow random access by index
 - **Tuple**: Fixed-size array, fast access by index, slow insertion/deletion
 - **Map**: Key-value store, O(log n) access, keys can be any type
 - **Struct**: Typed map backed by a module, enforces keys at compile time
 
-### 4. Khi nào dùng `with` special form?
+### 6.4. Khi nào dùng `with` special form?
 
 ```elixir
 # Thay vì nested case

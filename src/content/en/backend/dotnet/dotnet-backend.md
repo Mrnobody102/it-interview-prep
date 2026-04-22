@@ -1,12 +1,12 @@
 # .NET Backend
 
-## ASP.NET Core
+## 1. ASP.NET Core
 
-### Overview
+### 1.1. Overview
 
 **.NET Core** is a cross-platform, open-source framework for building modern, cloud-based applications. **ASP.NET Core** is the web version of .NET Core, combining MVC, Web API, and gRPC into a unified programming model.
 
-### Key Features
+### 1.2. Key features
 
 | Feature | Description |
 |---|---|
@@ -17,7 +17,7 @@
 | **Kestrel** | Built-in, high-performance web server |
 | **Unified framework** | Web API + MVC + gRPC in one framework |
 
-### .NET Framework vs .NET Core vs .NET 5+
+### 1.3. .NET Framework vs .NET Core vs .NET 5+
 
 | | .NET Framework | .NET Core | .NET 5+ |
 |---|---|---|---|
@@ -30,9 +30,9 @@
 
 ---
 
-## Project Setup and Structure
+## 2. Project setup and structure
 
-### Creating a Project
+### 2.1. Creating a project
 
 ```bash
 # Install .NET SDK
@@ -60,7 +60,7 @@ dotnet build
 dotnet test
 ```
 
-### Project Structure
+### 2.2. Project structure
 
 ```
 MyApi/
@@ -89,7 +89,7 @@ MyApi/
 └── MyApi.csproj
 ```
 
-### Program.cs
+### 2.3. `Program.cs`
 
 ```csharp
 // Program.cs - ASP.NET Core 6+ (Minimal API style)
@@ -160,9 +160,9 @@ app.Run();
 
 ---
 
-## Controllers
+## 3. Controllers
 
-### API Controllers
+### 3.1. API controllers
 
 ```csharp
 // Controllers/UsersController.cs
@@ -270,7 +270,7 @@ public class UsersController : ControllerBase
 }
 ```
 
-### Minimal APIs (.NET 6+)
+### 3.2. Minimal APIs (.NET 6+)
 
 Minimal APIs are a lightweight alternative to controllers for simpler applications.
 
@@ -323,9 +323,9 @@ app.Run();
 
 ---
 
-## Models and DTOs
+## 4. Models and DTOs
 
-### Entity Models
+### 4.1. Entity models
 
 ```csharp
 // Models/User.cs
@@ -397,7 +397,7 @@ public class Order
 }
 ```
 
-### DTOs
+### 4.2. DTOs
 
 ```csharp
 // DTOs/UserDtos.cs
@@ -466,9 +466,9 @@ public class PaginatedResult<T>
 
 ---
 
-## Dependency Injection
+## 5. Dependency injection
 
-### Service Registration
+### 5.1. Service registration
 
 ASP.NET Core has a built-in IoC container that manages service lifetimes.
 
@@ -485,7 +485,7 @@ builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 // - Transient: New instance each time it's requested
 ```
 
-### Service Implementation
+### 5.2. Service implementation
 
 ```csharp
 // Services/IUserService.cs
@@ -685,9 +685,9 @@ public class UserService : IUserService
 
 ---
 
-## Entity Framework Core
+## 6. Entity Framework Core
 
-### DbContext
+### 6.1. `DbContext`
 
 The DbContext is the primary class for interacting with the database. It manages the connection, tracks changes, and provides a querying interface.
 
@@ -757,7 +757,7 @@ public class AppDbContext : DbContext
 }
 ```
 
-### Database Migrations
+### 6.2. Database migrations
 
 ```bash
 # Add migrations
@@ -778,7 +778,7 @@ dotnet ef migrations script --idempotent
 dotnet ef database update 0
 ```
 
-### Query Optimization
+### 6.3. Query optimization
 
 ```csharp
 // AsNoTracking for read-only queries
@@ -828,9 +828,9 @@ public async Task<List<User>> GetActiveUsersAsync()
 
 ---
 
-## Middleware
+## 7. Middleware
 
-### Custom Middleware
+### 7.1. Custom middleware
 
 Middleware components form a pipeline that processes every HTTP request. Each component can choose to short-circuit the pipeline or pass the request to the next component.
 
@@ -909,7 +909,7 @@ public class ErrorResponse
 }
 ```
 
-### Middleware Pipeline
+### 7.2. Middleware pipeline
 
 The order of middleware registration matters. Exceptions should be handled early in the pipeline.
 
@@ -927,9 +927,9 @@ app.MapHub<ChatHub>("/chat");  // SignalR
 
 ---
 
-## Configuration
+## 8. Configuration
 
-### appsettings.json
+### 8.1. `appsettings.json`
 
 Configuration is hierarchical and environment-aware. ASP.NET Core reads from multiple sources, with later sources taking precedence.
 
@@ -957,7 +957,7 @@ Configuration is hierarchical and environment-aware. ASP.NET Core reads from mul
 }
 ```
 
-### Environment-based Configuration
+### 8.2. Environment-based configuration
 
 Environment-specific settings override base settings.
 
@@ -985,7 +985,7 @@ if (app.Environment.IsProduction())
 }
 ```
 
-### Options Pattern
+### 8.3. Options pattern
 
 The Options pattern binds configuration sections to strongly-typed classes.
 
@@ -1017,9 +1017,9 @@ public class AuthService
 
 ---
 
-## Logging
+## 9. Logging
 
-### Built-in Logging
+### 9.1. Built-in logging
 
 ASP.NET Core includes a logging abstraction that works with multiple providers (console, debug, event log, etc.).
 
@@ -1053,7 +1053,7 @@ public class UserService : IUserService
 }
 ```
 
-### Log Levels
+### 9.2. Log levels
 
 | Level | Use Case |
 |---|---|
@@ -1075,9 +1075,9 @@ _logger.LogCritical("Critical failure");
 
 ---
 
-## Authentication and Authorization
+## 10. Authentication and authorization
 
-### JWT Authentication
+### 10.1. JWT authentication
 
 JWT (JSON Web Token) is a stateless authentication mechanism commonly used in REST APIs.
 
@@ -1150,7 +1150,7 @@ public class AuthService : IAuthService
 }
 ```
 
-### Authorization Policies
+### 10.2. Authorization policies
 
 Authorization policies provide flexible access control based on roles, claims, or custom requirements.
 
@@ -1181,9 +1181,9 @@ public async Task<IActionResult> GetAdultsContent() { }
 
 ---
 
-## Best Practices
+## 11. Best practices
 
-### Project Structure Best Practices
+### 11.1. Project structure best practices
 
 | Practice | Description |
 |---|---|
@@ -1195,7 +1195,7 @@ public async Task<IActionResult> GetAdultsContent() { }
 | **Configuration** | Use the IOptions pattern for configuration |
 | **Separation of concerns** | Keep controllers thin; services handle business logic |
 
-### Performance Tips
+### 11.2. Performance tips
 
 ```csharp
 // 1. Use AsNoTracking for read-only queries
@@ -1221,7 +1221,7 @@ private static readonly Func<AppDbContext, int, Task<User>> _compiledQuery =
         ctx.Users.FirstOrDefault(u => u.Id == id));
 ```
 
-### Testing
+### 11.3. Testing
 
 ```csharp
 // xUnit test example
@@ -1272,19 +1272,19 @@ public class UserServiceTests
 
 ---
 
-## Interview Questions
+## 12. Common interview questions
 
-### 1. What is the difference between AddScoped, AddTransient, and AddSingleton?
+### 12.1. What is the difference between `AddScoped`, `AddTransient`, and `AddSingleton`?
 
 - **Singleton**: A single instance is created for the entire application lifetime. Every request and every service gets the same instance. Use for stateless services or services that cache expensive data.
 - **Scoped**: A new instance is created once per HTTP request (or per unit of work). The same instance is used throughout a single request. This is the most common lifetime for services that work with DbContext.
 - **Transient**: A new instance is created every time the service is requested. Use for lightweight, stateless services. Caution: if a transient service depends on a scoped service, it will hold a reference to the scoped instance for its entire lifetime.
 
-### 2. What is Entity Framework Core?
+### 12.2. What is Entity Framework Core?
 
 Entity Framework Core (EF Core) is an ORM (Object-Relational Mapper) for .NET. It maps .NET objects to database tables, allowing you to work with databases using strongly-typed C# objects instead of raw SQL. Key features include change tracking, lazy/eager loading, migrations, and support for multiple database providers (SQL Server, PostgreSQL, SQLite, etc.).
 
-### 3. How does ASP.NET Core middleware pipeline work?
+### 12.3. How does the ASP.NET Core middleware pipeline work?
 
 The middleware pipeline processes HTTP requests through a chain of components. Each component can:
 - Execute code before and after calling the next middleware
@@ -1293,7 +1293,7 @@ The middleware pipeline processes HTTP requests through a chain of components. E
 
 Middleware is configured in `Program.cs` using `app.Use()`, `app.Map()`, and `app.Run()`. The order matters: middleware registered first wraps middleware registered later.
 
-### 4. What is the difference between MVC and Web API in ASP.NET Core?
+### 12.4. What is the difference between MVC and Web API in ASP.NET Core?
 
 In ASP.NET Core, MVC and Web API have been unified into a single framework. `ControllerBase` provides the base functionality for both. The key differences in traditional ASP.NET:
 - MVC returns `ActionResult` with views (HTML)
@@ -1301,7 +1301,7 @@ In ASP.NET Core, MVC and Web API have been unified into a single framework. `Con
 
 In ASP.NET Core, you use `[ApiController]` attribute and return data directly. Views are served via Razor Pages or MVC controllers separately.
 
-### 5. How do you handle errors in ASP.NET Core?
+### 12.5. How do you handle errors in ASP.NET Core?
 
 Error handling in ASP.NET Core can be done at multiple levels:
 - **Global exception middleware**: Catch and format all unhandled exceptions
@@ -1309,7 +1309,7 @@ Error handling in ASP.NET Core can be done at multiple levels:
 - **Exception filters**: Handle exceptions at the controller level
 - **Model validation**: Return 400 Bad Request for invalid input
 
-### 6. What is the difference between FromQuery, FromBody, FromRoute, and FromHeader?
+### 12.6. What is the difference between `FromQuery`, `FromBody`, `FromRoute`, and `FromHeader`?
 
 | Attribute | Source |
 |---|---|
@@ -1319,11 +1319,11 @@ Error handling in ASP.NET Core can be done at multiple levels:
 | `[FromHeader]` | HTTP headers (Authorization) |
 | `[FromForm]` | Form data (multipart/form-data) |
 
-### 7. How does ASP.NET Core's authentication work?
+### 12.7. How does ASP.NET Core authentication work?
 
 ASP.NET Core uses an authentication handler-based model. When `UseAuthentication` is called, it reads credentials from the request, validates them, and sets `HttpContext.User`. The `[Authorize]` attribute then checks if the user is authenticated and authorized. Common schemes include JWT Bearer tokens, Cookie authentication, and OAuth providers.
 
-### 8. What is the purpose of DbContext in Entity Framework Core?
+### 12.8. What is the purpose of `DbContext` in Entity Framework Core?
 
 DbContext is the primary entry point for database operations. It:
 - Manages the database connection
@@ -1333,13 +1333,13 @@ DbContext is the primary entry point for database operations. It:
 - Configures the entity-to-table mappings via Fluent API or attributes
 - Supports migrations to update database schema
 
-### 9. What is the difference between Eager Loading, Lazy Loading, and Explicit Loading?
+### 12.9. What is the difference between eager loading, lazy loading, and explicit loading?
 
 - **Eager Loading**: Loads related data along with the main query using `.Include()` and `.ThenInclude()`. Best for scenarios where related data is always needed.
 - **Lazy Loading**: Automatically loads related data when navigation properties are accessed. Requires proxies or virtual properties. Can cause N+1 query problems.
 - **Explicit Loading**: Loads related data on demand using `.Reference()` or `.Collection()` methods. More control than lazy loading.
 
-### 10. How do you implement rate limiting in ASP.NET Core?
+### 12.10. How do you implement rate limiting in ASP.NET Core?
 
 ASP.NET Core 7+ includes built-in rate limiting via `Microsoft.AspNetCore.RateLimiting`. You configure rate limiter options in `Program.cs`, apply them with the `[EnableRateLimiting]` attribute, and optionally configure per-endpoint limits. Common policies include fixed window, sliding window, token bucket, and concurrency limiters.
 

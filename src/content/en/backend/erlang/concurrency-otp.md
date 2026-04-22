@@ -1,8 +1,8 @@
 # Concurrency & OTP
 
-## Concurrency and Processes
+## 1. Concurrency and processes
 
-### Spawning Processes
+### 1.1. Spawning processes
 
 ```elixir
 # Spawn a basic function
@@ -23,7 +23,7 @@ after
 end
 ```
 
-### Links and Monitors
+### 1.2. Links and monitors
 
 ```elixir
 # Links — crash together
@@ -37,7 +37,7 @@ receive do
 end
 ```
 
-### Agent (simple state)
+### 1.3. Agent (simple state)
 
 ```elixir
 {:ok, agent} = Agent.start(fn -> %{} end)
@@ -45,7 +45,7 @@ Agent.update(agent, fn state -> Map.put(state, :count, 1) end)
 Agent.get(agent, fn state -> state[:count] end)
 ```
 
-## GenServer (Generic Server)
+## 2. GenServer (generic server)
 
 ```elixir
 defmodule Cache do
@@ -84,7 +84,7 @@ defmodule Cache do
 end
 ```
 
-### GenServer Callbacks in Detail
+### 2.1. GenServer callbacks in detail
 
 ```elixir
 # handle_call — synchronous, returns {:reply, response, new_state}
@@ -111,9 +111,9 @@ def terminate(:normal, state) do
 end
 ```
 
-## Task and Supervisor
+## 3. Task and supervisor
 
-### Task for fire-and-forget
+### 3.1. Task for fire-and-forget
 
 ```elixir
 # Fire and forget
@@ -133,7 +133,7 @@ tasks = for i <- 1..10, do: Task.async(fn -> compute(i) end)
 results = Task.await_many(tasks)
 ```
 
-### Supervised Task
+### 3.2. Supervised task
 
 ```elixir
 # Static children list
@@ -145,9 +145,9 @@ children = [
 Supervisor.start_link(children, strategy: :one_for_one)
 ```
 
-## OTP Supervision Strategies
+## 4. OTP supervision strategies
 
-### Supervisor Strategies
+### 4.1. Supervisor strategies
 
 ```elixir
 # One-for-one: restart only the crashed process
@@ -172,7 +172,7 @@ Supervisor.start_link([
 # (does not restart child supervisors)
 ```
 
-### DynamicSupervisor
+### 4.2. `DynamicSupervisor`
 
 ```elixir
 # Start dynamic supervisor
@@ -185,7 +185,7 @@ DynamicSupervisor.start_child(sup, {Worker, args})
 DynamicSupervisor.count_children(sup)
 ```
 
-### Error Kernel Pattern
+### 4.3. Error kernel pattern
 
 ```elixir
 defmodule MyApp.Application do
@@ -207,7 +207,7 @@ defmodule MyApp.Application do
 end
 ```
 
-## Distributed Erlang
+## 5. Distributed Erlang
 
 ```elixir
 # Node 1:
@@ -226,9 +226,9 @@ receive do
 end
 ```
 
-## Behavior and Custom Behaviors
+## 6. Behavior and custom behaviors
 
-### Defining a Custom Behavior
+### 6.1. Defining a custom behavior
 
 ```elixir
 defmodule MyServer do
@@ -253,7 +253,7 @@ defmodule MyServer do
 end
 ```
 
-### ETS-based Server (Stateless)
+### 6.2. ETS-based server (stateless)
 
 ```elixir
 defmodule ETSRegistry do
@@ -279,9 +279,9 @@ defmodule ETSRegistry do
 end
 ```
 
-## Caching & Performance
+## 7. Caching and performance
 
-### ETS (Erlang Term Storage)
+### 7.1. ETS (Erlang Term Storage)
 
 ```elixir
 # Create ETS table
@@ -321,7 +321,7 @@ defmodule TTLCache do
 end
 ```
 
-### Process Dictionary (Avoid in Production)
+### 7.2. Process dictionary (avoid in production)
 
 ```elixir
 # DO NOT use in production - hard to test, not distributed
@@ -330,7 +330,7 @@ user_id = Process.get(:current_user_id)
 Process.delete(:current_user_id)
 ```
 
-### Performance Tips
+### 7.3. Performance tips
 
 - Use `concurrent` instead of `sequential` when possible
 - ETS for fast in-memory cache
@@ -339,9 +339,9 @@ Process.delete(:current_user_id)
 - Use `binary` instead of `list` for strings
 - `iodata` for output streams
 
-## OTP Patterns
+## 8. OTP patterns
 
-### Supervision Tree
+### 8.1. Supervision tree
 
 ```elixir
 defmodule MyApp.Application do
@@ -370,7 +370,7 @@ defmodule MyApp.Application do
 end
 ```
 
-### GenStateMachine
+### 8.2. `GenStateMachine`
 
 ```elixir
 defmodule OrderMachine do
@@ -399,26 +399,26 @@ defmodule OrderMachine do
 end
 ```
 
-## Common Interview Questions
+## 9. Common interview questions
 
-### 1. GenServer vs Agent vs Task — when to use which?
+### 9.1. GenServer vs Agent vs Task: when to use which?
 
 - **Agent**: stateful, simple read/write — used for shared state
 - **GenServer**: full control over state and behavior — used for complex services
 - **Task**: fire-and-forget or async with result — used for background jobs
 - **GenStateMachine**: when a state machine pattern is needed
 
-### 2. How does "Let it crash" work?
+### 9.2. How does "Let it crash" work?
 
 Processes do not share memory. When a process crashes, the supervisor catches it and decides whether to restart. Each worker is wrapped in a supervisor. The crash occurs in the worker and does not affect the system. The supervisor restarts the worker to a clean state.
 
-### 3. Difference between `handle_call`, `handle_cast`, `handle_info`?
+### 9.3. Difference between `handle_call`, `handle_cast`, and `handle_info`?
 
 - `handle_call`: synchronous — client waits for reply, used for operations that need a result
 - `handle_cast`: asynchronous — no reply, used for fire-and-forget operations
 - `handle_info`: handles messages sent directly to the process (not via GenServer.call/cast)
 
-### 4. What types of ETS tables exist?
+### 9.4. What types of ETS tables exist?
 
 - `:set` — each key is unique (default)
 - `:ordered_set` — ordered by key

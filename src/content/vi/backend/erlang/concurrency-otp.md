@@ -1,8 +1,8 @@
 # Concurrency & OTP
 
-## Concurrency và Processes
+## 1. Concurrency và processes
 
-### Spawning Processes
+### 1.1. Spawning processes
 
 ```elixir
 # Spawn a basic function
@@ -23,7 +23,7 @@ after
 end
 ```
 
-### Links và Monitors
+### 1.2. Links và monitors
 
 ```elixir
 # Links — crash together
@@ -37,7 +37,7 @@ receive do
 end
 ```
 
-### Agent (simple state)
+### 1.3. Agent (simple state)
 
 ```elixir
 {:ok, agent} = Agent.start(fn -> %{} end)
@@ -45,7 +45,7 @@ Agent.update(agent, fn state -> Map.put(state, :count, 1) end)
 Agent.get(agent, fn state -> state[:count] end)
 ```
 
-## GenServer (Generic Server)
+## 2. GenServer (generic server)
 
 ```elixir
 defmodule Cache do
@@ -84,7 +84,7 @@ defmodule Cache do
 end
 ```
 
-### GenServer Callbacks chi tiết
+### 2.1. GenServer callbacks chi tiết
 
 ```elixir
 # handle_call — synchronous, returns {:reply, response, new_state}
@@ -111,9 +111,9 @@ def terminate(:normal, state) do
 end
 ```
 
-## Task và Supervisor
+## 3. Task và supervisor
 
-### Task cho fire-and-forget
+### 3.1. Task cho fire-and-forget
 
 ```elixir
 # Fire and forget
@@ -133,7 +133,7 @@ tasks = for i <- 1..10, do: Task.async(fn -> compute(i) end)
 results = Task.await_many(tasks)
 ```
 
-### Supervised Task
+### 3.2. Supervised task
 
 ```elixir
 # Static children list
@@ -145,9 +145,9 @@ children = [
 Supervisor.start_link(children, strategy: :one_for_one)
 ```
 
-## OTP Supervision Strategies
+## 4. OTP supervision strategies
 
-### Các chiến lược Supervisor
+### 4.1. Các chiến lược supervisor
 
 ```elixir
 # One-for-one: restart chỉ process bị crash
@@ -172,7 +172,7 @@ Supervisor.start_link([
 # (không restart supervisors con)
 ```
 
-### DynamicSupervisor
+### 4.2. `DynamicSupervisor`
 
 ```elixir
 # Start dynamic supervisor
@@ -185,7 +185,7 @@ DynamicSupervisor.start_child(sup, {Worker, args})
 DynamicSupervisor.count_children(sup)
 ```
 
-### Error Kernel Pattern
+### 4.3. Error kernel pattern
 
 ```elixir
 defmodule MyApp.Application do
@@ -207,7 +207,7 @@ defmodule MyApp.Application do
 end
 ```
 
-## Distributed Erlang
+## 5. Distributed Erlang
 
 ```elixir
 # Node 1:
@@ -226,9 +226,9 @@ receive do
 end
 ```
 
-## Behavior và Custom Behaviors
+## 6. Behavior và custom behaviors
 
-### Dựng custom Behavior
+### 6.1. Dựng custom behavior
 
 ```elixir
 defmodule MyServer do
@@ -253,7 +253,7 @@ defmodule MyServer do
 end
 ```
 
-### ETS-based Server (stateless)
+### 6.2. ETS-based server (stateless)
 
 ```elixir
 defmodule ETSRegistry do
@@ -279,9 +279,9 @@ defmodule ETSRegistry do
 end
 ```
 
-## Caching & Performance
+## 7. Caching và performance
 
-### ETS (Erlang Term Storage)
+### 7.1. ETS (Erlang Term Storage)
 
 ```elixir
 # Tạo ETS table
@@ -321,7 +321,7 @@ defmodule TTLCache do
 end
 ```
 
-### Process Dictionary (tránh dùng)
+### 7.2. Process dictionary (tránh dùng)
 
 ```elixir
 # KHONG nên dùng trong production - khó test, không distributed
@@ -330,7 +330,7 @@ user_id = Process.get(:current_user_id)
 Process.delete(:current_user_id)
 ```
 
-### Performance Tips
+### 7.3. Performance tips
 
 - Dùng `concurrent` thay vì `sequential` khi có thể
 - ETS cho in-memory cache nhanh
@@ -339,9 +339,9 @@ Process.delete(:current_user_id)
 - Dùng `binary` thay vì `list` cho string
 - `iodata` cho output streams
 
-## OTP Patterns
+## 8. OTP patterns
 
-### Supervision Tree
+### 8.1. Supervision tree
 
 ```elixir
 defmodule MyApp.Application do
@@ -370,7 +370,7 @@ defmodule MyApp.Application do
 end
 ```
 
-### GenStateMachine
+### 8.2. `GenStateMachine`
 
 ```elixir
 defmodule OrderMachine do
@@ -399,26 +399,26 @@ defmodule OrderMachine do
 end
 ```
 
-## Câu hỏi phỏng vấn thường gặp
+## 9. Câu hỏi phỏng vấn thường gặp
 
-### 1. GenServer vs Agent vs Task — khi nào dùng?
+### 9.1. GenServer vs Agent vs Task: khi nào dùng?
 
 - **Agent**: stateful, simple read/write — dùng cho shared state
 - **GenServer**: full control về state và behavior — dùng cho services phức tạp
 - **Task**: fire-and-forget hoặc async với result — dùng cho background jobs
 - **GenStateMachine**: khi state machine pattern cần thiết
 
-### 2. "Let it crash" hoạt động như thế nào?
+### 9.2. "Let it crash" hoạt động như thế nào?
 
 Processes không share memory. Khi một process crash, supervisor catch và quyết định restart hay không. Mỗi worker được wrap trong supervisor. Crash xảy ra trong worker, không ảnh hưởng hệ thống. Supervisor restart worker về clean state.
 
-### 3. Sự khác biệt giữa `handle_call`, `handle_cast`, `handle_info`?
+### 9.3. Sự khác biệt giữa `handle_call`, `handle_cast`, `handle_info`?
 
 - `handle_call`: synchronous — client đợi reply, dùng cho operations cần result
 - `handle_cast`: asynchronous — không reply, dùng cho fire-and-forget operations
 - `handle_info`: xử lý messages gửi trực tiếp đến process (không qua GenServer.call/cast)
 
-### 4. ETS có những loại table nào?
+### 9.4. ETS có những loại table nào?
 
 - `:set` — mỗi key unique (default)
 - `:ordered_set` — ordered by key

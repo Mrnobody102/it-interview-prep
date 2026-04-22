@@ -1,8 +1,8 @@
 # Phoenix Framework
 
-## Router và Controllers
+## 1. Router và controllers
 
-### Router cơ bản
+### 1.1. Router cơ bản
 
 ```elixir
 defmodule MyAppWeb.Router do
@@ -34,7 +34,7 @@ defmodule MyAppWeb.Router do
 end
 ```
 
-### Plugs
+### 1.2. Plugs
 
 ```elixir
 # Custom plug
@@ -63,7 +63,7 @@ pipeline :protected do
 end
 ```
 
-### Controllers
+### 1.3. Controllers
 
 ```elixir
 defmodule MyAppWeb.UserController do
@@ -106,7 +106,7 @@ defmodule MyAppWeb.UserController do
 end
 ```
 
-## Contexts (Domain Logic)
+## 2. Contexts (domain logic)
 
 ```elixir
 # Tách business logic vào contexts
@@ -141,9 +141,9 @@ defmodule MyApp.Accounts do
 end
 ```
 
-## LiveView (Real-time)
+## 3. LiveView (real-time)
 
-### Counter LiveView
+### 3.1. Counter LiveView
 
 ```elixir
 defmodule MyAppWeb.CounterLive do
@@ -178,7 +178,7 @@ defmodule MyAppWeb.CounterLive do
 end
 ```
 
-### LiveView với form
+### 3.2. LiveView với form
 
 ```elixir
 defmodule MyAppWeb.UserFormLive do
@@ -213,7 +213,7 @@ defmodule MyAppWeb.UserFormLive do
 end
 ```
 
-### PubSub trong LiveView
+### 3.3. PubSub trong LiveView
 
 ```elixir
 # Server-side broadcast
@@ -238,9 +238,9 @@ def handle_info({:user_created, user}, socket) do
 end
 ```
 
-## Ecto (Database)
+## 4. Ecto (database)
 
-### Schema
+### 4.1. Schema
 
 ```elixir
 defmodule MyApp.User do
@@ -268,7 +268,7 @@ defmodule MyApp.User do
 end
 ```
 
-### Query
+### 4.2. Query
 
 ```elixir
 alias MyApp.{Repo, User}
@@ -300,7 +300,7 @@ from(u in User,
 |> Repo.all()
 ```
 
-### Associations
+### 4.3. Associations
 
 ```elixir
 # Preload associations
@@ -317,7 +317,7 @@ from(u in User,
 |> Repo.all()
 ```
 
-## Channels (WebSockets)
+## 5. Channels (WebSockets)
 
 ```elixir
 defmodule MyAppWeb.RoomChannel do
@@ -345,20 +345,20 @@ defmodule MyAppWeb.RoomChannel do
 end
 ```
 
-## Câu hỏi phỏng vấn thường gặp
+## 6. Câu hỏi phỏng vấn thường gặp
 
-### 1. Phoenix Context vs Controller — khác nhau?
+### 6.1. Phoenix Context vs Controller: khác nhau?
 
 **Context** là module chứa business logic, tách biệt khỏi web layer. **Controller** chỉ nhận request và trả response. Context giữ logic domain độc lập với web framework, dễ test và tái sử dụng. Controller gọi context functions để lấy data.
 
-### 2. Ecto query vs Ecto Schema — khác nhau?
+### 6.2. Ecto query vs Ecto Schema: khác nhau?
 
 `Ecto.Schema` định nghĩa mapping từ database table → Elixir struct. `Ecto.Query` xây dựng SQL query. `changeset/2` validate data trước khi insert/update. Schema không query trực tiếp, phải qua Repo.
 
-### 3. LiveView hoạt động như thế nào?
+### 6.3. LiveView hoạt động như thế nào?
 
 LiveView kết nối WebSocket giữa client và server. Server-side rendering với HTML được gửi ban đầu, sau đó user interactions gửi events qua WebSocket. `handle_event` callback xử lý, `assign` cập nhật state, `render` trả về HTML diff. Không cần client-side JS cho business logic.
 
-### 4. Sự khác biệt giữa Channel và LiveView?
+### 6.4. Sự khác biệt giữa Channel và LiveView?
 
 **Channels** cho các ứng dụng real-time với custom protocol (chat, notifications, collaborative editing). **LiveView** cho full-page interactive UI với server-side rendering, tự động diff HTML. LiveView là abstraction cao hơn trên Channels.

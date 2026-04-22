@@ -1,10 +1,10 @@
 # Node.js Backend
 
-## 17. Express & NestJS
+## 1. Express & NestJS
 
-### 17.1. Express.js
+### 1.1. Express.js
 
-#### 17.1.1. Overview
+#### 1.1.1. Overview
 
 Express.js is a **minimal and flexible** Node.js web framework that provides a thin layer of fundamental web application features without obscuring Node.js capabilities.
 
@@ -16,7 +16,7 @@ Express.js is a **minimal and flexible** Node.js web framework that provides a t
 | **Middleware** | Huge ecosystem (passport, cors, helmet, morgan) |
 | **Best for** | APIs, prototypes, small-to-medium apps |
 
-#### 17.1.2. Basic Express Setup
+#### 1.1.2. Basic Express Setup
 
 ```javascript
 // server.js
@@ -94,7 +94,7 @@ app.listen(PORT, () => {
 });
 ```
 
-#### 17.1.3. Express Router (Modular Routes)
+#### 1.1.3. Express Router (Modular Routes)
 
 ```javascript
 // routes/users.js
@@ -143,9 +143,9 @@ module.exports = router;
 
 ---
 
-### 17.2. NestJS
+### 1.2. NestJS
 
-#### 17.2.1. Overview
+#### 1.2.1. Overview
 
 NestJS is a **progressive Node.js framework** for building efficient, reliable, and scalable server-side applications. It uses TypeScript and is heavily inspired by Angular's architecture.
 
@@ -157,7 +157,7 @@ NestJS is a **progressive Node.js framework** for building efficient, reliable, 
 | **Decorators** | Heavy use of decorators for routing, validation, etc. |
 | **Best for** | Enterprise-grade, large-scale applications |
 
-#### 17.2.2. Project Structure
+#### 1.2.2. Project Structure
 
 ```
 src/
@@ -186,7 +186,7 @@ src/
     └── interceptors/
 ```
 
-#### 17.2.3. NestJS Code Examples
+#### 1.2.3. NestJS Code Examples
 
 ```typescript
 // main.ts
@@ -354,7 +354,7 @@ export class UsersService {
 }
 ```
 
-### 17.3. Express vs. NestJS Comparison
+### 1.3. Express vs. NestJS Comparison
 
 | Aspect | Express | NestJS |
 |---|---|---|

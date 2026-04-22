@@ -1,12 +1,12 @@
 # Node.js Backend
 
-## 18. Event Loop
+## 1. Event Loop
 
-### 18.1. Overview
+### 1.1. Overview
 
 Node.js is built on an **event-driven, non-blocking I/O model** that makes it lightweight and efficient. Despite running on a **single thread**, Node.js can handle thousands of concurrent connections through its event loop.
 
-### 18.2. Why Single-Threaded?
+### 1.2. Why Single-Threaded?
 
 | Model | Pros | Cons |
 |---|---|---|
@@ -15,7 +15,7 @@ Node.js is built on an **event-driven, non-blocking I/O model** that makes it li
 
 > **Key insight:** The single thread handles **I/O operations asynchronously**, not CPU-intensive computation. For CPU-bound work, use **Worker Threads**.
 
-### 18.3. The Event Loop Phases
+### 1.3. The Event Loop Phases
 
 The event loop processes callbacks in a specific order across multiple phases:
 
@@ -47,9 +47,9 @@ flowchart TD
 | **Check** | `setImmediate()` callbacks | Runs after Poll |
 | **Close Callbacks** | `socket.on('close', ...)` | Resource cleanup |
 
-### 18.4. Phase Details
+### 1.4. Phase Details
 
-#### 18.4.1. Timers Phase
+#### 1.4.1. Timers Phase
 
 ```javascript
 // Timers phase executes after the specified delay
@@ -61,7 +61,7 @@ setImmediate(() => console.log('immediate'));  // Executes in check phase
 // If after I/O cycle: setTimeout runs first
 ```
 
-#### 18.4.2. Poll Phase
+#### 1.4.2. Poll Phase
 
 - If the poll queue is **not empty**: Node executes callbacks synchronously until queue is empty or system limit
 - If the poll queue is **empty**: Event loop either waits for a timer or moves to Check phase
@@ -77,7 +77,7 @@ http.get(url, (res) => {
 });
 ```
 
-#### 18.4.3. Check Phase
+#### 1.4.3. Check Phase
 
 ```javascript
 // setImmediate always runs in the check phase
@@ -87,7 +87,7 @@ setImmediate(() => {
 });
 ```
 
-### 18.5. Microtasks vs. Macrotasks
+### 1.5. Microtasks vs. Macrotasks
 
 Microtasks have **higher priority** than macrotasks. After each phase, the entire microtask queue is drained before the next phase.
 
@@ -116,9 +116,9 @@ console.log('end');
 // 6. setImmediate   (macrotask - check phase)
 ```
 
-### 18.6. Common Pitfalls
+### 1.6. Common pitfalls
 
-#### 18.6.1. Blocking the Event Loop
+#### 1.6.1. Blocking the Event Loop
 
 ```javascript
 // BAD: CPU-intensive task blocks the event loop
@@ -156,7 +156,7 @@ app.get('/calculate', async (req, res) => {
 });
 ```
 
-#### 18.6.2. Memory Leaks
+#### 1.6.2. Memory Leaks
 
 ```javascript
 // BAD: Event listeners accumulate
@@ -188,7 +188,7 @@ const timer = setInterval(() => { /* ... */ }, 1000);
 app.on('shutdown', () => clearInterval(timer));
 ```
 
-#### 18.6.3. Callback Pyramid (Callback Hell)
+#### 1.6.3. Callback Pyramid (Callback Hell)
 
 ```javascript
 // BAD: Nested callbacks
@@ -211,7 +211,7 @@ async function readAllFiles() {
 }
 ```
 
-### 18.7. Node.js Cluster Module
+### 1.7. Node.js Cluster Module
 
 Since Node.js is single-threaded, use the **cluster module** to utilize all CPU cores:
 

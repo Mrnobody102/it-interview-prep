@@ -108,8 +108,31 @@ export const backend: Category = {
       name: { vi: "Python Backend", en: "Python Backend" },
       subtopics: [
         {
+          id: "python-backend-core",
+          name: { vi: "Python Core", en: "Python Core" },
+        },
+        {
+          id: "python-backend-runtime-concurrency",
+          name: { vi: "Runtime & Concurrency", en: "Runtime & Concurrency" },
+        },
+        {
           id: "django-fastapi",
           name: { vi: "Django / FastAPI", en: "Django / FastAPI" },
+        },
+        {
+          id: "python-backend-jobs-workflows",
+          name: { vi: "Jobs & Workflows", en: "Jobs & Workflows" },
+        },
+        {
+          id: "python-backend-ai-systems",
+          name: { vi: "AI Systems", en: "AI Systems" },
+        },
+        {
+          id: "python-backend-production",
+          name: {
+            vi: "Production & Best Practices",
+            en: "Production & Best Practices",
+          },
         },
       ],
     },
@@ -138,6 +161,34 @@ export const backend: Category = {
     {
       id: "cpp-backend",
       name: { vi: "C++ Backend", en: "C++ Backend" },
+      subtopics: [
+        {
+          id: "cpp-backend-fundamentals",
+          name: { vi: "Core Language", en: "Core Language" },
+        },
+        {
+          id: "cpp-backend-memory-performance",
+          name: { vi: "Memory & Performance", en: "Memory & Performance" },
+        },
+        {
+          id: "cpp-backend-concurrency-networking",
+          name: {
+            vi: "Concurrency & Networking",
+            en: "Concurrency & Networking",
+          },
+        },
+        {
+          id: "cpp-backend-ai-systems",
+          name: { vi: "AI Systems", en: "AI Systems" },
+        },
+        {
+          id: "cpp-backend-production",
+          name: {
+            vi: "Build, Profiling & Production",
+            en: "Build, Profiling & Production",
+          },
+        },
+      ],
     },
     {
       id: "erlang-backend",

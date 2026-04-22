@@ -1,10 +1,10 @@
 # Elixir Syntax
 
-## Overview
+## 1. Overview
 
 Erlang and Elixir are programming languages designed for distributed, fault-tolerant, real-time systems with high uptime. The Erlang VM (BEAM) is the runtime platform for both languages.
 
-### Core Features
+### 1.1. Core features
 
 | Feature | Description |
 |---------|-------------|
@@ -14,7 +14,7 @@ Erlang and Elixir are programming languages designed for distributed, fault-tole
 | **Hot Code Reloading** | Deploy code without downtime |
 | **Distributed** | Native cluster support via Erlang distribution |
 
-## Modules and Functions
+## 2. Modules and functions
 
 ```elixir
 # Module defines behavior
@@ -45,7 +45,7 @@ defmodule UserService do
 end
 ```
 
-### Guards and Pattern Matching
+### 2.1. Guards and pattern matching
 
 ```elixir
 # Guard clauses
@@ -65,9 +65,9 @@ def parse_ip(<<a, b, c, d, rest::binary>>) do
 end
 ```
 
-## Data Structures
+## 3. Data structures
 
-### Lists
+### 3.1. Lists
 
 ```elixir
 # List (linked list)
@@ -84,7 +84,7 @@ List.flatten([[1, 2], [3, 4]])  # Flatten nested lists
 for x <- 1..5, x > 2, do: x * 2  # [6, 8, 10]
 ```
 
-### Tuples
+### 3.2. Tuples
 
 ```elixir
 # Tuple (fixed-size, fast access by index)
@@ -101,7 +101,7 @@ def divide(a, b) do
 end
 ```
 
-### Maps
+### 3.3. Maps
 
 ```elixir
 # Map (key-value)
@@ -121,7 +121,7 @@ put_in(users, [:user, :email], "new_email@example.com")
 update_in(users, [:user, :age], &(&1 + 1))
 ```
 
-### Structs
+### 3.4. Structs
 
 ```elixir
 # Struct (typed map)
@@ -140,7 +140,7 @@ end
 %Config{}  # %Config{port: 8080, host: "localhost", timeout: 5000}
 ```
 
-### Keyword Lists
+### 3.5. Keyword lists
 
 ```elixir
 # Keyword list (list of 2-tuples, keys are atoms)
@@ -154,7 +154,7 @@ def connect(url, opts \\ []) do
 end
 ```
 
-## Comprehensions and Enum
+## 4. Comprehensions and `Enum`
 
 ```elixir
 # Transform data
@@ -179,9 +179,9 @@ map = for x <- 1..3, into: %{}, do: {x, x * x}
 |> Enum.sum()
 ```
 
-## Protocols and Behaviours
+## 5. Protocols and behaviours
 
-### Protocols (polymorphism)
+### 5.1. Protocols (polymorphism)
 
 ```elixir
 # Define a protocol
@@ -198,7 +198,7 @@ defimpl Size, for: User do
 end
 ```
 
-### Aliases and Imports
+### 5.2. Aliases and imports
 
 ```elixir
 # Alias
@@ -219,24 +219,24 @@ require Logger
 Logger.info("Hello")
 ```
 
-## Common Interview Questions
+## 6. Common interview questions
 
-### 1. How do Elixir and Erlang differ?
+### 6.1. How do Elixir and Erlang differ?
 
 Elixir runs on BEAM (Erlang VM), compiling down to Erlang bytecode. Elixir provides a more modern syntax, powerful macro system, and better tooling (Mix, ExUnit, Phoenix). Erlang provides traditional syntax and built-in otpstdlib. Runtime logic is fully compatible.
 
-### 2. Is `=` in Elixir assignment or pattern matching?
+### 6.2. Is `=` in Elixir assignment or pattern matching?
 
 `=` in Elixir is **pattern matching**, not assignment. When `x = 1`, Elixir tries to match `x` against `1`, succeeds, and binds `x` = 1. When `1 = x`, it also succeeds because `1` matches the current value of `x`. If matching fails (e.g., `2 = x`), it raises `MatchError`.
 
-### 3. Difference between `list`, `tuple`, `map`, `struct`?
+### 6.3. Difference between `list`, `tuple`, `map`, and `struct`?
 
 - **List**: Linked list, fast at prepending, slow random access by index
 - **Tuple**: Fixed-size array, fast access by index, slow insertion/deletion
 - **Map**: Key-value store, O(log n) access, keys can be any type
 - **Struct**: Typed map backed by a module, enforces keys at compile time
 
-### 4. When to use the `with` special form?
+### 6.4. When do you use the `with` special form?
 
 ```elixir
 # Instead of nested case

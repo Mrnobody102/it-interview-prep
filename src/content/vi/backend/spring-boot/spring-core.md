@@ -562,7 +562,7 @@ private int totalRetryDelay;
 
 ## 11. Tóm tắt so sánh quan trọng
 
-### Constructor vs Setter vs Field Injection
+### 11.1. Constructor vs Setter vs Field Injection
 
 | Tiêu chí | Constructor | Setter | Field |
 |----------|------------|--------|-------|
@@ -571,13 +571,13 @@ private int totalRetryDelay;
 | **Optional dependency** | `@Nullable` | ✅ | ✅ |
 | **Khuyến nghị** | **✅ Ưu tiên** | Khi cần optional | **❌ Tránh** |
 
-### BeanFactory vs ApplicationContext
+### 11.2. BeanFactory vs ApplicationContext
 
 | Tiêu chí | BeanFactory | ApplicationContext |
 |----------|------------|-------------------|
 | Khuyến nghị | Cho resource-constrained | **✅ Mặc định** |
 
-### AOP Advice Types
+### 11.3. AOP Advice Types
 
 | Type | Chặn được execution? | Sửa được return? | Sửa được args? |
 |------|---------------------|-----------------|---------------|

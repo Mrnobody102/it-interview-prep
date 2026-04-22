@@ -1,10 +1,10 @@
 # Erlang / Elixir Backend
 
-## Overview
+## 1. Overview
 
 Erlang and Elixir are programming languages designed for distributed, fault-tolerant, real-time systems with high uptime. The Erlang VM (BEAM) is the runtime platform for both languages.
 
-### Core Features
+### 1.1. Core features
 
 | Feature | Description |
 |---------|-------------|
@@ -14,7 +14,7 @@ Erlang and Elixir are programming languages designed for distributed, fault-tole
 | **Hot Code Reloading** | Deploy code without downtime |
 | **Distributed** | Native cluster support via Erlang distribution |
 
-## Subtopics
+## 2. Subtopics
 
 | Subtopic | Description |
 |----------|-------------|
@@ -22,6 +22,6 @@ Erlang and Elixir are programming languages designed for distributed, fault-tole
 | **Concurrency & OTP** | GenServer, Task, Supervisor, ETS, distributed Erlang |
 | **Phoenix Framework** | Router, Controllers, LiveView, Ecto, Channels |
 
-## Elixir and Erlang
+## 3. Elixir and Erlang
 
 Elixir runs on BEAM (Erlang VM), compiling down to Erlang bytecode. Elixir provides a more modern syntax, powerful macro system, and better tooling (Mix, ExUnit, Phoenix). Erlang provides traditional syntax and built-in otpstdlib. Runtime logic is fully compatible.

@@ -1,8 +1,8 @@
 # Phoenix Framework
 
-## Router and Controllers
+## 1. Router and controllers
 
-### Basic Router
+### 1.1. Basic router
 
 ```elixir
 defmodule MyAppWeb.Router do
@@ -34,7 +34,7 @@ defmodule MyAppWeb.Router do
 end
 ```
 
-### Plugs
+### 1.2. Plugs
 
 ```elixir
 # Custom plug
@@ -63,7 +63,7 @@ pipeline :protected do
 end
 ```
 
-### Controllers
+### 1.3. Controllers
 
 ```elixir
 defmodule MyAppWeb.UserController do
@@ -106,7 +106,7 @@ defmodule MyAppWeb.UserController do
 end
 ```
 
-## Contexts (Domain Logic)
+## 2. Contexts (domain logic)
 
 ```elixir
 # Separate business logic into contexts
@@ -141,9 +141,9 @@ defmodule MyApp.Accounts do
 end
 ```
 
-## LiveView (Real-time)
+## 3. LiveView (real-time)
 
-### Counter LiveView
+### 3.1. Counter LiveView
 
 ```elixir
 defmodule MyAppWeb.CounterLive do
@@ -178,7 +178,7 @@ defmodule MyAppWeb.CounterLive do
 end
 ```
 
-### LiveView with Form
+### 3.2. LiveView with form
 
 ```elixir
 defmodule MyAppWeb.UserFormLive do
@@ -213,7 +213,7 @@ defmodule MyAppWeb.UserFormLive do
 end
 ```
 
-### PubSub in LiveView
+### 3.3. PubSub in LiveView
 
 ```elixir
 # Server-side broadcast
@@ -238,9 +238,9 @@ def handle_info({:user_created, user}, socket) do
 end
 ```
 
-## Ecto (Database)
+## 4. Ecto (database)
 
-### Schema
+### 4.1. Schema
 
 ```elixir
 defmodule MyApp.User do
@@ -268,7 +268,7 @@ defmodule MyApp.User do
 end
 ```
 
-### Query
+### 4.2. Query
 
 ```elixir
 alias MyApp.{Repo, User}
@@ -300,7 +300,7 @@ from(u in User,
 |> Repo.all()
 ```
 
-### Associations
+### 4.3. Associations
 
 ```elixir
 # Preload associations
@@ -317,7 +317,7 @@ from(u in User,
 |> Repo.all()
 ```
 
-## Channels (WebSockets)
+## 5. Channels (WebSockets)
 
 ```elixir
 defmodule MyAppWeb.RoomChannel do
@@ -345,20 +345,20 @@ defmodule MyAppWeb.RoomChannel do
 end
 ```
 
-## Common Interview Questions
+## 6. Common interview questions
 
-### 1. Phoenix Context vs Controller — what's the difference?
+### 6.1. Phoenix Context vs Controller: what's the difference?
 
 **Context** is a module containing business logic, separated from the web layer. **Controller** only receives requests and returns responses. Context keeps domain logic independent from the web framework, making it easier to test and reuse. Controller calls context functions to fetch data.
 
-### 2. What is the difference between Ecto query and Ecto Schema?
+### 6.2. What is the difference between Ecto query and Ecto Schema?
 
 `Ecto.Schema` defines the mapping from database table to Elixir struct. `Ecto.Query` builds SQL queries. `changeset/2` validates data before insert/update. Schema does not query directly — you must go through Repo.
 
-### 3. How does LiveView work?
+### 6.3. How does LiveView work?
 
 LiveView establishes a WebSocket connection between client and server. Initial server-side rendering sends HTML, then user interactions send events over WebSocket. `handle_event` callback processes events, `assign` updates state, `render` returns HTML diff. No client-side JS needed for business logic.
 
-### 4. Difference between Channel and LiveView?
+### 6.4. What is the difference between Channel and LiveView?
 
 **Channels** are for real-time applications with custom protocol (chat, notifications, collaborative editing). **LiveView** is for full-page interactive UI with server-side rendering, automatically diffing HTML. LiveView is a higher-level abstraction built on Channels.

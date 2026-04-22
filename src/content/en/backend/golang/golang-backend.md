@@ -1,8 +1,8 @@
 # Go Backend
 
-## Go for Backend Development
+## 1. Go for Backend Development
 
-### Overview
+### 1.1. Overview
 
 **Go** (also known as Golang) is an open-source programming language developed by Google and released in 2009. It was designed to be simple, efficient, and particularly outstanding at concurrency. Go is well-known for:
 
@@ -11,7 +11,7 @@
 - **Simplicity**: Clean, minimal syntax that is easy to learn and read.
 - **Cross-platform**: Compiles to Windows, Linux, macOS, ARM, and more from a single codebase.
 
-### Go vs Other Languages
+### 1.2. Go vs Other Languages
 
 | Criteria | Go | Java/Kotlin | Node.js |
 |---|---|---|---|
@@ -25,9 +25,9 @@
 
 ---
 
-## Goroutines
+## 2. Goroutines
 
-### What is a Goroutine?
+### 2.1. What is a Goroutine?
 
 A goroutine is a **lightweight thread** managed by the Go runtime. Unlike OS threads, thousands of goroutines can run concurrently on a single OS thread. Goroutines are much cheaper than OS threads (about 2KB vs 1-8MB stack).
 
@@ -49,7 +49,7 @@ go func() {
 }()
 ```
 
-### WaitGroup
+### 2.2. WaitGroup
 
 WaitGroup is used to wait for a collection of goroutines to finish. You add a counter for each goroutine and call `Done()` when each one completes.
 
@@ -82,7 +82,7 @@ func main() {
 }
 ```
 
-### Mutex and Atomic Operations
+### 2.3. Mutex and atomic operations
 
 For protecting shared data access between goroutines, Go provides Mutex (mutual exclusion) and atomic operations.
 
@@ -144,7 +144,7 @@ func main() {
 }
 ```
 
-### Channel Basics
+### 2.4. Channel basics
 
 Channels provide **communication between goroutines** and help synchronize access to shared data. An unbuffered channel blocks the sender until a receiver is ready, and vice versa.
 
@@ -179,7 +179,7 @@ func main() {
 }
 ```
 
-### Channel Directions
+### 2.5. Channel directions
 
 Go allows you to specify channel direction in function signatures to make interfaces clearer and prevent accidental misuse.
 
@@ -204,7 +204,7 @@ func worker(ch chan string) {
 }
 ```
 
-### Select Statement
+### 2.6. Select statement
 
 The `select` statement lets a goroutine wait on multiple channel operations. It blocks until one of its cases can proceed.
 
@@ -250,7 +250,7 @@ func main() {
 }
 ```
 
-### Fan-out / Fan-in Pattern
+### 2.7. Fan-out / Fan-in pattern
 
 Fan-out distributes work across multiple workers reading from the same channel. Fan-in merges multiple channels into one.
 
@@ -325,9 +325,9 @@ func fanIn(ch1, ch2 <-chan string) <-chan string {
 
 ---
 
-## Defer
+## 3. `defer`
 
-### Defer Basics
+### 3.1. `defer` basics
 
 The `defer` keyword schedules a function call to run immediately before the surrounding function returns. Deferred calls execute in **Last-In, First-Out (LIFO)** order.
 
@@ -349,7 +349,7 @@ func main() {
 }
 ```
 
-### Defer with Resource Cleanup
+### 3.2. `defer` with resource cleanup
 
 Defer is commonly used for cleanup tasks like closing files, releasing database connections, or unlocking mutexes, ensuring they run even if an error occurs.
 
@@ -391,9 +391,9 @@ func processTransaction(db *sql.DB, userID int) error {
 
 ---
 
-## Interfaces
+## 4. Interfaces
 
-### Interface Basics
+### 4.1. Interface basics
 
 Interfaces in Go define a set of method signatures. A type implements an interface implicitly - there is no `implements` keyword. Go uses **structural typing**.
 
@@ -424,7 +424,7 @@ func printAny(value interface{}) {
 }
 ```
 
-### Error Interface
+### 4.2. Error interface
 
 Go's built-in error interface is simple but powerful. Custom errors can wrap additional context.
 
@@ -456,7 +456,7 @@ if err := doSomething(); err != nil {
 }
 ```
 
-### io.Reader / io.Writer
+### 4.3. `io.Reader` / `io.Writer`
 
 These standard interfaces are the foundation of Go's I/O ecosystem. Any type that implements them can work with the standard library's I/O utilities.
 
@@ -500,9 +500,9 @@ fmt.Println(string(data[:n])) // "Hello"
 
 ---
 
-## HTTP Server with net/http
+## 5. HTTP server with `net/http`
 
-### Basic HTTP Server
+### 5.1. Basic HTTP server
 
 Go's standard library includes a capable HTTP server. For simple APIs, `net/http` is often sufficient without additional dependencies.
 
@@ -562,7 +562,7 @@ func main() {
 }
 ```
 
-### HTTP Router (go-chi)
+### 5.2. HTTP router (`go-chi`)
 
 The `go-chi/chi` library is a lightweight, idiomatic router that builds on the standard `net/http` interface.
 
@@ -639,9 +639,9 @@ func deleteUser(w http.ResponseWriter, r *http.Request) {
 
 ---
 
-## Gin Framework
+## 6. Gin framework
 
-### Gin Setup
+### 6.1. Gin setup
 
 Gin is one of the most popular Go web frameworks. It is fast, has a minimalist design, and includes middleware support.
 
@@ -696,7 +696,7 @@ func main() {
 }
 ```
 
-### Gin Middleware
+### 6.2. Gin middleware
 
 Middleware in Gin wraps request handlers to add cross-cutting concerns like logging, authentication, and CORS.
 
@@ -743,7 +743,7 @@ func main() {
 }
 ```
 
-### Gin Groups
+### 6.3. Gin groups
 
 Route groups allow you to share middleware and base paths across a set of routes.
 
@@ -780,7 +780,7 @@ func main() {
 }
 ```
 
-### Gin Binding and Validation
+### 6.4. Gin binding and validation
 
 Gin uses binding tags for automatic request validation. Gin integrates with the `go-playground/validator` library.
 
@@ -832,9 +832,9 @@ func createUser(c *gin.Context) {
 
 ---
 
-## Context
+## 7. `context`
 
-### Context Basics
+### 7.1. `context` basics
 
 The `context` package provides cancellation, timeouts, and deadline propagation across API boundaries and goroutines. Always pass context as the first parameter of functions that may need cancellation.
 
@@ -861,7 +861,7 @@ func fetchDataWithTimeout(ctx context.Context, url string) error {
 }
 ```
 
-### Context with Goroutine Cancellation
+### 7.2. `context` with goroutine cancellation
 
 Context is ideal for coordinating the shutdown of long-running goroutine operations.
 
@@ -928,9 +928,9 @@ func process(ctx context.Context) {
 
 ---
 
-## Error Handling
+## 8. Error handling
 
-### Go Error Handling Pattern
+### 8.1. Go error handling pattern
 
 Go's approach to errors is explicit: functions return an error value that callers must check. This pattern is verbose but predictable and encourages error handling at every level.
 
@@ -972,7 +972,7 @@ func checkError(err error) {
 }
 ```
 
-### Sentinel Errors
+### 8.2. Sentinel errors
 
 Sentinel errors are predefined error values used to signal specific conditions that callers can check with `errors.Is()`.
 
@@ -1010,9 +1010,9 @@ func main() {
 
 ---
 
-## Database Operations
+## 9. Database operations
 
-### PostgreSQL with pgx
+### 9.1. PostgreSQL with `pgx`
 
 The `jackc/pgx` library is a Go database driver for PostgreSQL. It provides both a low-level interface and a connection pool.
 
@@ -1075,7 +1075,7 @@ func main() {
 }
 ```
 
-### GORM with PostgreSQL
+### 9.2. GORM with PostgreSQL
 
 GORM is a popular ORM for Go. It provides a chainable, fluent API for database operations.
 
@@ -1165,9 +1165,9 @@ func main() {
 
 ---
 
-## REST API Example
+## 10. REST API example
 
-### Complete User API with Gin and GORM
+### 10.1. Complete user API with Gin and GORM
 
 ```go
 package main
@@ -1364,9 +1364,9 @@ func main() {
 
 ---
 
-## Best Practices
+## 11. Best practices
 
-### Go Best Practices
+### 11.1. Go best practices
 
 | Practice | Description |
 |---|---|
@@ -1379,7 +1379,7 @@ func main() {
 | **Write tests** | Use `go test`, prefer table-driven tests |
 | **Benchmark** | Use `testing.B` for performance testing |
 
-### Project Structure
+### 11.2. Project structure
 
 ```
 myapp/
@@ -1409,7 +1409,7 @@ myapp/
 └── go.sum
 ```
 
-### Testing
+### 11.3. Testing
 
 ```go
 package service
@@ -1472,9 +1472,9 @@ func BenchmarkGetUsers(b *testing.B) {
 
 ---
 
-## Concurrency Patterns
+## 12. Concurrency patterns
 
-### Pipeline Pattern
+### 12.1. Pipeline pattern
 
 Pipelines chain goroutines together where each stage processes data and passes it to the next. This pattern is composable and efficient.
 
@@ -1516,7 +1516,7 @@ func main() {
 }
 ```
 
-### Worker Pool Pattern
+### 12.2. Worker pool pattern
 
 A worker pool limits the number of concurrent workers processing jobs, preventing resource exhaustion while maximizing throughput.
 
@@ -1570,21 +1570,21 @@ func main() {
 
 ---
 
-## Interview Questions
+## 13. Common interview questions
 
-### 1. What is the difference between goroutines and threads?
+### 13.1. What is the difference between goroutines and threads?
 
 OS threads are managed by the operating system kernel and have a fixed stack size of 1-8MB. Goroutines are managed entirely by the Go runtime and start with a stack of only 2KB, growing dynamically up to 1GB. Thousands of goroutines can multiplex onto a small number of OS threads via the Go scheduler. Goroutines are created with a single keyword (`go`), while threads require more boilerplate. Goroutines have faster creation, switching, and communication compared to OS threads.
 
-### 2. What is a channel in Go? What are buffered vs unbuffered channels?
+### 13.2. What is a channel in Go? What are buffered vs unbuffered channels?
 
 A channel is a typed conduit for communicating between goroutines. Unbuffered channels block the sender until a receiver is ready and vice versa, providing built-in synchronization. Buffered channels have a capacity and only block when the buffer is full (on send) or empty (on receive). Use unbuffered channels when you need direct synchronization between goroutines. Use buffered channels when you want to decouple senders and receivers for better throughput.
 
-### 3. How does Go's select statement work?
+### 13.3. How does Go's `select` statement work?
 
 The `select` statement allows a goroutine to wait on multiple channel operations simultaneously. It blocks until one of its cases can proceed, then executes that case. If multiple cases are ready at the same time, `select` picks one randomly. The optional `default` case executes immediately if no other case is ready (non-blocking).
 
-### 4. What is the purpose of the `context` package?
+### 13.4. What is the purpose of the `context` package?
 
 The `context` package provides a way to carry request-scoped values, cancellation signals, and deadlines across API boundaries. It is used to:
 - Cancel long-running operations when a client disconnects or a timeout expires
@@ -1593,27 +1593,27 @@ The `context` package provides a way to carry request-scoped values, cancellatio
 
 Always pass context as the first parameter of functions that may need cancellation.
 
-### 5. How does Go handle errors differently from other languages?
+### 13.5. How does Go handle errors differently from other languages?
 
 Go uses explicit error handling via return values rather than exceptions. Functions return an `error` type, and callers must check it explicitly. This makes error handling visible at every call site, reducing the risk of unhandled errors. Go also supports error wrapping with `fmt.Errorf` and `errors.Wrap` to preserve the error chain. For truly unrecoverable situations (like out-of-memory), Go uses `panic` and `recover`, but these are reserved for truly exceptional cases.
 
-### 6. What is the purpose of `defer` in Go?
+### 13.6. What is the purpose of `defer` in Go?
 
 The `defer` keyword schedules a function call to run when the surrounding function exits, regardless of whether it returns normally or via panic. Deferred functions execute in LIFO (last-in, first-out) order. `defer` is commonly used for cleanup tasks like closing files, releasing locks, and rolling back transactions. It ensures resources are always released, even when functions have multiple return points or panic.
 
-### 7. Explain Go's interface model.
+### 13.7. Explain Go's interface model.
 
 Go uses implicit interface implementation - a type implements an interface automatically by implementing all its methods. There is no `implements` keyword. Interfaces are defined by their behavior (methods), not by the types that implement them. Empty interfaces (`interface{}` or `any` in Go 1.18+) can hold any value. The zero value of an interface is `nil`. Go favors small, focused interfaces (the `io.Reader`, `io.Writer` pattern) over large ones.
 
-### 8. What is the Go scheduler and how does it work?
+### 13.8. What is the Go scheduler and how does it work?
 
 The Go scheduler multiplexes goroutines onto OS threads. It uses three entities: G (goroutine), M (machine/thread), and P (processor). Each P has a run queue of goroutines and runs on an M. The scheduler handles goroutine creation, switching, and blocking. When a goroutine blocks on a system call, its M is released to run other goroutines. This allows Go to handle millions of concurrent connections with a small number of OS threads.
 
-### 9. How do you prevent race conditions in Go?
+### 13.9. How do you prevent race conditions in Go?
 
 Go provides the `go test -race` flag to detect race conditions during testing. For shared data access, use `sync.Mutex` or `sync.RWMutex` for mutual exclusion, or `sync/atomic` for simple atomic operations. Alternatively, use channels to communicate ownership of data, following the motto: "Don't communicate by sharing memory; share memory by communicating."
 
-### 10. What is the difference between `errors.Is()` and `errors.As()`?
+### 13.10. What is the difference between `errors.Is()` and `errors.As()`?
 
 `errors.Is()` checks whether an error matches a specific error value in its chain of wrapped errors. Use it for sentinel errors or specific error types. `errors.As()` finds the first error in the chain that matches a target type and, if found, sets it to that value. Use it when you need to extract structured error information from a custom error type.
 
