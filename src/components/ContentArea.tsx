@@ -266,11 +266,7 @@ export function ContentArea({
             {selectedCategory.topics.map((topic) => {
               const handleClick = () => {
                 if (onTopicSelect) {
-                  const target =
-                    topic.subtopics && topic.subtopics.length > 0
-                      ? topic.subtopics[0]
-                      : topic;
-                  onTopicSelect(target);
+                  onTopicSelect(topic);
                 }
               };
 

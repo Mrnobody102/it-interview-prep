@@ -5,6 +5,42 @@ import { Sidebar } from "./components/Sidebar";
 import { ContentArea } from "./components/ContentArea";
 import { SearchModal } from "./components/SearchModal";
 import { categories, type Category, type Topic } from "./data/categories/index";
+import { hasContentForTopic } from "./lib/content";
+
+const CONTENT_LANGUAGES = ["vi", "en"] as const;
+
+function findTopicById(topics: Topic[], id: string): Topic | null {
+  for (const topic of topics) {
+    if (topic.id === id) return topic;
+    if (topic.subtopics) {
+      const found = findTopicById(topic.subtopics, id);
+      if (found) return found;
+    }
+  }
+
+  return null;
+}
+
+function topicHasAnyContent(category: Category, topic: Topic): boolean {
+  return CONTENT_LANGUAGES.some((lang) =>
+    hasContentForTopic(lang, category.id, topic.id, category.topics)
+  );
+}
+
+function resolveNavigableTopic(category: Category, topic: Topic): Topic {
+  if (topicHasAnyContent(category, topic) || !topic.subtopics?.length) {
+    return topic;
+  }
+
+  for (const subtopic of topic.subtopics) {
+    const resolved = resolveNavigableTopic(category, subtopic);
+    if (topicHasAnyContent(category, resolved) || !resolved.subtopics?.length) {
+      return resolved;
+    }
+  }
+
+  return topic;
+}
 
 export default function App() {
   const navigate = useNavigate();
@@ -48,27 +84,36 @@ export default function App() {
         setSelectedCategory(category);
 
         if (topicId) {
-          const findTopic = (topics: Topic[]): Topic | null => {
-            for (const topic of topics) {
-              if (topic.id === topicId) return topic;
-              if (topic.subtopics) {
-                const found = findTopic(topic.subtopics);
-                if (found) return found;
-              }
-            }
-            return null;
-          };
-          const topic = findTopic(category.topics);
-          setSelectedTopic(topic);
+          const topic = findTopicById(category.topics, topicId);
+
+          if (!topic) {
+            setSelectedTopic(null);
+            return;
+          }
+
+          const navigableTopic = resolveNavigableTopic(category, topic);
+          setSelectedTopic(navigableTopic);
+
+          if (navigableTopic.id !== topic.id) {
+            navigate(`/${category.id}/${navigableTopic.id}`, { replace: true });
+          }
         } else {
           setSelectedTopic(null);
         }
+      } else {
+        setSelectedCategory(null);
+        setSelectedTopic(null);
       }
     } else {
       setSelectedCategory(null);
       setSelectedTopic(null);
     }
-  }, [categoryId, topicId]);
+  }, [categoryId, topicId, navigate]);
+
+  const navigateToTopic = (category: Category, topic: Topic) => {
+    const navigableTopic = resolveNavigableTopic(category, topic);
+    navigate(`/${category.id}/${navigableTopic.id}`);
+  };
 
   const handleCategorySelect = (category: Category) => {
     navigate(`/${category.id}`);
@@ -77,7 +122,7 @@ export default function App() {
 
   const handleTopicSelect = (topic: Topic) => {
     if (selectedCategory) {
-      navigate(`/${selectedCategory.id}/${topic.id}`);
+      navigateToTopic(selectedCategory, topic);
       setIsMobileSidebarOpen(false);
     }
   };
@@ -150,7 +195,7 @@ export default function App() {
         onClose={() => setIsSearchOpen(false)}
         language={language}
         onTopicSelect={(topic, category) => {
-          navigate(`/${category.id}/${topic.id}`);
+          navigateToTopic(category, topic);
           setIsSearchOpen(false);
         }}
       />

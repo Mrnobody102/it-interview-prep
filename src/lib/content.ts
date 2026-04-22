@@ -233,6 +233,16 @@ export function getContentForTopic(
   return key ? getLoadedContent(lang, key) : "";
 }
 
+export function hasContentForTopic(
+  lang: Language,
+  categoryId: string,
+  topicId: string,
+  topics: TopicTree[]
+): boolean {
+  const parentId = findParentId(topics, topicId);
+  return resolveContentKey(lang, topicId, categoryId, parentId) !== undefined;
+}
+
 export async function getTopicContentAsync(
   lang: Language,
   topicId: string,
