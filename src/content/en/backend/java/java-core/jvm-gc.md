@@ -459,7 +459,7 @@ flowchart TD
     R2 -.->|"Mixed GC"| R4
 ```
 
-#### Collection Types
+#### 10.5.1. Collection Types
 
 | Type | Trigger | What Happens | Pause Type |
 |------|---------|-------------|------------|
@@ -467,7 +467,7 @@ flowchart TD
 | **Mixed Collection** | Old Gen occupancy exceeds threshold | Collects Young + selected Old regions with most garbage | Short STW |
 | **Humongous Allocation** | Object > 50% of region size | Dedicated humongous regions | — |
 
-#### Tuning G1GC
+#### 10.5.2. Tuning G1GC
 
 ```bash
 java -XX:+UseG1GC \
@@ -479,7 +479,7 @@ java -XX:+UseG1GC \
      -Xms4g -Xmx4g -jar web-app.jar
 ```
 
-#### G1GC Tuning Guidelines
+#### 10.5.3. G1GC Tuning Guidelines
 
 | Symptom | Tuning Adjustment |
 |---------|-----------------|
@@ -493,7 +493,7 @@ java -XX:+UseG1GC \
 
 ZGC is designed for **ultra-low latency** applications with very large heaps (up to multi-terabytes). It achieves pause times under **1 millisecond** regardless of heap size.
 
-#### How ZGC Works: Colored Pointers
+#### 10.6.1. How ZGC Works: Colored Pointers
 
 ZGC uses **colored pointers** — extra bits in object references that encode GC state:
 
@@ -529,7 +529,7 @@ java -XX:+UseZGC -Xmx512g -jar tb-scale-app.jar
 | **Concurrent Relocate** | Move objects, update references | No |
 | **Pause Relocate Start** | Root relocate | **Yes** (sub-ms) |
 
-#### ZGC Key Properties
+#### 10.6.2. ZGC Key Properties
 
 - **No compaction pauses** — objects are moved concurrently
 - **Scalable** — pause times stay low regardless of heap size
@@ -638,3 +638,25 @@ java -Xms4g -Xmx4g \                  # Equal min/max heap
 ---
 
 ## 13. Performance Tuning Checklist
+
+- define the real objective first: throughput, latency, or memory footprint
+- choose the collector based on heap size and pause budget instead of habit
+- keep `-Xms` and `-Xmx` aligned when predictable latency matters
+- enable GC logs and compare before and after every tuning change
+- check allocation rate, promotion rate, and old-gen pressure before changing flags
+- investigate humongous objects, large caches, and buffer churn in memory-heavy services
+- validate JVM tuning with real workload patterns, not only synthetic benchmarks
+
+## 14. Common interview questions
+
+### 14.1. What is the difference between Minor GC and Full GC?
+
+Minor GC mainly collects the young generation and is expected to happen more often. Full GC touches a much larger part of the heap and usually causes more expensive pauses.
+
+### 14.2. When would you choose G1GC instead of ZGC?
+
+G1GC is a strong default for many services and moderate heaps. ZGC becomes attractive when heaps are very large and latency budgets are much tighter.
+
+### 14.3. Why do teams often set `-Xms` equal to `-Xmx`?
+
+Because it reduces heap resizing during runtime, which makes memory behavior and pause characteristics more predictable.

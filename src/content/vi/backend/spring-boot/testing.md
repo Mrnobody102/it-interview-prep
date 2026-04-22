@@ -695,3 +695,17 @@ class UserAuditingTest {
     }
 }
 ```
+
+## 10. Câu hỏi phỏng vấn thường gặp
+
+### 10.1. Khi nào dùng `@WebMvcTest` thay vì `@SpringBootTest`?
+
+Dùng `@WebMvcTest` khi muốn test controller theo kiểu slice, với dependency được mock. Dùng `@SpringBootTest` khi cần full application context.
+
+### 10.2. Vì sao Testcontainers hữu ích cho backend test?
+
+Vì nó cho phép test chạy với hạ tầng thật như PostgreSQL, Redis hoặc Kafka, nhờ đó bắt được integration issue mà mock không thấy.
+
+### 10.3. `@DataJpaTest` dùng để làm gì?
+
+Nó khởi động JPA slice tập trung cho repository test, kiểm tra entity mapping và xác minh query mà không cần load toàn bộ ứng dụng.

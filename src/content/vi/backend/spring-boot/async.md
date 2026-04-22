@@ -1,10 +1,10 @@
-# Spring → Async & Scheduler
+# Spring -> Async & Scheduler
 
 ## 1. @Async
 
-Chạy method trong thread pool nền thay vì thread gọi.
+`@Async` cho phép chạy method trên thread pool nền thay vì thread đang xử lý request.
 
-### 1.1. Bật & Sử dụng cơ bản
+### 1.1. Bật & sử dụng cơ bản
 
 ```java
 @Configuration
@@ -26,12 +26,11 @@ public class AsyncConfig {
 @Service
 public class EmailService {
 
-    @Async  // Chạy trong thread riêng
+    @Async
     public void sendEmail(String to, String subject) {
-        // Tác vụ tốn thời gian
+        // tác vụ nền
     }
 
-    // Trả CompletableFuture để xử lý reactive
     @Async
     public CompletableFuture<String> fetchData(String url) {
         String result = restTemplate.getForObject(url, String.class);
@@ -40,26 +39,18 @@ public class EmailService {
 }
 ```
 
-### 1.2. Cấu hình Thread Pool
+### 1.2. Cấu hình thread pool
 
 ```properties
-# application.yml
 spring.task.execution.pool.core-size=4
 spring.task.execution.pool.max-size=10
 spring.task.execution.pool.queue-capacity=100
 spring.task.execution.thread-name-prefix=async-
 ```
 
-### 1.3. Xử lý Exception
+### 1.3. Xử lý exception
 
 ```java
-@Async
-@SneakyThrows  // Lombok
-public void doSomething() {
-    throw new IOException("Error");
-}
-
-// Với CompletableFuture
 @Async
 public CompletableFuture<Result> computeSomething() {
     try {
@@ -70,122 +61,112 @@ public CompletableFuture<Result> computeSomething() {
 }
 ```
 
+Với method `void`, exception dễ bị nuốt nếu không cấu hình `AsyncUncaughtExceptionHandler`.
+
 ### 1.4. Lưu ý quan trọng
 
-```java
-// ❌ SAI: @Async trên method private
-private @Async void doSomething() { }  // Không hoạt động!
-
-// ❌ SAI: Self-invocation bỏ qua proxy
-@Service
-public class MyService {
-    public void caller() {
-        this.asyncMethod();  // Bỏ qua proxy → chạy đồng bộ!
-    }
-
-    @Async
-    public void asyncMethod() { }
-}
-
-// ✅ ĐÚNG: Inject self để gọi qua proxy
-@Service
-public class MyService {
-    @Autowired
-    private MyService self;
-
-    public void caller() {
-        self.asyncMethod();  // Qua proxy → async!
-    }
-
-    @Async
-    public void asyncMethod() { }
-}
-```
+- `@Async` không hoạt động với method `private`
+- self-invocation sẽ bỏ qua proxy
+- không nên dùng thread pool mặc định một cách mù quáng
+- cần quan sát queue size, timeout, rejection policy
 
 ## 2. @Scheduled
 
-Chạy method theo interval cố định hoặc với biểu thức cron.
+`@Scheduled` dùng cho các tác vụ chạy định kỳ.
 
-### 2.1. Bật & Cơ bản
+### 2.1. Bật & cơ bản
 
 ```java
 @Configuration
 @EnableScheduling
-public class SchedulerConfig { }
+public class SchedulerConfig {
+}
 
-// Mỗi 5 giây
 @Scheduled(fixedRate = 5000)
-public void doEveryFiveSeconds() { }
+public void runEveryFiveSeconds() { }
 
-// Fixed delay (đợi task trước xong)
 @Scheduled(fixedDelay = 60000)
-public void doAfter60SecondsFromCompletion() { }
-
-// Initial delay
-@Scheduled(initialDelay = 10000, fixedRate = 30000)
-public void doAfter10SecThenEvery30Sec() { }
+public void runAfterPreviousFinished() { }
 ```
 
-### 2.2. Biểu thức Cron
+### 2.2. Biểu thức cron
 
 ```java
-// Cron: second minute hour day month weekday
-@Scheduled(cron = "0 0 2 * * ?")        // Mỗi ngày lúc 2 AM
-@Scheduled(cron = "0 0/30 * * * ?")      // Mỗi 30 phút
-@Scheduled(cron = "0 0 9-17 * * MON-FRI") // Mỗi giờ 9-5h, T2-T6
-@Scheduled(cron = "0 0 1 1 * ?")        // Ngày đầu mỗi tháng lúc 1 AM
+@Scheduled(cron = "0 0 2 * * ?")
+public void runEveryDayAt2am() { }
+
+@Scheduled(cron = "0 0/30 * * * ?")
+public void runEvery30Minutes() { }
 ```
 
-| Trường | Giá trị | Đặc biệt |
-|--------|---------|-----------|
-| Second | 0-59 | — |
-| Minute | 0-59 | — |
-| Hour | 0-23 | — |
-| Day | 1-31 | — |
-| Month | 1-12 | — |
-| Weekday | 1-7 (CN-T7) | — |
+### 2.3. Multiple schedules và dynamic scheduling
+
+```java
+@Scheduled(cron = "0 0 8 * * MON-FRI")
+@Scheduled(cron = "0 0 20 * * MON-FRI")
+public void sendReminder() { }
+```
+
+```java
+@Component
+public class DynamicJobRegistrar {
+
+    private final TaskScheduler taskScheduler;
+
+    public DynamicJobRegistrar(TaskScheduler taskScheduler) {
+        this.taskScheduler = taskScheduler;
+    }
+
+    public void register(Duration delay) {
+        taskScheduler.schedule(
+            () -> System.out.println("run dynamic job"),
+            Instant.now().plus(delay)
+        );
+    }
+}
+```
+
+Mẫu này phù hợp khi lịch chạy được lấy từ config hoặc database ở runtime.
 
 ## 3. Kết hợp @Async + @Scheduled
 
 ```java
-@Scheduled(cron = "0 0 3 * * ?")  // Mỗi ngày lúc 3 AM
-@Async  // Chạy trong thread pool async
-public void dailyReportGeneration() {
-    // Tạo report nặng
-    // Gửi email
+@Scheduled(cron = "0 0 3 * * ?")
+@Async
+public void generateDailyReport() {
+    // tác vụ nặng
 }
 ```
 
 ## 4. Use Cases
 
-| Tác vụ | Khuyến nghị |
-|--------|-------------|
+| Tác vụ | Gợi ý |
+|---|---|
 | Gửi email | `@Async` |
-| Tạo report | `@Async` |
-| Batch processing | `@Async` với thread pool |
 | Refresh cache | `@Scheduled` |
-| Cleanup dữ liệu cũ | `@Scheduled` |
-| Thống kê hàng ngày | `@Scheduled` |
-| Gửi nhắc nhở | `@Scheduled` + `@Async` |
+| Batch processing | `@Async` + thread pool riêng |
+| Daily report | `@Scheduled` + `@Async` |
 
-## 5. Spring @EventListener để giảm coupling
+## 5. Spring `@EventListener` để giảm coupling
 
 ```java
-// Publish event
 @Service
 public class OrderService {
-    @Autowired
-    private ApplicationEventPublisher publisher;
+
+    private final ApplicationEventPublisher publisher;
+
+    public OrderService(ApplicationEventPublisher publisher) {
+        this.publisher = publisher;
+    }
 
     public void createOrder(Order order) {
-        orderRepository.save(order);
         publisher.publishEvent(new OrderCreatedEvent(order));
     }
 }
 
-// Listen và xử lý async
 @Component
 public class OrderEventHandler {
+
     @Async
     @EventListener
     public void handleOrderCreated(OrderCreatedEvent event) {
@@ -193,3 +174,19 @@ public class OrderEventHandler {
     }
 }
 ```
+
+Đây là cách tốt để tách nghiệp vụ chính khỏi side effects như gửi mail, audit log, analytics.
+
+## 6. Câu hỏi phỏng vấn thường gặp
+
+### 6.1. Khi nào `@Async` là đủ và khi nào cần message queue?
+
+`@Async` đủ cho background work trong cùng process khi yêu cầu reliability còn vừa phải. Cần message queue khi phải có durable delivery, retry qua lần restart, backpressure hoặc tách service rõ hơn.
+
+### 6.2. Vì sao nên cấu hình custom executor cho async work?
+
+Vì executor mặc định thường quá chung chung. Hệ thống thực tế thường cần pool size, queue capacity, thread naming và rejection policy rõ ràng.
+
+### 6.3. Khi nào `@EventListener` kết hợp tốt với xử lý async?
+
+Khi nghiệp vụ chính chỉ nên publish event, còn side effect như email, analytics, notification cần tách khỏi luồng transaction chính.

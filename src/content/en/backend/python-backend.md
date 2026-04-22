@@ -143,7 +143,7 @@ Because real AI backends rarely stop at "call the model". They usually also need
 - If you already know web backend but are moving into AI backend, start with `Runtime & Concurrency`, then `FastAPI`, `Jobs & Workflows`, and `AI Systems`.
 - If you are preparing for interviews, read the question section at the end of each child doc because that is where common interview angles are concentrated.
 
-## 8. Common orientation questions
+## 8. Common interview questions
 
 ### 8.1. Where is Python strongest in backend systems?
 

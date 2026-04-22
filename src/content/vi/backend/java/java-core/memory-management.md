@@ -463,3 +463,17 @@ class Example {
 | Set `-Xms` và `-Xmx` bằng nhau | Loại bỏ heap resizing overhead |
 | Monitor Metaspace với `-XX:MetaspaceSize` | Ngăn metaspace-driven GC |
 | Dùng `jstat -gc` để monitor heap và GC activity | Visibility real-time memory usage |
+
+## 8. Câu hỏi phỏng vấn thường gặp
+
+### 8.1. Stack memory và heap memory khác nhau thế nào?
+
+Stack chủ yếu lưu call frame và local variable của từng thread, còn heap lưu object và array dùng chung do garbage collector quản lý.
+
+### 8.2. Java có còn bị memory leak không?
+
+Có. Memory leak trong Java thường là object vẫn còn strong reference dù ứng dụng thực ra không còn cần nó nữa.
+
+### 8.3. Vì sao `ThreadLocal` nguy hiểm trong thread pool?
+
+Vì thread trong pool sống rất lâu. Nếu không clear `ThreadLocal`, dữ liệu cũ và phần bộ nhớ giữ lại có thể kéo dài qua nhiều request.

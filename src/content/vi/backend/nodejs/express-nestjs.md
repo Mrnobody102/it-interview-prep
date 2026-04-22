@@ -691,6 +691,11 @@ export class CacheInterceptor implements NestInterceptor {
 // create-user.dto.ts
 import { IsEmail, IsString, MinLength, IsOptional, IsEnum } from 'class-validator';
 
+enum UserRole {
+  USER = 'user',
+  ADMIN = 'admin',
+}
+
 export class CreateUserDto {
   @IsString()
   @MinLength(2)
@@ -704,8 +709,8 @@ export class CreateUserDto {
   password: string;
 
   @IsOptional()
-  @IsEnum(['user', 'admin'])
-  role?: string;
+  @IsEnum(UserRole)
+  role?: UserRole;
 }
 
 // update-user.dto.ts
@@ -715,10 +720,12 @@ import { CreateUserDto } from './create-user.dto';
 export class UpdateUserDto extends PartialType(CreateUserDto) {}
 
 // Validation pipe (main.ts)
+import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
+import { AppModule } from './app.module';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule.create());
+  const app = await NestFactory.create(AppModule);
 
   app.useGlobalPipes(
     new ValidationPipe({
@@ -1149,3 +1156,17 @@ describe('UsersController', () => {
 | Low overhead critical | Vot | |
 | Enterprise pattern compliance | | Vot |
 | Learning Node.js | Vot | |
+
+## 9. Câu hỏi phỏng vấn thường gặp
+
+### 9.1. Khi nào nên chọn Express thay vì NestJS?
+
+Nên chọn Express khi service còn nhỏ, team muốn ít abstraction, và đủ kỷ luật để tự giữ kiến trúc sạch mà không cần framework ép khuôn quá nhiều.
+
+### 9.2. Vì sao dependency injection càng quan trọng khi backend lớn lên?
+
+Vì dependency graph rõ ràng giúp testing, module boundary, thay thế implementation và bảo trì giữa nhiều team dễ hơn.
+
+### 9.3. NestJS có chạy trên Express được không?
+
+Có. NestJS mặc định có thể chạy trên Express, hoặc dùng Fastify nếu team muốn overhead thấp hơn và trade-off hiệu năng khác.

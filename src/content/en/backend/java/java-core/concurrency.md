@@ -132,6 +132,32 @@ synchronized (lock) {
 }
 ```
 
+### 5.1. Example: Producer-Consumer
+
+```java
+class SharedBuffer {
+    private final Queue<Integer> queue = new LinkedList<>();
+    private final int capacity = 5;
+
+    public synchronized void produce(int value) throws InterruptedException {
+        while (queue.size() == capacity) {
+            wait();
+        }
+        queue.offer(value);
+        notifyAll();
+    }
+
+    public synchronized int consume() throws InterruptedException {
+        while (queue.isEmpty()) {
+            wait();
+        }
+        int value = queue.poll();
+        notifyAll();
+        return value;
+    }
+}
+```
+
 ---
 
 ## 6. Thread Pools & Executor Framework
@@ -194,6 +220,21 @@ boolean done = future.isDone();
 boolean cancelled = future.cancel(true);
 ```
 
+### 7.1. Example
+
+```java
+ExecutorService executor = Executors.newSingleThreadExecutor();
+
+Callable<String> fetchReport = () -> {
+    Thread.sleep(300);
+    return "report-ready";
+};
+
+Future<String> future = executor.submit(fetchReport);
+System.out.println(future.get());
+executor.shutdown();
+```
+
 ---
 
 ## 8. Concurrent Collections
@@ -246,6 +287,10 @@ class Consumer implements Runnable {
 }
 ```
 
+### 8.1. BlockingQueue Example
+
+`BlockingQueue` is the simplest production-friendly solution for a producer-consumer pipeline because the queue itself handles backpressure and coordination.
+
 ---
 
 ## 9. Atomic Variables
@@ -265,6 +310,17 @@ counter.compareAndSet(10, 20); // CAS: if current == 10, set to 20
 | `incrementAndGet()` | Atomically increments and returns new value |
 | `getAndSet(val)` | Atomically sets and returns old value |
 | `compareAndSet(expected, updated)` | CAS: succeeds only if current == expected |
+
+### 9.1. Example
+
+```java
+AtomicInteger requestCount = new AtomicInteger();
+
+public void handleRequest() {
+    int current = requestCount.incrementAndGet();
+    System.out.println("Processed request #" + current);
+}
+```
 
 ---
 
@@ -309,6 +365,32 @@ for (int i = 0; i < 3; i++) {
         System.out.println("Party " + id + " continuing...");
     }).start();
 }
+```
+
+### 10.3. Exchanger
+
+`Exchanger<V>` lets two threads meet at a synchronization point and swap data safely.
+
+```java
+Exchanger<String> exchanger = new Exchanger<>();
+
+new Thread(() -> {
+    try {
+        String response = exchanger.exchange("from producer");
+        System.out.println(response);
+    } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+    }
+}).start();
+
+new Thread(() -> {
+    try {
+        String response = exchanger.exchange("from consumer");
+        System.out.println(response);
+    } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+    }
+}).start();
 ```
 
 ---
@@ -379,7 +461,7 @@ Thread t2 = new Thread(() -> {
 });
 ```
 
-#### Prevention Strategies
+#### 12.1.1. Prevention Strategies
 
 | Strategy | Description |
 |----------|-------------|
@@ -464,7 +546,7 @@ public class TransactionLivelock {
 }
 ```
 
-#### How to Avoid Livelock
+#### 12.3.1. How to Avoid Livelock
 
 | Strategy | Description |
 |----------|-------------|
@@ -476,11 +558,11 @@ public class TransactionLivelock {
 
 ---
 
-## 14. CompletableFuture — Asynchronous Programming
+## 13. CompletableFuture — Asynchronous Programming
 
 `CompletableFuture` extends `Future` with rich composition, transformation, and error handling capabilities for asynchronous programming.
 
-### 14.1. Comparison: Future vs CompletableFuture
+### 13.1. Comparison: Future vs CompletableFuture
 
 | Aspect | `Future<T>` | `CompletableFuture<T>` |
 |--------|------------|----------------------|
@@ -491,7 +573,7 @@ public class TransactionLivelock {
 | **Multiple results** | Single result only | Stream of results possible |
 | **Callback style** | Blocking `get()` only | Non-blocking callbacks |
 
-### 14.2. Creating CompletableFutures
+### 13.2. Creating CompletableFutures
 
 ```java
 // From a value
@@ -515,7 +597,7 @@ CompletableFuture<String> cf4 = CompletableFuture.failedFuture(
 );
 ```
 
-### 14.3. Transformation Methods
+### 13.3. Transformation Methods
 
 ```java
 CompletableFuture<Integer> cf = CompletableFuture.supplyAsync(() -> "100");
@@ -533,7 +615,7 @@ cf.thenAccept(result -> System.out.println("Result: " + result));
 cf.thenRun(() -> System.out.println("Computation done"));
 ```
 
-### 14.4. Chaining and Composition
+### 13.4. Chaining and Composition
 
 ```java
 // thenCompose — for dependent async operations (flatMap for futures)
@@ -551,7 +633,7 @@ CompletableFuture<Integer> age = CompletableFuture.supplyAsync(() -> getAge());
 CompletableFuture<String> result = name.thenCombine(age, (n, a) -> n + " is " + a + " years old");
 ```
 
-### 14.5. Error Handling
+### 13.5. Error Handling
 
 ```java
 CompletableFuture<String> cf = CompletableFuture
@@ -579,7 +661,7 @@ cf.recover(ex -> {
 });
 ```
 
-### 14.6. Combining Multiple Futures
+### 13.6. Combining Multiple Futures
 
 ```java
 // allOf — wait for ALL futures to complete
@@ -608,7 +690,7 @@ f1.thenAcceptBoth(f2, (r1, r2) -> {
 f1.runAfterEither(f2, () -> System.out.println("First one done!"));
 ```
 
-### 14.7. Complete Example
+### 13.7. Complete Example
 
 ```java
 public CompletableFuture<UserProfile> getUserProfile(String userId) {
@@ -632,11 +714,11 @@ public CompletableFuture<UserProfile> getUserProfile(String userId) {
 
 ---
 
-## 15. Semaphore — Resource Pooling
+## 14. Semaphore — Resource Pooling
 
 `Semaphore` controls access to a shared resource using a counter. Threads must **acquire** a permit before accessing and **release** it after.
 
-### 15.1. Key Concepts
+### 14.1. Key Concepts
 
 | Method | Description |
 |--------|-------------|
@@ -648,7 +730,7 @@ public CompletableFuture<UserProfile> getUserProfile(String userId) {
 | `release(n)` | Release n permits |
 | `availablePermits()` | Get current permit count |
 
-### 15.2. Bounded Resource Pool
+### 14.2. Bounded Resource Pool
 
 ```java
 import java.util.concurrent.Semaphore;
@@ -709,7 +791,7 @@ try {
 }
 ```
 
-### 15.3. Fair vs Unfair Semaphore
+### 14.3. Fair vs Unfair Semaphore
 
 ```java
 // Unfair (default) — better throughput, but may cause thread starvation
@@ -733,7 +815,7 @@ if (semaphore.tryAcquire(1, 5, TimeUnit.SECONDS)) {
 }
 ```
 
-### 15.4. Use Cases
+### 14.4. Use Cases
 
 | Use Case | Example |
 |----------|---------|
@@ -774,11 +856,11 @@ public class RateLimiter {
 
 ---
 
-## 16. CountDownLatch vs CyclicBarrier vs Phaser
+## 15. CountDownLatch vs CyclicBarrier vs Phaser
 
 These three synchronizers are often confused but serve different purposes.
 
-### 16.1. Comparison Table
+### 15.1. Comparison Table
 
 | Aspect | `CountDownLatch` | `CyclicBarrier` | `Phaser` |
 |--------|-----------------|----------------|---------|
@@ -788,7 +870,7 @@ These three synchronizers are often confused but serve different purposes.
 | **Action on reset** | Creates new latch | All parties released together | All parties advance to next phase |
 | **Java version** | Java 5+ | Java 5+ | Java 7+ |
 
-### 16.2. CountDownLatch — One-Time Signal
+### 15.2. CountDownLatch — One-Time Signal
 
 Use when one or more threads must **wait for a set of other threads** to complete.
 
@@ -814,7 +896,7 @@ class ServiceHealthCheck {
 // CountDownLatch latch2 = new CountDownLatch(3); // New instance
 ```
 
-### 16.3. CyclicBarrier — Threads Waiting for Each Other
+### 15.3. CyclicBarrier — Threads Waiting for Each Other
 
 Use when a set of threads need to **synchronize at a common barrier point** before proceeding together.
 
@@ -852,7 +934,7 @@ class ParallelMergeSort {
 // After all threads pass, the barrier automatically resets
 ```
 
-### 16.4. Phaser — Flexible Phase Synchronization
+### 15.4. Phaser — Flexible Phase Synchronization
 
 `Phaser` is the most flexible — supports dynamic number of parties and multiple phases. It combines concepts of `CountDownLatch` and `CyclicBarrier` with phase-based synchronization.
 
@@ -902,7 +984,7 @@ phaser.arriveAndDeregister();
 int currentPhase = phaser.getPhase(); // 0, 1, 2, ...
 ```
 
-### 16.5. When to Use Which
+### 15.5. When to Use Which
 
 | Scenario | Synchronizer |
 |----------|-------------|
@@ -912,9 +994,9 @@ int currentPhase = phaser.getPhase(); // 0, 1, 2, ...
 
 ---
 
-## 17. Fork/Join Framework — Deep Dive
+## 16. Fork/Join Framework — Deep Dive
 
-### 17.1. Work-Stealing Algorithm
+### 16.1. Work-Stealing Algorithm
 
 The Fork/Join framework uses **work-stealing** to balance load efficiently across threads:
 
@@ -932,7 +1014,7 @@ flowchart TD
 - When a worker finishes its tasks, it **steals** tasks from another worker
 - This keeps all threads busy with minimal contention
 
-### 17.2. Common Pool
+### 16.2. Common Pool
 
 Java 8+ provides a **shared `ForkJoinPool`** accessible via `ForkJoinPool.commonPool()`:
 
@@ -952,7 +1034,7 @@ List<String> results = list.parallelStream()
     .collect(Collectors.toList());
 ```
 
-### 17.3. RecursiveAction vs RecursiveTask
+### 16.3. RecursiveAction vs RecursiveTask
 
 ```java
 // RecursiveAction — no return value
@@ -1010,7 +1092,7 @@ class MaxTask extends RecursiveTask<Integer> {
 }
 ```
 
-### 17.4. ForkJoinPool Best Practices
+### 16.4. ForkJoinPool Best Practices
 
 | Practice | Why |
 |----------|-----|
@@ -1022,7 +1104,7 @@ class MaxTask extends RecursiveTask<Integer> {
 
 ---
 
-## 18. Best Practices
+## 17. Best Practices
 
 - **Use Thread Pools** instead of creating threads manually (`ExecutorService`)
 - **Design immutable objects** when possible (`final` fields, no setters)
@@ -1031,3 +1113,17 @@ class MaxTask extends RecursiveTask<Integer> {
 - **Always close resources** with `try-with-resources`
 - **Prefer higher-level concurrency utilities** (ExecutorService, ConcurrentHashMap, BlockingQueue) over `synchronized`/`wait`/`notify`
 - **Use atomic variables** for simple counters/flags instead of `synchronized`
+
+## 18. Common interview questions
+
+### 18.1. What is the difference between `synchronized` and `Lock`?
+
+`synchronized` is built into the language and is simpler for basic mutual exclusion. `Lock` gives extra control such as `tryLock`, timed waits, interruptible acquisition, and multiple condition queues.
+
+### 18.2. When would you use `Callable` instead of `Runnable`?
+
+Use `Callable` when the task must return a value or throw checked exceptions. It is typically submitted through `ExecutorService` and paired with `Future`.
+
+### 18.3. How do `CountDownLatch` and `CyclicBarrier` differ?
+
+`CountDownLatch` is usually one-shot and lets one or more threads wait for a count to reach zero. `CyclicBarrier` lets a fixed group wait for each other repeatedly at a synchronization point.

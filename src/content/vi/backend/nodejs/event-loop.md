@@ -809,3 +809,17 @@ function isEventLoopBlocked(thresholdMs = 50) {
 │  Microtasks      │  (before next loop iteration)
 └──────────────────┘
 ```
+
+## 12. Câu hỏi phỏng vấn thường gặp
+
+### 12.1. Node.js có thực sự single-threaded không?
+
+Luồng JavaScript chính là single-threaded theo góc nhìn ứng dụng, nhưng Node.js vẫn dùng libuv, hệ điều hành và thread pool hoặc worker thread ở phía dưới.
+
+### 12.2. `process.nextTick()` khác `setImmediate()` như thế nào?
+
+`process.nextTick()` chạy trước khi event loop chuyển sang phase tiếp theo. `setImmediate()` chạy ở check phase, sau poll phase.
+
+### 12.3. Vì sao CPU-bound task làm Node.js đau nhiều như vậy?
+
+Vì CPU task dài sẽ block main JavaScript thread, làm chậm timer, I/O callback, xử lý request và promise resolution.

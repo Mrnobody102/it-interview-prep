@@ -695,3 +695,17 @@ class UserAuditingTest {
     }
 }
 ```
+
+## 10. Common interview questions
+
+### 10.1. When should you use `@WebMvcTest` instead of `@SpringBootTest`?
+
+Use `@WebMvcTest` when you want a focused controller slice test with mocked dependencies. Use `@SpringBootTest` when the full application context is required.
+
+### 10.2. Why are Testcontainers useful for backend tests?
+
+Because they let tests run against real infrastructure such as PostgreSQL, Redis, or Kafka, which catches integration issues that mocks cannot.
+
+### 10.3. What is the purpose of `@DataJpaTest`?
+
+It starts a focused JPA slice for repository testing, entity mapping validation, and query verification without loading the whole application.

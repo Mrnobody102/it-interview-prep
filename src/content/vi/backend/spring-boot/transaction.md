@@ -215,3 +215,17 @@ Page<User> users = userRepository.findByStatus(
 | **Dirty Read** | Đọc dữ liệu chưa commit từ transaction khác |
 | **Non-repeatable Read** | Đọc cùng row hai lần → giá trị khác nhau (do UPDATE) |
 | **Phantom Read** | Cùng query → số rows khác nhau (do INSERT/DELETE) |
+
+## 6. Câu hỏi phỏng vấn thường gặp
+
+### 6.1. Transaction propagation là gì?
+
+Propagation định nghĩa cách một method transactional hoạt động khi được gọi bên trong transaction khác, ví dụ join vào transaction hiện có, tạo transaction mới hoặc chạy không có transaction.
+
+### 6.2. Vì sao `@Transactional` đôi khi không hoạt động khi self-invocation?
+
+Vì Spring thường áp transaction thông qua proxy. Một method gọi method khác trên cùng instance sẽ đi vòng qua proxy.
+
+### 6.3. Mặc định Spring rollback transaction khi nào?
+
+Mặc định Spring rollback với unchecked exception (`RuntimeException` và `Error`). Checked exception cần cấu hình rollback rõ ràng nếu muốn hành vi đó.

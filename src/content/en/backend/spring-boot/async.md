@@ -235,3 +235,17 @@ public class OrderEventHandler {
     }
 }
 ```
+
+## 6. Common interview questions
+
+### 6.1. When is `@Async` enough and when do you need a message queue?
+
+`@Async` is enough for in-process background work with modest reliability needs. Use a message queue when you need durable delivery, retries across restarts, backpressure, or cross-service decoupling.
+
+### 6.2. Why should you configure a custom executor for async work?
+
+Because the default executor is often too generic. Real systems usually need explicit pool sizing, queue capacity, thread naming, and rejection handling.
+
+### 6.3. When is `@EventListener` a good companion to async processing?
+
+It is useful when domain logic should publish an event and side effects such as email, analytics, or notifications should stay decoupled from the main transaction flow.

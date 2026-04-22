@@ -281,3 +281,17 @@ a.sound();              // Output: "Meow" — resolved at runtime via VMT
 ```
 
 > **Note:** This is the mechanism behind **runtime polymorphism**. The JVM does not know at compile time which `sound()` to call; it looks up the correct entry in the VMT of the actual object.
+
+## 8. Common interview questions
+
+### 8.1. When should you prefer composition over inheritance?
+
+Prefer composition when behavior should be assembled from smaller capabilities and you want looser coupling than a rigid class hierarchy.
+
+### 8.2. Can static methods be overridden?
+
+No. Static methods belong to the class, so a child class can only hide them, not override them polymorphically.
+
+### 8.3. Why are interfaces often preferred for contracts?
+
+Because they model capabilities without forcing inheritance from a base implementation, which keeps designs more flexible.

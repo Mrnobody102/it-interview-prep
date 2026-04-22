@@ -215,3 +215,17 @@ Page<User> users = userRepository.findByStatus(
 | **Dirty Read** | Read uncommitted data from another transaction |
 | **Non-repeatable Read** | Same row read twice → different values (due to UPDATE) |
 | **Phantom Read** | Same query → different rows (due to INSERT/DELETE) |
+
+## 6. Common interview questions
+
+### 6.1. What is transaction propagation?
+
+Propagation defines how a transactional method behaves when it is called inside another transaction, for example joining it, creating a new one, or running without one.
+
+### 6.2. Why does `@Transactional` sometimes not work on self-invocation?
+
+Because Spring usually applies transactions through proxies. A method calling another method on the same instance bypasses the proxy.
+
+### 6.3. When does Spring roll back a transaction by default?
+
+By default, Spring rolls back on unchecked exceptions (`RuntimeException` and `Error`). Checked exceptions need explicit rollback configuration if that behavior is required.

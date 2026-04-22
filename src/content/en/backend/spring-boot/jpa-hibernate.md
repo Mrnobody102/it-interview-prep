@@ -315,7 +315,7 @@ spring:
   jpa:
     properties:
       hibernate:
-        open_in_view: true  # Default: true (but disables lazy loading safely)
+        open_in_view: true  # Keeps the session open longer, so lazy access may still work
 ```
 
 > **Warning:** This keeps the session open until the view is rendered. Can cause lazy loading issues to surface at the presentation layer.
@@ -409,7 +409,6 @@ class UserRepositoryTest {
 
 ```java
 @DataJpaTest
-@SpringBootTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @TestPropertySource(locations = "classpath:application-test.yml")
 class UserRepositoryIntegrationTest {
@@ -436,6 +435,8 @@ class UserRepositoryIntegrationTest {
     }
 }
 ```
+
+If you need the entire application context, use `@SpringBootTest` as a separate full integration test style rather than combining it with `@DataJpaTest`.
 
 ### 14.3. Testing N+1 Solutions
 
@@ -858,3 +859,17 @@ ORDER BY relevance DESC;
     """, nativeQuery = true)
 List<Product> searchByKeyword(@Param("keyword") String keyword);
 ```
+
+## 19. Common interview questions
+
+### 19.1. What are the main JPA entity states?
+
+The core states are transient, persistent, detached, and removed. Understanding transitions between them is essential for explaining flush behavior and unexpected updates.
+
+### 19.2. What causes the N+1 query problem?
+
+It happens when a parent query is followed by many extra child queries during lazy loading, often because fetching strategy was not planned for the access pattern.
+
+### 19.3. Should you default to `FetchType.EAGER` to avoid lazy issues?
+
+No. `EAGER` often hides the immediate error while creating bigger query and memory problems. It is usually better to keep associations lazy and fetch explicitly for each use case.

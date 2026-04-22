@@ -129,7 +129,7 @@ Because in AI stacks, C++ is usually not just "the fast language". It often owns
 - If you already work in backend and want C++ for performance-critical systems, read from section 4.1 through 4.3.
 - If you are building AI infrastructure, prioritize `Memory & Performance`, `AI Systems`, and `Production`.
 
-## 8. Common orientation questions
+## 8. Common interview questions
 
 ### 8.1. Where is C++ strongest in backend systems?
 

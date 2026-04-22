@@ -63,7 +63,7 @@ public class UserService {
 | **Setter Injection** | `@Autowired` trên setter | Phụ thuộc qua setter | Chỉ dùng khi phụ thuộc là **tùy chọn** |
 | **Field Injection** | `@Autowired` trên field | Inject trực tiếp vào field | **Không nên dùng** — khó test |
 
-#### Constructor Injection (Khuyến nghị)
+#### 3.2.1. Constructor Injection (Khuyến nghị)
 
 ```java
 // ✅ Tiêm qua constructor — đây là cách tốt nhất
@@ -88,7 +88,7 @@ public class UserService {
 }
 ```
 
-#### Setter Injection
+#### 3.2.2. Setter Injection
 
 ```java
 // ⚠️ Tiêm qua setter — chỉ dùng khi cần optional dependency
@@ -103,7 +103,7 @@ public class NotificationService {
 }
 ```
 
-#### Field Injection (Tránh dùng)
+#### 3.2.3. Field Injection (Tránh dùng)
 
 ```java
 // ❌ Tiêm trực tiếp vào field — KHÔNG NÊN dùng
@@ -586,3 +586,17 @@ private int totalRetryDelay;
 | `@AfterReturning` | ❌ | ✅ | ❌ |
 | `@AfterThrowing` | ❌ | ❌ | ❌ |
 | `@Around` | ✅ | ✅ | ✅ |
+
+## 12. Câu hỏi phỏng vấn thường gặp
+
+### 12.1. Vì sao constructor injection thường được ưu tiên?
+
+Vì nó làm dependency rõ ràng, hỗ trợ immutability và giúp class dễ test hơn.
+
+### 12.2. `BeanFactory` khác `ApplicationContext` như thế nào?
+
+`BeanFactory` là IoC container tối thiểu. `ApplicationContext` mở rộng thêm các tính năng mà ứng dụng thực tế thường cần như event, resource loading và message resolution.
+
+### 12.3. Vì sao cần hiểu giới hạn của Spring AOP?
+
+Vì Spring AOP hoạt động dựa trên proxy. Điều đó ảnh hưởng đến self-invocation, final method và kỳ vọng về những lời gọi method nào thực sự được intercept.

@@ -1120,6 +1120,8 @@ func main() {
 
 ## 10. REST API Example
 
+### 10.1. Complete User API với Gin và GORM
+
 ```go
 package main
 
@@ -1514,3 +1516,55 @@ func main() {
     }
 }
 ```
+
+---
+
+## 13. Câu hỏi phỏng vấn thường gặp
+
+### 13.1. Sự khác biệt giữa goroutine và thread là gì?
+
+OS thread được quản lý bởi kernel của hệ điều hành và thường có stack cố định cỡ 1-8MB. Goroutine được Go runtime quản lý hoàn toàn, bắt đầu với stack rất nhỏ khoảng 2KB và tăng động khi cần. Hàng nghìn goroutine có thể được multiplex lên một số ít OS thread thông qua Go scheduler. Goroutine được tạo rất nhẹ với từ khóa `go`, trong khi thread có chi phí tạo, switch ngữ cảnh và đồng bộ lớn hơn.
+
+### 13.2. Channel trong Go là gì? Buffered và unbuffered channel khác nhau thế nào?
+
+Channel là một kênh typed để các goroutine giao tiếp với nhau. Unbuffered channel sẽ block phía gửi cho tới khi có phía nhận sẵn sàng, đồng thời block phía nhận khi chưa có dữ liệu, nên nó tạo ra cơ chế đồng bộ tự nhiên. Buffered channel có capacity, cho phép gửi nhiều giá trị trước khi block. Dùng unbuffered khi cần đồng bộ trực tiếp; dùng buffered khi muốn tách nhịp giữa producer và consumer để tăng throughput.
+
+### 13.3. `select` trong Go hoạt động như thế nào?
+
+`select` cho phép một goroutine chờ trên nhiều thao tác channel cùng lúc. Nó sẽ block tới khi có ít nhất một case có thể chạy. Nếu nhiều case cùng sẵn sàng, Go sẽ chọn ngẫu nhiên một case. `default` là nhánh tùy chọn để thực thi ngay nếu chưa có channel nào sẵn sàng, giúp tạo non-blocking operation.
+
+### 13.4. Package `context` dùng để làm gì?
+
+`context` được dùng để truyền cancellation signal, deadline, timeout và các giá trị gắn với request qua nhiều tầng hàm. Nó rất quan trọng trong backend để:
+
+- hủy tác vụ dài khi client đã disconnect
+- truyền timeout xuống DB, HTTP client, worker
+- mang theo metadata như `trace_id`, `request_id`, `user_id`
+
+Thông thường `context.Context` nên là tham số đầu tiên trong các hàm cần hỗ trợ cancellation.
+
+### 13.5. Go xử lý lỗi khác gì so với các ngôn ngữ dùng exception?
+
+Go dùng explicit error handling qua giá trị trả về thay vì exception. Hàm thường trả về `error`, và caller phải kiểm tra lỗi ngay tại call site. Cách này làm luồng xử lý lỗi rõ ràng hơn, giảm nguy cơ bỏ sót exception. Ngoài ra Go hỗ trợ wrapping error bằng `fmt.Errorf(... %w ...)`, `errors.Is()` và `errors.As()` để giữ được error chain. `panic` và `recover` chỉ nên dùng cho tình huống thật sự bất thường.
+
+### 13.6. `defer` dùng để làm gì?
+
+`defer` dùng để lên lịch chạy một hàm khi hàm hiện tại kết thúc, bất kể return bình thường hay bị `panic`. Các deferred call chạy theo thứ tự LIFO. Đây là cách rất phù hợp để cleanup tài nguyên như đóng file, unlock mutex, rollback transaction, close response body hoặc cleanup tạm sau khi xử lý request.
+
+### 13.7. Hãy giải thích mô hình interface của Go.
+
+Go dùng implicit interface implementation. Một type được xem là implement interface nếu nó có đủ method cần thiết, không cần từ khóa `implements`. Interface trong Go mô tả behavior, không mô tả cây kế thừa. Go khuyến khích dùng interface nhỏ, tập trung, như `io.Reader`, `io.Writer`, thay vì interface lớn ôm quá nhiều trách nhiệm.
+
+### 13.8. Go scheduler là gì và hoạt động ra sao?
+
+Go scheduler chịu trách nhiệm mapping goroutine lên OS thread. Nó dựa trên mô hình `G-M-P`: `G` là goroutine, `M` là machine/thread, `P` là processor đại diện cho resource logic của scheduler. Mỗi `P` có run queue riêng. Khi một goroutine bị block do syscall hoặc I/O, runtime có thể giải phóng thread để tiếp tục chạy goroutine khác. Cơ chế này giúp Go xử lý lượng kết nối đồng thời rất lớn với số lượng OS thread tương đối nhỏ.
+
+### 13.9. Làm sao để tránh race condition trong Go?
+
+Go có `go test -race` để phát hiện race condition trong quá trình test. Khi nhiều goroutine cùng truy cập shared state, có thể dùng `sync.Mutex`, `sync.RWMutex`, hoặc `sync/atomic` cho các thao tác đơn giản. Một hướng khác là tránh chia sẻ state trực tiếp, thay vào đó truyền dữ liệu qua channel, đúng theo triết lý: "Don't communicate by sharing memory; share memory by communicating."
+
+### 13.10. `errors.Is()` và `errors.As()` khác nhau thế nào?
+
+`errors.Is()` dùng để kiểm tra xem một lỗi trong error chain có khớp với một sentinel error cụ thể hay không. `errors.As()` dùng để tìm lỗi đầu tiên trong chain khớp với một kiểu lỗi cụ thể và ép nó ra target để đọc thêm metadata. Dùng `Is` khi so sánh theo giá trị lỗi, dùng `As` khi cần lấy structured error type.
+
+> **Tip:** Điểm mạnh của Go là sự đơn giản. Hãy ưu tiên **composition**, **interface nhỏ**, và **goroutine + channel** để xây dựng backend service dễ scale, dễ maintain và dễ debug.

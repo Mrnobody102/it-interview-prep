@@ -89,6 +89,22 @@ class MyClass {
 
 ## 3. JVM Flags
 
+### 3.1. Heap Size Flags
+
+`-Xms` và `-Xmx` quyết định kích thước heap ban đầu và tối đa. Trong production, nhiều hệ thống đặt hai giá trị này bằng nhau để tránh heap resize trong lúc tải tăng.
+
+### 3.2. Garbage Collector Selection Flags
+
+Flag chọn GC collector quyết định chiến lược cân bằng giữa throughput, latency, và kích thước heap. Ví dụ: `-XX:+UseG1GC` phù hợp đa số dịch vụ web, còn `-XX:+UseZGC` phù hợp workload heap lớn cần pause time rất thấp.
+
+### 3.3. G1 GC Related Flags
+
+Khi dùng G1, các flag như `-XX:MaxGCPauseMillis`, `-XX:InitiatingHeapOccupancyPercent`, và `-XX:G1HeapRegionSize` là nhóm cần hiểu đầu tiên vì chúng tác động trực tiếp đến pause target và chu kỳ concurrent mark.
+
+### 3.4. Other Useful Flags
+
+Ngoài heap và collector selection, các flag cho stack, metaspace, và GC log cũng rất quan trọng khi debug production incidents.
+
 | Flag | Mô tả | Ví dụ giá trị |
 |---|---|---|
 | `-Xms` | Heap ban đầu | `-Xms512m` |
@@ -424,7 +440,7 @@ java -XX:SurvivorRatio=4              # Eden : Survivor = 4 : 1 : 1 (faster agin
 
 ## 11. Chi tiết các thuật toán GC
 
-### 9.1. Tổng quan thuật toán
+### 11.1. Tổng quan thuật toán
 
 ```mermaid
 flowchart TD
@@ -435,7 +451,7 @@ flowchart TD
     SM -->|"Dùng half of space"| COP
 ```
 
-### 9.2. Serial GC (`-XX:+UseSerialGC`)
+### 11.2. Serial GC (`-XX:+UseSerialGC`)
 
 - **Single-threaded** — cả minor và full GC chạy trên một thread
 - Dùng **Mark-Sweep-Compact** algorithm
@@ -446,7 +462,7 @@ flowchart TD
 java -XX:+UseSerialGC -Xms256m -Xmx256m -jar app.jar
 ```
 
-### 9.3. Parallel GC (`-XX:+UseParallelGC`) — Mặc định Java 8
+### 11.3. Parallel GC (`-XX:+UseParallelGC`) — Mặc định Java 8
 
 - **Multi-threaded** — dùng tất cả CPU cores
 - **Throughput-focused** — maximize throughput
@@ -460,18 +476,18 @@ java -XX:+UseParallelGC \
      -Xms4g -Xmx4g -jar batch-app.jar
 ```
 
-### 9.4. CMS GC (`-XX:+UseConcMarkSweepGC`) — Deprecated Java 9, Removed Java 14
+### 11.4. CMS GC (`-XX:+UseConcMarkSweepGC`) — Deprecated Java 9, Removed Java 14
 
 - **Concurrent Mark Sweep** — hầu hết các phases chạy concurrently với application
 - Aims for **low latency** với short pause times
 - Does **not** compact — có thể dẫn đến fragmentation
 - **Use case:** Legacy applications. **Deprecated** — dùng G1GC thay thế.
 
-### 9.5. G1GC (`-XX:+UseG1GC`) — Mặc định từ Java 9
+### 11.5. G1GC (`-XX:+UseG1GC`) — Mặc định từ Java 9
 
 **Garbage-First** collector chia heap thành các **regions** có kích thước bằng nhau (~1MB default). Nó ưu tiên các regions với nhiều garbage nhất (garbage-first).
 
-#### Các loại Collection trong G1
+#### 11.5.1. Các loại Collection trong G1
 
 | Loại | Trigger | Xảy ra gì | Kiểu Pause |
 |------|---------|-------------|------------|
@@ -479,7 +495,7 @@ java -XX:+UseParallelGC \
 | **Mixed Collection** | Old Gen occupancy vượt threshold | Collects Young + selected Old regions với nhiều garbage | Short STW |
 | **Humongous Allocation** | Object > 50% region size | Dedicated humongous regions | — |
 
-#### Tuning G1GC
+#### 11.5.2. Tuning G1GC
 
 ```bash
 java -XX:+UseG1GC \
@@ -490,7 +506,7 @@ java -XX:+UseG1GC \
      -Xms4g -Xmx4g -jar web-app.jar
 ```
 
-#### G1GC Tuning Guidelines
+#### 11.5.3. G1GC Tuning Guidelines
 
 | Triệu chứng | Điều chỉnh |
 |---------|-----------------|
@@ -500,11 +516,11 @@ java -XX:+UseG1GC \
 | **Fragmentation** | Tăng heap size hoặc điều chỉnh survivor ratio |
 | **Young Gen quá lớn/nhỏ** | Điều chỉnh `-XX:NewRatio` hoặc `-XX:SurvivorRatio` |
 
-### 9.6. ZGC (`-XX:+UseZGC`) — Java 11+, Scalable Low-Latency
+### 11.6. ZGC (`-XX:+UseZGC`) — Java 11+, Scalable Low-Latency
 
 ZGC được thiết kế cho **ultra-low latency** applications với very large heaps (lên đến multi-terabytes). Nó đạt pause times dưới **1 millisecond** bất kể heap size.
 
-#### ZGC hoạt động thế nào: Colored Pointers
+#### 11.6.1. ZGC hoạt động thế nào: Colored Pointers
 
 ZGC dùng **colored pointers** — extra bits trong object references để encode GC state:
 
@@ -540,14 +556,14 @@ java -XX:+UseZGC -Xmx512g -jar tb-scale-app.jar
 | **Concurrent Relocate** | Move objects, update references | No |
 | **Pause Relocate Start** | Root relocate | **Yes** (sub-ms) |
 
-#### ZGC Key Properties
+#### 11.6.2. ZGC Key Properties
 
 - **No compaction pauses** — objects được move concurrently
 - **Scalable** — pause times giữ thấp bất kể heap size
 - **Throughput** — hơi thấp hơn G1 (nhiều CPU hơn cho GC)
 - **NUMA-aware** — optimized cho NUMA systems
 
-### 9.7. Shenandoah (`-XX:+UseShenandoahGC`) — Java 12+
+### 11.7. Shenandoah (`-XX:+UseShenandoahGC`) — Java 12+
 
 Giống ZGC về mục tiêu (low-latency) nhưng dùng **thuật toán khác**:
 
@@ -645,3 +661,18 @@ java -Xms4g -Xmx4g \                  # Equal min/max heap
 | **VisualVM** | GUI tool | Profiling, heap dumps, phân tích thread |
 | **Java Flight Recorder** | `-XX:StartFlightRecording` | Profiling liên tục |
 
+---
+
+## 14. Câu hỏi phỏng vấn thường gặp
+
+### 14.1. Minor GC và Full GC khác nhau thế nào?
+
+Minor GC chủ yếu dọn young generation và xảy ra thường xuyên hơn. Full GC tác động phạm vi heap lớn hơn nhiều nên thường có pause đắt hơn.
+
+### 14.2. Khi nào nên dùng G1GC thay vì ZGC?
+
+G1GC là lựa chọn mặc định tốt cho nhiều service với heap vừa phải. ZGC phù hợp hơn khi heap rất lớn và latency budget chặt hơn nhiều.
+
+### 14.3. Vì sao nhiều team đặt `-Xms` bằng `-Xmx`?
+
+Vì nó giảm việc resize heap lúc runtime, từ đó giúp hành vi bộ nhớ và pause time ổn định, dễ dự đoán hơn.

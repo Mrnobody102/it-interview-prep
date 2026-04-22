@@ -1233,3 +1233,85 @@ public class UserServiceTests
     }
 }
 ```
+
+---
+
+## 12. Câu hỏi phỏng vấn thường gặp
+
+### 12.1. Sự khác biệt giữa `AddScoped`, `AddTransient`, và `AddSingleton` là gì?
+
+- **Singleton**: chỉ có một instance cho toàn bộ vòng đời ứng dụng. Mọi request và service sẽ dùng chung instance này. Phù hợp với stateless service hoặc service cache dữ liệu tốn kém.
+- **Scoped**: tạo một instance mới cho mỗi HTTP request hoặc mỗi unit of work. Trong cùng một request sẽ dùng chung một instance. Đây là lifetime phổ biến nhất cho service làm việc với `DbContext`.
+- **Transient**: mỗi lần resolve service sẽ tạo một instance mới. Phù hợp với service nhẹ, stateless. Cần chú ý nếu transient service phụ thuộc vào scoped service thì vòng đời phụ thuộc đó vẫn bị ràng buộc theo request.
+
+### 12.2. Entity Framework Core là gì?
+
+Entity Framework Core là ORM của .NET, cho phép ánh xạ object C# sang bảng trong cơ sở dữ liệu và thao tác dữ liệu bằng object mạnh kiểu thay vì viết toàn bộ SQL thủ công. EF Core hỗ trợ change tracking, migrations, quan hệ entity, eager/lazy loading và nhiều database provider như SQL Server, PostgreSQL, SQLite.
+
+### 12.3. Middleware pipeline của ASP.NET Core hoạt động như thế nào?
+
+Middleware pipeline xử lý HTTP request qua một chuỗi component. Mỗi middleware có thể:
+
+- chạy logic trước khi gọi middleware kế tiếp
+- chạy logic sau khi middleware kế tiếp trả kết quả
+- chặn luôn request nếu không gọi `next`
+- bắt exception từ các middleware nằm sau
+
+Pipeline được cấu hình trong `Program.cs` bằng `app.Use()`, `app.Map()`, `app.Run()`. Thứ tự đăng ký rất quan trọng vì middleware đăng ký trước sẽ bao ngoài middleware đăng ký sau.
+
+### 12.4. Sự khác biệt giữa MVC và Web API trong ASP.NET Core là gì?
+
+Trong ASP.NET Core hiện đại, MVC và Web API đã được hợp nhất trong cùng framework. `ControllerBase` cung cấp phần nền cho API controller. Theo cách hiểu truyền thống:
+
+- MVC thường trả về view HTML
+- Web API thường trả về dữ liệu như JSON hoặc XML
+
+Trong ASP.NET Core, khi làm API ta thường dùng `[ApiController]` và trả về data trực tiếp; còn render giao diện thì dùng Razor Pages hoặc MVC controller với view.
+
+### 12.5. Làm sao để xử lý lỗi trong ASP.NET Core?
+
+Có thể xử lý lỗi theo nhiều lớp:
+
+- global exception middleware để bắt lỗi chưa được handle
+- `ProblemDetails` theo chuẩn RFC 7807 cho error response
+- exception filters ở mức controller/action
+- model validation để tự trả `400 Bad Request` khi input không hợp lệ
+
+Thực tế production thường kết hợp global exception middleware + logging + chuẩn hóa response lỗi.
+
+### 12.6. `FromQuery`, `FromBody`, `FromRoute`, và `FromHeader` khác nhau thế nào?
+
+| Attribute | Nguồn dữ liệu |
+|---|---|
+| `[FromQuery]` | Query string như `?page=1` |
+| `[FromBody]` | Request body như JSON/XML |
+| `[FromRoute]` | Route parameter như `/users/{id}` |
+| `[FromHeader]` | HTTP header như `Authorization` |
+| `[FromForm]` | Form data hoặc multipart form |
+
+### 12.7. ASP.NET Core authentication hoạt động như thế nào?
+
+ASP.NET Core dùng mô hình authentication dựa trên handler. Khi `UseAuthentication` chạy, framework sẽ đọc credential từ request, validate nó, rồi gán `HttpContext.User`. Sau đó `[Authorize]` sẽ kiểm tra user đã authenticate và có quyền hay chưa. Các scheme phổ biến gồm JWT Bearer, Cookie authentication, OAuth/OIDC.
+
+### 12.8. `DbContext` trong Entity Framework Core có vai trò gì?
+
+`DbContext` là entry point chính cho database operation trong EF Core. Nó:
+
+- quản lý connection tới database
+- theo dõi thay đổi của entity
+- ánh xạ entity với table qua Fluent API hoặc attribute
+- hỗ trợ query, insert, update, delete
+- đóng vai trò gần giống Unit of Work và Repository nội bộ
+- hỗ trợ migration để cập nhật schema
+
+### 12.9. Eager loading, lazy loading, và explicit loading khác nhau thế nào?
+
+- **Eager loading**: load luôn dữ liệu liên quan bằng `.Include()` hoặc `.ThenInclude()`. Hợp khi chắc chắn cần dữ liệu liên quan.
+- **Lazy loading**: chỉ load khi truy cập navigation property. Tiện nhưng dễ gây N+1 query problem.
+- **Explicit loading**: chủ động gọi load khi cần bằng `.Reference()` hoặc `.Collection()`. Kiểm soát tốt hơn lazy loading.
+
+### 12.10. Làm sao để implement rate limiting trong ASP.NET Core?
+
+ASP.NET Core 7+ có built-in rate limiting qua `Microsoft.AspNetCore.RateLimiting`. Có thể cấu hình policy trong `Program.cs`, áp dụng cho endpoint hoặc controller, rồi dùng các chiến lược như fixed window, sliding window, token bucket hoặc concurrency limiter. Trong hệ thống lớn, rate limiting thường đi cùng API Gateway, logging và monitoring để quan sát abuse pattern.
+
+> **Tip:** ASP.NET Core rất phù hợp cho backend enterprise nhờ type safety, tooling mạnh, async/await tốt, DI sẵn có và hệ sinh thái tương đối trưởng thành.

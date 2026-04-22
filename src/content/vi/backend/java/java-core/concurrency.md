@@ -446,7 +446,7 @@ class DeadlockDemo {
 }
 ```
 
-#### Phòng tránh Deadlock
+#### 12.1.1. Phòng tránh Deadlock
 
 | Cách | Mô tả |
 |---|---|
@@ -523,7 +523,7 @@ public class TransactionLivelock {
 }
 ```
 
-#### Cách tránh Livelock
+#### 12.2.1. Cách tránh Livelock
 
 | Chiến lược | Mô tả |
 |------------|-------|
@@ -535,11 +535,11 @@ public class TransactionLivelock {
 
 ---
 
-## 14. CompletableFuture — Lập trình Asynchronous
+## 13. CompletableFuture — Lập trình Asynchronous
 
 `CompletableFuture` mở rộng `Future` với khả năng composition, transformation và error handling phong phú cho lập trình bất đồng bộ.
 
-### 14.1. So sánh: Future vs CompletableFuture
+### 13.1. So sánh: Future vs CompletableFuture
 
 | Tiêu chí | `Future<T>` | `CompletableFuture<T>` |
 |---------|------------|----------------------|
@@ -550,7 +550,7 @@ public class TransactionLivelock {
 | **Multiple results** | Chỉ một kết quả | Có thể trả về stream of results |
 | **Callback style** | Chỉ blocking `get()` | Non-blocking callbacks |
 
-### 14.2. Tạo CompletableFutures
+### 13.2. Tạo CompletableFutures
 
 ```java
 // Từ một giá trị
@@ -574,7 +574,7 @@ CompletableFuture<String> cf4 = CompletableFuture.failedFuture(
 );
 ```
 
-### 14.3. Các method Transformation
+### 13.3. Các method Transformation
 
 ```java
 CompletableFuture<Integer> cf = CompletableFuture.supplyAsync(() -> "100");
@@ -592,7 +592,7 @@ cf.thenAccept(result -> System.out.println("Result: " + result));
 cf.thenRun(() -> System.out.println("Computation done"));
 ```
 
-### 14.4. Chaining và Composition
+### 13.4. Chaining và Composition
 
 ```java
 // thenCompose — cho async operations phụ thuộc nhau (flatMap cho futures)
@@ -610,7 +610,7 @@ CompletableFuture<Integer> age = CompletableFuture.supplyAsync(() -> getAge());
 CompletableFuture<String> result = name.thenCombine(age, (n, a) -> n + " is " + a + " years old");
 ```
 
-### 14.5. Error Handling
+### 13.5. Error Handling
 
 ```java
 CompletableFuture<String> cf = CompletableFuture
@@ -638,7 +638,7 @@ cf.recover(ex -> {
 });
 ```
 
-### 14.6. Kết hợp nhiều Futures
+### 13.6. Kết hợp nhiều Futures
 
 ```java
 // allOf — chờ TẤT CẢ futures hoàn thành
@@ -667,7 +667,7 @@ f1.thenAcceptBoth(f2, (r1, r2) -> {
 f1.runAfterEither(f2, () -> System.out.println("First one done!"));
 ```
 
-### 14.7. Ví dụ hoàn chỉnh
+### 13.7. Ví dụ hoàn chỉnh
 
 ```java
 public CompletableFuture<UserProfile> getUserProfile(String userId) {
@@ -691,11 +691,11 @@ public CompletableFuture<UserProfile> getUserProfile(String userId) {
 
 ---
 
-## 15. Semaphore — Resource Pooling
+## 14. Semaphore — Resource Pooling
 
 `Semaphore` kiểm soát truy cập đến shared resource sử dụng một counter. Threads phải **acquire** permit trước khi truy cập và **release** sau khi xong.
 
-### 15.1. Các method chính
+### 14.1. Các method chính
 
 | Method | Mô tả |
 |--------|-------|
@@ -707,7 +707,7 @@ public CompletableFuture<UserProfile> getUserProfile(String userId) {
 | `release(n)` | Release n permits |
 | `availablePermits()` | Số permits hiện có |
 
-### 15.2. Bounded Resource Pool
+### 14.2. Bounded Resource Pool
 
 ```java
 import java.util.concurrent.Semaphore;
@@ -767,7 +767,7 @@ try {
 }
 ```
 
-### 15.3. Fair vs Unfair Semaphore
+### 14.3. Fair vs Unfair Semaphore
 
 ```java
 // Unfair (default) — throughput tốt hơn, nhưng có thể gây starvation
@@ -791,7 +791,7 @@ if (semaphore.tryAcquire(1, 5, TimeUnit.SECONDS)) {
 }
 ```
 
-### 15.4. Use Cases
+### 14.4. Use Cases
 
 | Trường hợp sử dụng | Ví dụ |
 |----------|-------|
@@ -832,11 +832,11 @@ public class RateLimiter {
 
 ---
 
-## 16. CountDownLatch vs CyclicBarrier vs Phaser
+## 15. CountDownLatch vs CyclicBarrier vs Phaser
 
 Ba synchronizers này thường bị nhầm lẫn nhưng phục vụ các mục đích khác nhau.
 
-### 16.1. Bảng so sánh
+### 15.1. Bảng so sánh
 
 | Tiêu chí | `CountDownLatch` | `CyclicBarrier` | `Phaser` |
 |---------|-----------------|----------------|---------|
@@ -846,7 +846,7 @@ Ba synchronizers này thường bị nhầm lẫn nhưng phục vụ các mục 
 | **Action on reset** | Tạo latch mới | Tất cả parties được release cùng lúc | Tất cả parties advance sang phase tiếp |
 | **Java version** | Java 5+ | Java 5+ | Java 7+ |
 
-### 16.2. CountDownLatch — Tín hiệu một lần
+### 15.2. CountDownLatch — Tín hiệu một lần
 
 Dùng khi một hoặc nhiều threads phải **chờ một set threads khác** hoàn thành.
 
@@ -869,7 +869,7 @@ class ServiceHealthCheck {
 }
 ```
 
-### 16.3. CyclicBarrier — Threads chờ nhau
+### 15.3. CyclicBarrier — Threads chờ nhau
 
 Dùng khi một set threads cần **đồng bộ tại một barrier point** trước khi tiếp tục cùng nhau.
 
@@ -907,7 +907,7 @@ class ParallelMergeSort {
 // Sau khi tất cả threads pass, barrier tự động reset
 ```
 
-### 16.4. Phaser — Đồng bộ hóa linh hoạt theo Phase
+### 15.4. Phaser — Đồng bộ hóa linh hoạt theo Phase
 
 `Phaser` là linh hoạt nhất — hỗ trợ số parties động và nhiều phases. Nó kết hợp concepts của `CountDownLatch` và `CyclicBarrier` với phase-based synchronization.
 
@@ -954,7 +954,7 @@ phaser.arriveAndDeregister();          // Bỏ đăng ký
 int currentPhase = phaser.getPhase();  // 0, 1, 2, ...
 ```
 
-### 16.5. Khi nào dùng cái nào
+### 15.5. Khi nào dùng cái nào
 
 | Trường hợp sử dụng | Synchronizer |
 |----------|-------------|
@@ -964,9 +964,9 @@ int currentPhase = phaser.getPhase();  // 0, 1, 2, ...
 
 ---
 
-## 17. Fork/Join Framework — Chi tiết
+## 16. Fork/Join Framework — Chi tiết
 
-### 17.1. Work-Stealing Algorithm
+### 16.1. Work-Stealing Algorithm
 
 Fork/Join framework sử dụng **work-stealing** để cân bằng load hiệu quả giữa các threads:
 
@@ -984,7 +984,7 @@ flowchart TD
 - Khi worker hoàn thành tasks, nó **steal** tasks từ worker khác
 - Điều này giữ tất cả threads busy với ít contention nhất
 
-### 17.2. Common Pool
+### 16.2. Common Pool
 
 Java 8+ cung cấp một **shared `ForkJoinPool`** qua `ForkJoinPool.commonPool()`:
 
@@ -1004,7 +1004,7 @@ List<String> results = list.parallelStream()
     .collect(Collectors.toList());
 ```
 
-### 17.3. RecursiveAction vs RecursiveTask
+### 16.3. RecursiveAction vs RecursiveTask
 
 ```java
 // RecursiveAction — không có giá trị trả về
@@ -1062,7 +1062,7 @@ class MaxTask extends RecursiveTask<Integer> {
 }
 ```
 
-### 17.4. Best Practices cho ForkJoinPool
+### 16.4. Best Practices cho ForkJoinPool
 
 | Thực hành | Tại sao |
 |-----------|---------|
@@ -1074,7 +1074,7 @@ class MaxTask extends RecursiveTask<Integer> {
 
 ---
 
-## 18. Best Practices
+## 17. Best Practices
 
 | Thực hành | Lý do |
 |---|---|
@@ -1085,3 +1085,17 @@ class MaxTask extends RecursiveTask<Integer> {
 | Trong **Spring Boot**, dùng `@Async` | Không cần quản lý đa luồng thủ công |
 | Tránh dùng `Thread.stop()` | deprecated, không an toàn |
 | Dùng `volatile` cho **shared flags** | Đảm bảo visibility |
+
+## 18. Câu hỏi phỏng vấn thường gặp
+
+### 18.1. `synchronized` khác `Lock` như thế nào?
+
+`synchronized` là cơ chế built-in của ngôn ngữ, phù hợp cho mutual exclusion cơ bản. `Lock` cho nhiều quyền kiểm soát hơn như `tryLock`, timeout, interruptible lock acquisition và nhiều condition queue.
+
+### 18.2. Khi nào dùng `Callable` thay vì `Runnable`?
+
+Dùng `Callable` khi task cần trả về kết quả hoặc ném checked exception. Nó thường đi cùng `ExecutorService` và `Future`.
+
+### 18.3. `CountDownLatch` và `CyclicBarrier` khác nhau ở đâu?
+
+`CountDownLatch` thường dùng một lần để chờ count về 0. `CyclicBarrier` cho một nhóm thread chờ nhau nhiều lần tại cùng một điểm đồng bộ.

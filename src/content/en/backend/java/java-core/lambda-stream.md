@@ -416,3 +416,17 @@ String result = people.stream()
     .collect(Collectors.joining(", ", "[", "]"));
 // Output: "[Alice, Bob, Charlie]"
 ```
+
+## 10. Common interview questions
+
+### 10.1. What is the difference between `map()` and `flatMap()`?
+
+`map()` transforms each element into one new value. `flatMap()` transforms each element into a stream-like structure and then flattens the nested results.
+
+### 10.2. Can you reuse a stream after a terminal operation?
+
+No. A stream is consumed once. After a terminal operation such as `collect`, `forEach`, or `count`, you must create a new stream.
+
+### 10.3. When is `parallelStream()` a bad idea?
+
+It is a bad idea for small datasets, blocking I/O, shared mutable state, or workloads where the coordination overhead is larger than the parallel benefit.

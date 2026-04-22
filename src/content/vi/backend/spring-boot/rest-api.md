@@ -374,3 +374,17 @@ public class SecurityConfig {
     }
 }
 ```
+
+## 11. Câu hỏi phỏng vấn thường gặp
+
+### 11.1. Khi nào nên trả về `201 Created` thay vì `200 OK`?
+
+Trả về `201 Created` khi request tạo ra resource mới và server xác định được resource đó, thường kèm `Location` header.
+
+### 11.2. `@RequestBody` khác `@ModelAttribute` như thế nào?
+
+`@RequestBody` bind payload có cấu trúc như JSON. `@ModelAttribute` thường dùng cho form-style parameter hoặc query/form binding.
+
+### 11.3. Vì sao pagination nên được thiết kế sớm trong REST API?
+
+Vì collection endpoint thường lớn rất nhanh. Quy ước pagination, sorting và filtering rất khó retrofit sau khi client đã phụ thuộc vào version đầu tiên.

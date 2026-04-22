@@ -633,3 +633,17 @@ readinessProbe:
 ```
 
 > **Lưu ý**: Trong Kubernetes, `livenessProbe` kiểm tra xem app có cần restart không. `readinessProbe` kiểm tra xem app có sẵn sàng nhận traffic không.
+
+## 12. Câu hỏi phỏng vấn thường gặp
+
+### 12.1. `livenessProbe` và `readinessProbe` khác nhau ở đâu?
+
+Liveness trả lời việc process có nên bị restart hay không. Readiness trả lời instance có nên nhận traffic ở thời điểm hiện tại hay không.
+
+### 12.2. Vì sao actuator endpoint cần được bảo vệ?
+
+Vì chúng có thể lộ chi tiết vận hành, trạng thái môi trường, metrics hoặc mappings nhạy cảm trong production.
+
+### 12.3. Khi nào nên thêm custom metrics?
+
+Khi platform metrics chưa đủ để giải thích business throughput, queue depth, cache hit rate hoặc failure pattern đặc thù của domain.

@@ -143,7 +143,7 @@ Vì AI backend ngoài thực tế hiếm khi chỉ là "gọi model". Nó thư�
 - Nếu bạn đã làm web app nhưng mới chuyển sang AI backend, bắt đầu từ `Runtime & Concurrency`, rồi sang `FastAPI`, `Jobs & Workflows`, `AI Systems`.
 - Nếu bạn đang chuẩn bị phỏng vấn, đọc thêm phần câu hỏi ở cuối từng doc con, vì đó là nơi dễ bị hỏi nhất.
 
-## 8. Câu hỏi định hướng hay gặp
+## 8. Câu hỏi phỏng vấn thường gặp
 
 ### 8.1. Python mạnh nhất ở đâu trong backend?
 

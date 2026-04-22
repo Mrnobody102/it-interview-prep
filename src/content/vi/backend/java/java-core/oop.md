@@ -6,6 +6,8 @@ Mô hình lập trình dựa trên **object** và **class**, mỗi object là m�
 
 ## 2. Bốn đặc điểm chính của OOP
 
+### 2.1. Encapsulation, Inheritance, Polymorphism, Abstraction
+
 | Đặc điểm | Mô tả | Ví dụ |
 |---|---|---|
 | **Encapsulation** | Che giấu dữ liệu, chỉ truy cập qua getter/setter | `private` field + public getter/setter |
@@ -190,11 +192,39 @@ class C implements A, B {
 }
 ```
 
+### 6.2. Cách xử lý `default` method bị xung đột
+
 > **Tip:** Nếu chỉ một interface có `default` method trùng tên và interface kia không có, Java tự động ưu tiên method đó — không cần override.
 
-## 7. Các câu hỏi phỏng vấn thường gặp
+## 7. Dynamic Dispatch (Virtual Method Table)
 
-### 7.1. Khi nào dùng `final` với class?
+JVM dùng **Virtual Method Table (VMT)** để chọn implementation đúng ở runtime dựa trên **kiểu thực tế của object**, không phải kiểu khai báo của biến tham chiếu.
+
+```java
+class Animal {
+    void sound() {
+        System.out.println("Some sound");
+    }
+}
+
+class Cat extends Animal {
+    @Override
+    void sound() {
+        System.out.println("Meow");
+    }
+}
+
+Animal a = new Cat();
+a.sound(); // "Meow"
+```
+
+### 7.1. Runtime Polymorphism
+
+> **Note:** Đây là cơ chế đứng sau runtime polymorphism trong Java.
+
+## 8. Các câu hỏi phỏng vấn thường gặp
+
+### 8.1. Khi nào dùng `final` với class?
 
 ```java
 public final class String {
@@ -204,11 +234,11 @@ public final class String {
 
 Dùng `final` khi class không cần subclass — đảm bảo tính **bất biến** và **bảo mật**.
 
-### 7.2. Static method có overriding được không?
+### 8.2. Static method có overriding được không?
 
 **Không.** Static method thuộc về class, không phải object. Nếu subclass khai báo method cùng signature, đó là **method hiding**, không phải overriding.
 
-### 7.3. Constructor có phải là method không?
+### 8.3. Constructor có phải là method không?
 
 **Không.** Constructor có các đặc điểm riêng:
 

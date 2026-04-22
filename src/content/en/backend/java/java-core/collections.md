@@ -2,322 +2,253 @@
 
 ## 1. Overview
 
-The Java Collections Framework provides classes and interfaces for working with **dynamic groups of objects** (collections).
+The Java Collections Framework provides standard interfaces and implementations for managing groups of objects.
 
-> **Note:** `Collection` (with capital C) is an **interface** — the root of the collection hierarchy. `Collections` (with capital C + s) is a **utility class** with static methods for sorting, searching, and synchronizing collections.
-
-### 1.1. Core Interfaces Hierarchy
+### 1.1. Classification
 
 ```
 Iterable
-  └── Collection
-        ├── List      (ordered, index-based, allows duplicates)
-        ├── Set       (no duplicates)
-        └── Queue     (FIFO or priority-based)
-              └── Deque (double-ended queue)
+  -> Collection
+       -> List
+       -> Set
+       -> Queue
+            -> Deque
 
-Map  (key-value pairs, keys are unique — NOT part of Collection interface)
+Map   (separate hierarchy, not a subtype of Collection)
 ```
 
----
+`Collection` is an interface. `Collections` is a utility class with helpers such as sorting, searching, and wrappers.
+
+In backend systems, choosing the wrong collection usually does not break correctness first. It breaks performance, memory usage, or concurrency behavior.
 
 ## 2. Iterator vs ListIterator
 
-| Aspect | `Iterator` | `ListIterator` |
-|--------|-----------|----------------|
-| **Direction** | One-way (forward only) | Bidirectional (forward + backward) |
-| **Add/Set/Remove** | `remove()` only | `add()`, `set()`, `remove()` |
-| **Index access** | No | Yes (`previousIndex()`, `nextIndex()`) |
-| **Use with** | All `Collection` types | `List` only |
+| Feature | `Iterator` | `ListIterator` |
+|---|---|---|
+| Direction | Forward only | Forward and backward |
+| Write support | `remove()` | `add()`, `set()`, `remove()` |
+| Works with | Any `Collection` | `List` only |
+
+### 2.1. Example
 
 ```java
-List<String> list = Arrays.asList("A", "B", "C");
+List<String> items = new ArrayList<>(List.of("A", "B", "C"));
 
-// Iterator
-Iterator<String> it = list.iterator();
+Iterator<String> it = items.iterator();
 while (it.hasNext()) {
-    String item = it.next();
-    if ("B".equals(item)) {
+    if ("B".equals(it.next())) {
         it.remove();
     }
 }
 
-// ListIterator (bidirectional)
-ListIterator<String> li = list.listIterator();
+ListIterator<String> li = items.listIterator();
 while (li.hasNext()) {
-    if (li.nextIndex() == 1) {
-        li.set("X");  // Modify current element
+    String value = li.next();
+    if ("A".equals(value)) {
+        li.set("X");
     }
-    li.next();
-}
-while (li.hasPrevious()) {
-    System.out.println(li.previous());
 }
 ```
 
----
+`ListIterator` is less common in day-to-day code, but it becomes useful when you need in-place bidirectional traversal or replacement logic.
 
 ## 3. fail-fast vs fail-safe
 
-| Aspect | fail-fast | fail-safe |
-|--------|-----------|-----------|
-| **Behavior** | Throws `ConcurrentModificationException` on concurrent modification | Works on a copy of the collection |
-| **Implementation** | Detects modification during iteration via mod count | No mod-count checking |
-| **Performance** | No overhead | Overhead of copying |
-| **Examples** | `ArrayList`, `HashMap`, `HashSet`, `LinkedList` | `CopyOnWriteArrayList`, `ConcurrentHashMap`, `ConcurrentLinkedQueue` |
+Fail-fast iterators detect structural changes during iteration and usually throw `ConcurrentModificationException`. Fail-safe iterators iterate over a snapshot or concurrent structure and tolerate modification.
+
+The key point is that fail-fast is a bug detector, not a synchronization mechanism.
+
+### 3.1. fail-fast Example
 
 ```java
-// fail-fast example (don't do this!)
-List<String> list = new ArrayList<>(Arrays.asList("A", "B", "C"));
-for (String s : list) {  // ConcurrentModificationException
-    if ("B".equals(s)) {
-        list.remove(s);
-    }
-}
+List<String> list = new ArrayList<>(List.of("A", "B", "C"));
 
-// fail-safe solution using Iterator remove
-Iterator<String> it = list.iterator();
-while (it.hasNext()) {
-    if ("B".equals(it.next())) {
-        it.remove();  // Safe removal through iterator
+for (String item : list) {
+    if ("B".equals(item)) {
+        list.remove(item); // ConcurrentModificationException
     }
 }
 ```
 
----
+The safe alternatives are:
 
-## 4. List Implementations
+- remove through the iterator itself
+- use a concurrent collection
+- collect changes and apply them afterward
 
-| Implementation | Get/Set | Add/Remove End | Add/Remove Middle | Use Case |
-|---------------|---------|--------------|-----------------|----------|
-| `ArrayList` | O(1) | O(1) amortized | O(n) | Frequent **reads**, infrequent writes |
-| `LinkedList` | O(n) | O(1) | O(1) at known position | Frequent **adds/removes** at ends, implement List/Queue/Deque/Stack |
-| `Vector` | O(1) | O(1) | O(n) | Legacy, **synchronized** (thread-safe) |
-| `Stack` | O(1) | O(1) | N/A | Legacy LIFO stack (extends Vector) |
+## 4. List: Ordered and Allows Duplicates
+
+### 4.1. Comparison
+
+| Implementation | Strength | Weakness | Typical Use |
+|---|---|---|---|
+| `ArrayList` | Fast random access | Slow middle inserts/removes | Read-heavy lists |
+| `LinkedList` | Fast end inserts/removes | Poor random access | Queue/deque style access |
+| `Vector` | Synchronized legacy list | Legacy API, overhead | Rarely recommended |
+
+For most business code, `ArrayList` should be the default assumption until profiling proves otherwise.
+
+### 4.2. Example
 
 ```java
-// ArrayList - best for random access
-List<String> arrList = new ArrayList<>();
-arrList.add("A");
-String first = arrList.get(0);  // O(1)
+List<String> arrayList = new ArrayList<>();
+arrayList.add("A");
+arrayList.add("B");
+System.out.println(arrayList.get(1));
 
-// LinkedList - best for frequent add/remove at ends
-List<String> linked = new LinkedList<>();
-linked.addFirst("X");
-linked.addLast("Y");
-String removed = linked.removeFirst();  // O(1)
-
-// LinkedList as Queue/Deque
-Queue<Integer> queue = new LinkedList<>();
-queue.offer(1);       // add to tail
-queue.poll();         // remove from head
-
-Deque<Integer> deque = new LinkedList<>();
-deque.offerFirst(1);  // head
-deque.offerLast(2);   // tail
-deque.pollFirst();
-deque.pollLast();
+LinkedList<String> linkedList = new LinkedList<>();
+linkedList.addFirst("start");
+linkedList.addLast("end");
 ```
 
----
+Although `LinkedList` has attractive asymptotic complexity on paper, modern CPU cache behavior means `ArrayList` still wins surprisingly often in real applications.
 
-## 5. Set Implementations
+## 5. Set: No Duplicates
 
-| Implementation | Ordering | Null | Time Complexity | Internal Structure |
-|---------------|----------|------|-----------------|-------------------|
-| `HashSet` | Unordered | One null | O(1) average | Hash table |
-| `LinkedHashSet` | Insertion order | One null | O(1) average | Hash table + doubly linked list |
-| `TreeSet` | Sorted (natural/comparator) | **No null** | O(log n) | Red-black tree |
+### 5.1. Comparison
+
+| Implementation | Ordering | Time Complexity | Notes |
+|---|---|---|---|
+| `HashSet` | Unordered | `O(1)` average | Backed by `HashMap` |
+| `LinkedHashSet` | Insertion order | `O(1)` average | Keeps iteration order |
+| `TreeSet` | Sorted | `O(log n)` | Backed by a red-black tree |
+
+### 5.2. How Does HashSet Work?
+
+`HashSet` internally stores elements as keys in a `HashMap`. That means `hashCode()` selects a bucket and `equals()` resolves collisions.
+
+In practice, a bad `hashCode()` implementation creates more collisions and degrades performance.
+
+This is why entity and value object equality rules matter so much when those objects are used inside collections.
+
+### 5.3. Custom Classes in HashSet
+
+If a custom class is stored in `HashSet`, it must implement `equals()` and `hashCode()` consistently.
 
 ```java
-// HashSet - unordered, O(1) lookup
-Set<String> hashSet = new HashSet<>();
-hashSet.add("Banana");
-hashSet.add("Apple");
-hashSet.add("Banana");  // Duplicate, ignored
-System.out.println(hashSet);  // Unordered output
+public class User {
+    private final Long id;
 
-// LinkedHashSet - maintains insertion order
-Set<String> linkedSet = new LinkedHashSet<>();
-linkedSet.add("First");
-linkedSet.add("Second");
-linkedSet.add("Third");  // Output: [First, Second, Third]
+    public User(Long id) {
+        this.id = id;
+    }
 
-// TreeSet - sorted, no null allowed
-Set<Integer> treeSet = new TreeSet<>();
-treeSet.add(3);
-treeSet.add(1);
-treeSet.add(2);
-System.out.println(treeSet);  // Output: [1, 2, 3]
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof User other)) return false;
+        return Objects.equals(id, other.id);
+    }
 
-// TreeSet with custom comparator
-Set<String> descSet = new TreeSet<>(Comparator.reverseOrder());
-descSet.add("Apple");
-descSet.add("Banana");
-descSet.add("Cherry");  // Output: [Banana, Cherry, Apple]
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
+}
 ```
 
----
+If mutable fields participate in `equals()` or `hashCode()`, changing them after insertion can make the set behave unpredictably.
 
-## 6. Queue & Deque
+## 6. Queue and Deque
 
-### 6.1. Queue Interface
+### 6.1. Comparison
 
-| Method | Throws Exception | Returns null/false |
-|--------|-----------------|-------------------|
-| Insert | `add(e)` | `offer(e)` |
-| Remove | `remove()` | `poll()` |
-| Examine | `element()` | `peek()` |
+| Structure | Meaning | Common Methods |
+|---|---|---|
+| `Queue` | FIFO access | `offer`, `poll`, `peek` |
+| `Deque` | Double-ended access | `offerFirst`, `offerLast`, `pollFirst`, `pollLast` |
 
-### 6.2. Deque Interface (Double-Ended Queue)
+Queue choice matters in backend work for buffering, scheduling, retries, rate limiting, and producer-consumer flows.
 
-Supports both **FIFO** (Queue) and **LIFO** (Stack) operations.
+### 6.2. PriorityQueue
 
-| Queue Operation | Deque Equivalent |
-|----------------|-----------------|
-| `add(e)` / `offer(e)` | `offerLast(e)` |
-| `remove()` / `poll()` | `pollFirst()` |
-| `element()` / `peek()` | `peekFirst()` |
-| — | `offerFirst(e)`, `pollLast()` |
-| — | `push(e)` (LIFO stack) |
-| — | `pop()` (LIFO stack) |
-
-### 6.3. Key Implementations
-
-| Implementation | Null | Bounded | Internal |
-|---------------|------|---------|----------|
-| `PriorityQueue` | **No null** | No | Min-heap (natural order) |
-| `ArrayDeque` | **No null** | Yes (resizable array) | Array |
-| `LinkedList` | Allows null | No | Doubly linked list |
+`PriorityQueue` is heap-based. The head is the smallest element by default, or the highest-priority element according to the comparator.
 
 ```java
-// PriorityQueue - heap-based, min element at head by default
 Queue<Integer> pq = new PriorityQueue<>();
 pq.offer(5);
 pq.offer(2);
 pq.offer(8);
-System.out.println(pq.peek());  // 2 (smallest)
+System.out.println(pq.poll()); // 2
+```
 
-// PriorityQueue with reverse order (max-heap)
-Queue<Integer> maxPq = new PriorityQueue<>(Comparator.reverseOrder());
-maxPq.offer(5);
-maxPq.offer(2);
-SystemPq.peek());  // 8 (largest)
+Important caveat: iteration order of `PriorityQueue` is not sorted order. Only repeated `poll()` gives you priority order.
 
-// ArrayDeque - fast double-ended operations
-Deque<String> deque = new ArrayDeque<>();
-deque.offerFirst("A");
-deque.offerLast("B");
-deque.pollFirst();  // A
-deque.pollLast();   // B
+### 6.3. ArrayDeque
 
-// ArrayDeque as Stack (faster than Stack class)
+`ArrayDeque` is usually the preferred modern stack/queue implementation for single-threaded code.
+
+```java
 Deque<Integer> stack = new ArrayDeque<>();
 stack.push(1);
 stack.push(2);
-stack.push(3);
-stack.pop();  // 3
-stack.peek(); // 2
+System.out.println(stack.pop()); // 2
 ```
 
----
+It is generally better than legacy `Stack` and often better than `LinkedList` for queue/deque behavior due to lower object overhead.
 
-## 7. Map (Not Part of Collection Interface)
+## 7. Map: Key-Value
 
-Maps store **key-value pairs**. Keys are unique (one `null` key allowed unless stated), values can be duplicated.
+### 7.1. Comparison
 
-### 7.1. Map Interface Methods
+| Implementation | Ordering | Null Key | Time Complexity | Best For |
+|---|---|---|---|---|
+| `HashMap` | Unordered | One | `O(1)` average | General use |
+| `LinkedHashMap` | Insertion/access order | One | `O(1)` average | Ordered maps and LRU cache patterns |
+| `TreeMap` | Sorted | No | `O(log n)` | Sorted navigation |
+| `ConcurrentHashMap` | Unordered | No | `O(1)` average | Concurrent access |
+
+`HashMap` is the default for general use, but map choice becomes architectural when iteration order, concurrency, or range-query behavior matter.
+
+### 7.2. HashMap Internals (Java 8+)
+
+`HashMap` uses buckets, hashing, and collision handling. In Java 8+, heavily-collided buckets may be treeified into red-black trees to avoid long linked-list lookups.
+
+The interview point is simple: `hashCode()` chooses the bucket, `equals()` confirms key identity.
+
+That means a good key type should usually be:
+
+- immutable
+- stable in equality semantics
+- cheap to hash
+
+### 7.3. LinkedHashMap: LRU Cache
+
+`LinkedHashMap` can be configured in access-order mode, which makes it useful for small in-memory LRU caches.
 
 ```java
-Map<String, Integer> map = new HashMap<>();
-
-map.put("A", 1);        // Add/update
-map.get("A");           // Get by key
-map.remove("A");        // Remove by key
-map.containsKey("A");   // Key exists?
-map.containsValue(1);  // Value exists?
-map.keySet();           // Set of keys
-map.values();           // Collection of values
-map.entrySet();         // Set of key-value pairs
-map.getOrDefault("B", 0);  // Get with default
-map.merge("A", 1, Integer::sum);  // Merge if exists
+Map<String, String> cache = new LinkedHashMap<>(16, 0.75f, true) {
+    @Override
+    protected boolean removeEldestEntry(Map.Entry<String, String> eldest) {
+        return size() > 100;
+    }
+};
 ```
 
-### 7.2. Map Implementations
+This is fine for small local caches, but large production caching usually belongs in Caffeine, Redis, or another purpose-built system.
 
-| Implementation | Ordering | Null Key | Null Values | Time (get/put) | Notes |
-|---------------|----------|----------|-------------|----------------|-------|
-| `HashMap` | Unordered | One null | Multiple null | O(1) avg | Uses **red-black tree** for collisions from Java 8+ |
-| `LinkedHashMap` | Insertion order | One null | Multiple null | O(1) avg | HashMap + doubly linked list |
-| `TreeMap` | Sorted | **No null** | Multiple null | O(log n) | Red-black tree, navigable |
-| `ConcurrentHashMap` | Unordered | **No null** | **No null** | O(1) avg | Thread-safe, segmented locking |
+### 7.4. TreeMap: Sorted Map
 
-```java
-// HashMap - basic key-value store
-Map<String, Integer> hashMap = new HashMap<>();
-hashMap.put("Alice", 25);
-hashMap.put("Bob", 30);
-hashMap.put("Alice", 26);  // Updates Alice's value
-System.out.println(hashMap.get("Bob"));  // 30
+`TreeMap` keeps keys ordered and exposes navigation APIs such as `firstKey()`, `lastKey()`, `higherKey()`, and `subMap()`.
 
-// LinkedHashMap - insertion order
-Map<String, Integer> linkedMap = new LinkedHashMap<>();
-linkedMap.put("First", 1);
-linkedMap.put("Second", 2);
-linkedMap.put("Third", 3);  // Iterates in insertion order
+It is a strong fit when ordering is part of the problem itself, not just a presentation detail.
 
-// TreeMap - sorted by keys
-Map<String, Integer> treeMap = new TreeMap<>();
-treeMap.put("Banana", 2);
-treeMap.put("Apple", 1);
-treeMap.put("Cherry", 3);
-System.out.println(treeMap.keySet());  // [Apple, Banana, Cherry]
+## 8. Common Interview Questions
 
-// TreeMap - navigation methods
-treeMap.lowerKey("Cherry");  // Banana
-treeMap.higherKey("Apple");   // Banana
-treeMap.subMap("Apple", "Cherry");  // {Apple=1, Banana=2}
+### 8.1. When Should I Use ArrayList vs LinkedList?
 
-// ConcurrentHashMap - thread-safe
-ConcurrentHashMap<String, Integer> concurrent = new ConcurrentHashMap<>();
-concurrent.putIfAbsent("Lock", 1);  // Only if key absent
-concurrent.computeIfAbsent("Key", k -> 1);  // Lazy compute
-```
+Use `ArrayList` by default. Reach for `LinkedList` only when you truly benefit from frequent end insertions/removals or need deque semantics.
 
-### 7.3. Choosing a Map
+In interviews, saying "ArrayList by default" is usually the safer and more realistic answer.
 
-| Use Case | Recommended Map |
-|----------|----------------|
-| General purpose, fast lookups | `HashMap` |
-| Need insertion order | `LinkedHashMap` |
-| Need sorted keys | `TreeMap` |
-| Multi-threaded environment | `ConcurrentHashMap` |
-| Thread-safe but need null support | `Collections.synchronizedMap()` (legacy) |
+### 8.2. HashMap vs Hashtable vs ConcurrentHashMap?
 
----
+`Hashtable` is legacy. `HashMap` is not thread-safe. `ConcurrentHashMap` is the normal choice for concurrent read/write access.
 
-## 8. Legacy Collections
+Also note that `ConcurrentHashMap` does not allow `null` keys or values, which removes ambiguity in concurrent access semantics.
 
-| Class | Description | Modern Alternative |
-|-------|-------------|-------------------|
-| `Vector` | Synchronized `ArrayList` | `ArrayList` + `Collections.synchronizedList()` |
-| `Stack` | LIFO stack (extends `Vector`) | `ArrayDeque` |
-| `Hashtable` | Synchronized `HashMap` | `ConcurrentHashMap` |
-| `Enumeration` | Legacy iterator | `Iterator` |
+### 8.3. HashMap vs TreeMap vs LinkedHashMap?
 
----
+Use `HashMap` for speed, `LinkedHashMap` for predictable iteration order or LRU patterns, and `TreeMap` when you need sorted keys and range queries.
 
-## 9. Choosing the Right Collection
-
-| Goal | Best Choice |
-|------|-------------|
-| Fast random access by index | `ArrayList` |
-| Fast add/remove at ends | `ArrayDeque`, `LinkedList` |
-| Unique elements, no ordering | `HashSet` |
-| Unique elements, insertion order | `LinkedHashSet` |
-| Unique elements, sorted | `TreeSet` |
-| Key-value pairs | `HashMap` |
-| Key-value, insertion order | `LinkedHashMap` |
-| Key-value, sorted | `TreeMap` |
-| Thread-safe collections | `ConcurrentHashMap`, `CopyOnWriteArrayList` |
-| Producer-consumer queue | `BlockingQueue` |
+That distinction comes up often in API pagination, in-memory indexing, and business rules that depend on natural ordering.

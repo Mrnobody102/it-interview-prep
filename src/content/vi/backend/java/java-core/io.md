@@ -199,6 +199,18 @@ Path tempFile = Files.createTempFile("prefix", ".tmp");
 Path tempDir = Files.createTempDirectory("dir");
 ```
 
+### 3.5. Selector và Non-Blocking Network I/O
+
+Khi cần một thread xử lý nhiều kết nối socket cùng lúc, `Selector` cho phép theo dõi nhiều `Channel` ở chế độ non-blocking thay vì chặn trên từng kết nối.
+
+```java
+Selector selector = Selector.open();
+ServerSocketChannel server = ServerSocketChannel.open();
+server.configureBlocking(false);
+server.bind(new InetSocketAddress(8080));
+server.register(selector, SelectionKey.OP_ACCEPT);
+```
+
 ## 4. Serialization
 
 Biến **object Java thành dãy byte** để lưu vào file hoặc truyền qua mạng.
@@ -331,45 +343,180 @@ try (FileInputStream fis = new FileInputStream("file.txt")) {
 } // tự động close(), cả exception đọc và close đều được xử lý
 ```
 
-## 6. Scoped Memory (Java 22+)
+### 5.3. Ví dụ thực tế
+
+`try-with-resources` rất hay gặp trong code backend thực tế: đọc file cấu hình, làm việc với JDBC, thao tác socket, hoặc stream response từ dịch vụ khác.
 
 ```java
-// Java 22 giới thiệu ScopedValue — thay thế ThreadLocal cho structured concurrency
-
-// ThreadLocal — gắn giá trị với thread vô thời hạn
-ThreadLocal<String> tl = new ThreadLocal<>();
-tl.set("data");
-// phải gọi remove() thủ công, dễ leak
-
-// ScopedValue — gắn giá trị trong scope cụ thể
-ScopedValue<String> USER = ScopedValue.newInstance();
-
-ScopedValue.where(USER, "Alice", () -> {
-    System.out.println(USER.get()); // "Alice"
-    // Tự động cleanup khi thoát scope
-});
+try (Connection conn = dataSource.getConnection();
+     PreparedStatement stmt = conn.prepareStatement(
+         "select id, name from users where active = ?")) {
+    stmt.setBoolean(1, true);
+    ResultSet rs = stmt.executeQuery();
+    while (rs.next()) {
+        System.out.println(rs.getLong("id"));
+    }
+}
 ```
 
-## 7. Các câu hỏi phỏng vấn thường gặp
+## 6. File Operations
 
-### 7.1. Byte Stream vs Character Stream?
+### 6.1. Dùng `java.io.File`
 
-| Tiêu chí | Byte Stream | Character Stream |
+```java
+File file = new File("path/to/file.txt");
+
+file.exists();              // Kiểm tra tồn tại
+file.isFile();              // Có phải file?
+file.isDirectory();         // Có phải thư mục?
+file.length();              // Kích thước theo byte
+file.lastModified();        // Thời gian sửa gần nhất
+file.mkdir();               // Tạo thư mục
+file.mkdirs();              // Tạo thư mục + parent directories
+file.delete();              // Xóa file/thư mục
+file.renameTo(new File("new.txt"));  // Đổi tên / move
+file.listFiles();           // Liệt kê file trong thư mục
+```
+
+### 6.2. Dùng `java.nio.file`
+
+```java
+Path path = Path.of("path/to/file.txt");
+
+Files.exists(path);
+Files.notExists(path);
+
+List<String> lines = Files.readAllLines(path);
+String content = Files.readString(path); // Java 11+
+
+Files.writeString(path, "Hello");
+Files.write(path, bytes);
+
+Files.copy(from, to, StandardCopyOption.REPLACE_EXISTING);
+Files.move(from, to, StandardCopyOption.ATOMIC_MOVE);
+
+Files.createDirectory(path);
+Files.createDirectories(path);
+
+Files.walk(path)
+    .filter(p -> p.toString().endsWith(".java"))
+    .forEach(System.out::println);
+
+try (Stream<String> linesStream = Files.lines(path)) {
+    long count = linesStream.filter(line -> line.contains("TODO")).count();
+}
+```
+
+Trong code backend hiện đại, `Path`/`Files` thường được ưu tiên hơn `File` vì API giàu hơn, rõ ràng hơn, và hợp với NIO.
+
+## 7. Buffered I/O Performance
+
+Luôn ưu tiên buffered I/O khi đọc/ghi nhiều dữ liệu nhỏ lặp lại, vì giảm số lần system call đáng kể.
+
+| Tình huống | Khuyến nghị |
+|---|---|
+| Đọc/ghi nhỏ, lặp lại | Dùng `BufferedInputStream`, `BufferedReader`, `BufferedWriter` |
+| Copy file lớn | Dùng buffer lớn, `Files.copy()`, hoặc `FileChannel.transferTo()` |
+| Đọc từng dòng text | `BufferedReader.readLine()` |
+| Truy cập ngẫu nhiên | `RandomAccessFile` hoặc `FileChannel` |
+| Networking throughput cao | `SocketChannel`, `Selector`, hoặc framework NIO-based |
+
+```java
+// Unbuffered — chậm, đọc từng byte
+try (FileInputStream fis = new FileInputStream("large.txt");
+     FileOutputStream fos = new FileOutputStream("copy.txt")) {
+    int b;
+    while ((b = fis.read()) != -1) {
+        fos.write(b);
+    }
+}
+
+// Buffered — nhanh hơn đáng kể
+try (BufferedInputStream bis = new BufferedInputStream(
+        new FileInputStream("large.txt"));
+     BufferedOutputStream bos = new BufferedOutputStream(
+        new FileOutputStream("copy.txt"))) {
+    byte[] buffer = new byte[8192];
+    int n;
+    while ((n = bis.read(buffer)) != -1) {
+        bos.write(buffer, 0, n);
+    }
+}
+
+// NIO copy
+Files.copy(Path.of("large.txt"), Path.of("copy.txt"),
+    StandardCopyOption.COPY_ATTRIBUTES,
+    StandardCopyOption.REPLACE_EXISTING);
+```
+
+## 8. Common I/O Patterns
+
+### 8.1. Đọc input từ người dùng
+
+```java
+try (BufferedReader reader = new BufferedReader(
+        new InputStreamReader(System.in))) {
+    System.out.print("Enter your name: ");
+    String name = reader.readLine();
+}
+
+Scanner scanner = new Scanner(System.in);
+int num = scanner.nextInt();
+String line = scanner.nextLine();
+
+Console console = System.console();
+if (console != null) {
+    String username = console.readLine("Username: ");
+    char[] password = console.readPassword("Password: ");
+}
+```
+
+### 8.2. Đọc tài nguyên từ classpath
+
+```java
+try (InputStream is = getClass().getClassLoader()
+        .getResourceAsStream("config.properties")) {
+    Properties props = new Properties();
+    props.load(is);
+}
+
+Path configPath = Path.of(
+    getClass().getClassLoader().getResource("config.xml").toURI());
+Document doc = DocumentBuilderFactory.newInstance()
+    .newDocumentBuilder().parse(configPath.toFile());
+```
+
+Các pattern này xuất hiện nhiều trong backend thực tế: đọc config, stream dữ liệu lớn, load template/resource trong JAR, hoặc xử lý import/export file.
+
+## 9. I/O vs NIO Comparison
+
+| Tiêu chí | `java.io` | `java.nio` |
 |---|---|---|
-| **Dữ liệu** | Nhị phân (8-bit) | Ký tự Unicode (16-bit) |
-| **Class** | `InputStream`/`OutputStream` | `Reader`/`Writer` |
-| **Use case** | File nhị phân, image, audio | Text file |
-| **Encoding** | Không quan tâm encoding | Quan tâm encoding (UTF-8, ISO-8859-1...) |
+| Mô hình I/O | Blocking | Blocking + Non-blocking |
+| Cách truy cập dữ liệu | Stream tuần tự | Buffer / channel |
+| Channel | Không | Có |
+| Selector | Không | Có |
+| Bộ nhớ | Chủ yếu heap | Heap + direct buffer |
+| Khả năng scale nhiều kết nối | Kém hơn | Tốt hơn |
+| Dùng tốt cho | File nhỏ, code đơn giản | Networking, file lớn, throughput cao |
+| Độ phức tạp | Thấp | Cao hơn |
 
-### 7.2. Tại sao BufferedStream quan trọng?
+Tóm ngắn gọn:
 
-Mỗi lần gọi `read()`/`write()` là 1 system call — tốn kém. Buffer gom dữ liệu và chỉ gọi OS khi buffer đầy hoặc khi `flush()`.
+- `java.io` dễ học, hợp cho tác vụ đơn giản
+- `java.nio` mạnh hơn khi cần hiệu năng, networking, hoặc non-blocking I/O
+- trong backend hiện đại, hiểu cả hai là cần thiết vì framework và thư viện có thể dùng cả hai kiểu API
 
-### 7.3. Serializable vs Externalizable?
+## 10. Câu hỏi phỏng vấn thường gặp
 
-| Tiêu chí | `Serializable` | `Externalizable` |
-|---|---|---|
-| **Customization** | Hạn chế (transient, custom read/write) | Hoàn toàn tùy chỉnh |
-| **Performance** | Chậm hơn (reflection) | Nhanh hơn (code tự viết) |
-| **Code** | Ít | Nhiều |
-| **Use case** | Đa số trường hợp | Cần kiểm soát hoàn toàn serialization |
+### 10.1. `InputStream` khác `Reader` như thế nào?
+
+`InputStream` xử lý byte thô, còn `Reader` xử lý ký tự nên phụ thuộc vào text encoding.
+
+### 10.2. Khi nào nên dùng `FileChannel` thay vì stream truyền thống?
+
+Dùng `FileChannel` khi cần throughput cao hơn, đọc ghi theo vị trí, memory-mapped file, hoặc tích hợp với các API NIO khác.
+
+### 10.3. Khi nào selector thực sự hữu ích?
+
+Selector hữu ích khi một thread phải quản lý rất nhiều kết nối mạng mà không muốn block riêng trên từng kết nối.

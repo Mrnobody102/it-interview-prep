@@ -466,3 +466,17 @@ class Example {
 | Set equal `-Xms` and `-Xmx` | Eliminates heap resizing overhead |
 | Monitor Metaspace with `-XX:MetaspaceSize` | Prevent metaspace-driven GC |
 | Use `jstat -gc` to monitor heap and GC activity | Real-time memory usage visibility |
+
+## 8. Common interview questions
+
+### 8.1. What is the difference between stack and heap memory?
+
+The stack mainly stores call frames and local variables for each thread, while the heap stores shared objects and arrays managed by the garbage collector.
+
+### 8.2. Can Java applications still have memory leaks?
+
+Yes. A leak in Java usually means objects are still strongly referenced even though the application no longer needs them.
+
+### 8.3. Why is `ThreadLocal` risky in thread pools?
+
+Because pooled threads live a long time. If `ThreadLocal` values are not cleared, stale data and unintended memory retention can survive across requests.

@@ -396,3 +396,17 @@ interface StringUtils {
 
 System.out.println(StringUtils.isBlank("  ")); // true
 ```
+
+## 10. Câu hỏi phỏng vấn thường gặp
+
+### 10.1. `map()` khác `flatMap()` như thế nào?
+
+`map()` biến đổi mỗi phần tử thành một giá trị mới. `flatMap()` biến đổi mỗi phần tử thành một cấu trúc dạng stream rồi làm phẳng kết quả lồng nhau.
+
+### 10.2. Có thể dùng lại một stream sau terminal operation không?
+
+Không. Stream chỉ được consume một lần. Sau `collect`, `forEach`, `count` hay terminal operation khác thì phải tạo stream mới.
+
+### 10.3. Khi nào `parallelStream()` là lựa chọn tệ?
+
+Khi dữ liệu nhỏ, có blocking I/O, có shared mutable state, hoặc overhead điều phối lớn hơn lợi ích song song hóa.

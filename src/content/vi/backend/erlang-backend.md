@@ -25,3 +25,17 @@ Erlang và Elixir là ngôn ngữ lập trình được thiết kế cho các h�
 ## 3. Elixir và Erlang
 
 Elixir chạy trên BEAM (Erlang VM), compile xuống bytecode Erlang. Elixir cung cấp syntax hiện đại hơn, macro system mạnh, và tooling tốt hơn (Mix, ExUnit, Phoenix). Erlang cung cấp ngữ pháp truyền thống, otpstdlib sẵn có. Logic runtime hoàn toàn tương thích.
+
+## 4. Câu hỏi phỏng vấn thường gặp
+
+### 4.1. Vì sao BEAM mạnh trong hệ thống concurrency cao?
+
+Vì BEAM chạy được số lượng rất lớn lightweight process, cô lập lỗi tốt, và scheduler phân phối công việc công bằng mà không cần map mỗi task thành một OS thread.
+
+### 4.2. Erlang process khác gì OS thread?
+
+Erlang process nhẹ hơn rất nhiều, có vùng nhớ tách biệt, giao tiếp bằng message passing, và được VM scheduler quản lý thay vì hệ điều hành.
+
+### 4.3. Khi nào nên chọn Elixir/Erlang thay vì Go hoặc Java?
+
+Nên chọn khi fault tolerance, long-lived connection, soft real-time behavior và operational resilience quan trọng hơn raw single-thread performance.

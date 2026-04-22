@@ -129,7 +129,7 @@ Vì trong AI stack, C++ thường không chỉ là "ngôn ngữ nhanh", mà là 
 - Nếu bạn đang làm backend thường nhưng muốn học C++ cho performance-critical systems, đọc từ mục 4.1 tới 4.3.
 - Nếu bạn đang làm AI infra, hãy ưu tiên `Memory & Performance`, `AI Systems` và `Production`.
 
-## 8. Câu hỏi định hướng hay gặp
+## 8. Câu hỏi phỏng vấn thường gặp
 
 ### 8.1. C++ mạnh nhất ở đâu trong backend?
 

@@ -550,3 +550,17 @@ public class GlobalExceptionHandler {
     public record ErrorResponse(String code, String message) {}
 }
 ```
+
+## 11. Câu hỏi phỏng vấn thường gặp
+
+### 11.1. `@SpringBootApplication` bao gồm những gì?
+
+Nó gộp `@Configuration`, `@EnableAutoConfiguration` và `@ComponentScan`, nên chỉ một annotation đã có thể bootstrap phần lớn ứng dụng.
+
+### 11.2. Vì sao auto-configuration hữu ích?
+
+Vì nó loại bỏ phần setup lặp lại và cung cấp default hợp lý dựa trên classpath cùng application properties, nhưng vẫn cho phép override khi cần.
+
+### 11.3. Vì sao nên externalize configuration?
+
+Vì mỗi môi trường khác nhau. Đưa secret, port, URL và feature toggle ra ngoài code giúp deploy an toàn hơn và dễ vận hành hơn.

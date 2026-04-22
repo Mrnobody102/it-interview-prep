@@ -168,6 +168,46 @@ try (FileChannel channel = FileChannel.open(
 }
 ```
 
+### 3.4. Path, Files
+
+```java
+Path path = Path.of("src/main/resources/app.yml");
+Path absolute = path.toAbsolutePath();
+Path normalized = path.normalize();
+
+Files.exists(path);
+Files.notExists(path);
+
+String content = Files.readString(path);
+Files.writeString(path, "updated");
+
+try (DirectoryStream<Path> stream = Files.newDirectoryStream(Path.of("src"))) {
+    for (Path entry : stream) {
+        System.out.println(entry.getFileName());
+    }
+}
+
+Files.walk(Path.of("."))
+    .filter(p -> p.toString().endsWith(".java"))
+    .forEach(System.out::println);
+```
+
+`Path` and `Files` are usually preferred over legacy `File` APIs in modern Java because the API is richer, clearer, and integrates naturally with NIO operations.
+
+### 3.5. Selector and Non-Blocking Network I/O
+
+When one thread needs to watch many socket channels at once, `Selector` allows multiplexing rather than blocking on each connection independently.
+
+```java
+Selector selector = Selector.open();
+ServerSocketChannel server = ServerSocketChannel.open();
+server.configureBlocking(false);
+server.bind(new InetSocketAddress(8080));
+server.register(selector, SelectionKey.OP_ACCEPT);
+```
+
+This model matters more for networking frameworks and high-connection servers than for simple file I/O, but it is one of the main reasons `java.nio` is associated with scalable network programming.
+
 ---
 
 ## 4. Serialization
@@ -458,3 +498,17 @@ Document doc = DocumentBuilderFactory.newInstance()
 | **Scalability** | Poor for many connections | Excellent (selectors, multiplexing) |
 | **Best for** | Simple file I/O, small data | Large files, high-throughput, networking |
 | **Complexity** | Simple | More complex |
+
+## 10. Common interview questions
+
+### 10.1. What is the difference between `InputStream` and `Reader`?
+
+`InputStream` works with raw bytes, while `Reader` works with characters and therefore depends on text encoding.
+
+### 10.2. When should you prefer `FileChannel` over classic streams?
+
+Use `FileChannel` when you need higher throughput, partial reads and writes, file positioning, memory-mapped files, or integration with other NIO APIs.
+
+### 10.3. When do selectors make sense?
+
+Selectors make sense when one thread must manage many network connections without blocking on each one individually.

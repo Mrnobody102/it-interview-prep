@@ -426,6 +426,8 @@ public class UserServiceApplication { }
 
 ## 11. Rate Limiter (Resilience4j)
 
+### 11.1. Configuration
+
 Giới hạn số lượng requests trong một khoảng thời gian.
 
 ```properties
