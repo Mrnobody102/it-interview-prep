@@ -2,169 +2,119 @@
 
 ## Overview
 
-Robotics perception is not just computer vision on a robot. It is the full problem of turning noisy, delayed sensor streams into a stable estimate of:
+Robot perception is broader than camera models or SLAM libraries alone.
 
-- where the robot is
-- what the environment looks like
-- what objects and obstacles exist
-- what can be acted on safely
+In practice, the topic is easier to learn through four connected layers:
 
-This topic sits between raw sensing and planning.
+1. sensors, calibration, and fusion
+2. localization, state estimation, and SLAM
+3. maps and navigation-facing world models
+4. manipulation perception and semantic grounding
 
----
-
-## Sensor Modalities
-
-Common sensors in modern systems:
-
-| Sensor | Strengths | Weaknesses |
-|---|---|---|
-| **RGB camera** | semantics, cheap, rich texture | lighting sensitivity, no direct depth |
-| **Stereo / RGB-D** | geometry + semantics | limited range, reflective surfaces |
-| **LiDAR** | accurate distance, robust geometry | lower semantics, cost |
-| **IMU** | fast motion estimate | drift over time |
-| **Wheel odometry** | cheap local motion signal | slip and cumulative drift |
-| **Force/torque** | contact understanding | local and task-specific |
-
-Good robot perception is usually multimodal, not single-sensor.
+That is why this topic is now split into dedicated child topics.
 
 ---
 
-## Sensor Fusion
+## Why This Matters for Physical AI
 
-Fusion matters because no sensor is enough on its own.
+A robot must turn noisy sensor streams into a stable action-ready belief about the world.
 
-Common combinations:
+That means perception is responsible for:
 
-- camera + IMU for visual-inertial odometry
-- LiDAR + IMU for robust localization
-- wheel odometry + IMU + map matching for mobile robots
-- camera + depth + force sensing for manipulation
+- spatial consistency
+- temporal consistency
+- confidence under uncertainty
+- compatibility with planners and controllers
+- graceful degradation when sensors fail or drift
 
-Core concerns:
-
-- calibration
-- timestamp alignment
-- frame consistency
-- latency compensation
-- outlier handling
-
-Many robotics bugs that look like "bad AI" are really fusion or calibration bugs.
+This is why deployed robot perception is a systems problem, not only a model problem.
 
 ---
 
-## Localization vs Mapping vs SLAM
+## Map of the Subtopics
 
-These terms are related but different:
+### 1. Sensors, Calibration & Sensor Fusion
 
-| Problem | Meaning |
-|---|---|
-| **Localization** | estimate robot pose in a known map |
-| **Mapping** | build a map of the environment |
-| **SLAM** | localize while building the map at the same time |
+Focus:
 
-In practice:
+- RGB, depth, LiDAR, IMU, odometry, and force sensing
+- sensor strengths and failure modes
+- timestamp alignment and extrinsic calibration
+- why multi-sensor fusion often beats any single modality
 
-- AMCL-style localization is common for known indoor maps
-- visual SLAM and LiDAR SLAM are common when the map is unknown or evolving
-- factor-graph methods dominate many higher-accuracy pipelines
+Use this when the main challenge is building trustworthy raw perception input.
 
----
+### 2. Localization, State Estimation & SLAM
 
-## State Estimation
+Focus:
 
-State estimation sits underneath localization and control.
+- localization vs mapping vs SLAM
+- EKF, UKF, particle filters, and factor graphs
+- visual, LiDAR, and visual-inertial odometry
+- tradeoffs between filtering, smoothing, and mapping pipelines
 
-Important concepts:
+Use this when the system needs a stable pose estimate in a changing world.
 
-- Extended Kalman Filter (EKF)
-- Unscented Kalman Filter (UKF)
-- particle filters
-- factor graphs
-- smoothing vs filtering
+### 3. Maps, Scene Representation & Navigation Perception
 
-The right choice depends on:
+Focus:
 
-- system nonlinearity
-- sensor quality
-- compute budget
-- real-time constraints
+- occupancy grids, costmaps, voxel maps, and semantic maps
+- dynamic obstacle handling
+- navigation-facing world representation
+- why map simplicity still matters in production
 
----
+Use this when perception feeds motion planning and traversability decisions.
 
-## Maps and Scene Representations
+### 4. Manipulation Perception & Semantic Grounding
 
-Robots can reason over different world models:
+Focus:
 
-- occupancy grids
-- costmaps
-- point clouds
-- voxel maps
-- TSDF / ESDF
-- semantic maps
-- object-centric scene graphs
+- hand-eye calibration and object pose estimation
+- grasp affordances and contact-aware perception
+- semantic grounding for object-centric action
+- where foundation models help and where deterministic scaffolding is still needed
 
-In 2026, richer 3D scene representations are more common, but simpler maps still dominate reliable deployed navigation because they are easier to debug and maintain.
+Use this when perception must support precise interaction, not just navigation.
 
 ---
 
-## Navigation Perception
+## Recommended Learning Order
 
-For mobile robots, perception must feed navigation cleanly:
+A practical order is:
 
-- detect static obstacles
-- identify dynamic obstacles
-- maintain local and global costmaps
-- distinguish traversable from non-traversable space
-- update the map without destabilizing the planner
+1. sensors and fusion
+2. localization and SLAM
+3. maps and navigation perception
+4. manipulation perception and semantic grounding
 
-This is why perception and navigation should be designed together, not as isolated modules.
-
----
-
-## Manipulation Perception
-
-Manipulation requires a different emphasis:
-
-- hand-eye calibration
-- object detection and tracking
-- pose estimation
-- grasp affordance estimation
-- contact and force feedback
-
-A mobile robot can often tolerate a small localization error. A manipulator trying to insert, grasp, or align parts often cannot.
+This order usually mirrors how real robot systems are built and debugged.
 
 ---
 
-## Where Foundation Models Help
+## Relationship to Other AI-Robotics Topics
 
-Modern perception stacks increasingly use:
+This Robot Perception section overlaps with, but does not replace:
 
-- vision-language models for scene understanding
-- foundation models for segmentation and grounding
-- learned 3D representations for pose or affordance prediction
+- **Computer Vision** for broader image and multimodal perception methods
+- **Robotics Foundations & ROS 2** for middleware, transforms, and hardware integration
+- **Motion Planning, Manipulation & Control** for downstream action generation
+- **Simulation, Sim2Real & Synthetic Data** for evaluation and data generation
 
-But the deployment question is still practical:
-
-- latency
-- robustness to lighting and clutter
-- calibration drift
-- fallback behavior
-
-Learned perception adds power, but deployed robots still need deterministic scaffolding around it.
+Perception is the bridge from sensing to action, not the whole robot stack.
 
 ---
 
 ## Interview Q&A
 
-### 1. What is the difference between odometry and localization?
+### 1) Why split Robot Perception into smaller subtopics?
 
-Odometry estimates motion incrementally and accumulates drift. Localization estimates pose relative to a known world or map.
+Because sensing, state estimation, mapping, and manipulation perception are separate engineering concerns with different tools and failure patterns.
 
-### 2. Why is calibration so important in robotics perception?
+### 2) Why is calibration such a recurring pain point?
 
-Because the robot acts in physical space. Even a strong detector is not useful if its outputs are misaligned with the robot's real frames.
+Because robots act in physical coordinates, so even good models become unusable if sensor frames and timestamps are wrong.
 
-### 3. Why do many production robots still use simple maps?
+### 3) Why are simple maps still common in production robots?
 
-Because simpler representations are easier to debug, cheaper to maintain, and often sufficient for reliable operation.
+Because they are easier to debug, easier to maintain, and often sufficient for reliable navigation behavior.

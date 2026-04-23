@@ -2,183 +2,117 @@
 
 ## Tổng quan
 
-Stack robotics hiện đại dù có thêm rất nhiều AI vẫn đứng trên các nền tảng cổ điển:
+Robotics hiện đại vẫn được xây trên các nền móng hệ thống cổ điển.
 
-- frame và transform
-- kinematics và dynamics
-- state estimation
-- planning và control
-- hardware interface
-- middleware đáng tin cậy
+Trong thực tế, cụm kiến thức này tách tự nhiên thành bốn lớp:
 
-Tính đến tháng 4/2026, muốn học AI-robotics nghiêm túc thì vẫn nên nắm các lớp này trước khi lao thẳng vào robot foundation model hay embodied agent.
+1. kiến trúc robot stack và ranh giới middleware
+2. ROS 2 communication, QoS, và lifecycle behavior
+3. frames, robot description, và calibration
+4. kinematics, control interfaces, và system integration
 
----
-
-## Stack robotics hiện đại
-
-Có thể nhìn một robot stack theo các lớp:
-
-1. Sensor và actuator
-2. Real-time control và hardware interface
-3. Middleware và messaging
-4. Robot description và transforms
-5. Perception và state estimation
-6. Planning và behavior orchestration
-7. Learned policy hoặc foundation model
-8. Safety, supervision và deployment
-
-Càng thêm learned component thì hệ thống càng khó, chứ không hề đơn giản hơn.
+Đó là lý do chủ đề này được tách thành các mục con thay vì giữ trong một trang nén.
 
 ---
 
-## Vì sao ROS 2 vẫn quan trọng
+## Vì sao phần này quan trọng trước cả Embodied AI
 
-ROS 2 vẫn là lớp tích hợp mặc định cho rất nhiều hệ robotics:
+Robot foundation models và learned policies không loại bỏ nhu cầu hiểu:
 
-- giao tiếp pub/sub
-- services và actions
-- lifecycle-managed nodes
-- launch orchestration
-- tầng transport dựa trên DDS
-- tích hợp mạnh với navigation, manipulation và control
+- distributed software architecture
+- timing và message semantics
+- transform correctness
+- ranh giới giữa software và hardware control
+- recovery và orchestration
 
-Điểm quan trọng trong phỏng vấn hay dự án thực tế không phải là nhớ command ROS 2, mà là hiểu kiến trúc phần mềm phân tán cho robot.
-
-Đến tháng 4/2026, có thể hình dung khá thực dụng như sau:
-
-- **Kilted Kaiju** là bản ROS 2 phát hành mới nhất
-- **Jazzy Jalisco** là target rất quan trọng cho production dài hạn
-- **Lyrical Luth** là nhánh release/development kế tiếp đang tiến tới mốc tháng 5/2026
-
-### Nên nắm những gì
-
-- nodes, topics, services, actions
-- QoS settings
-- TF2 transform tree
-- launch files
-- parameters và lifecycle nodes
-- rosbag để record và replay
+Thiếu các lớp này, ngay cả perception hay policy model mạnh cũng khó tin cậy và khó debug.
 
 ---
 
-## QoS không phải kiến thức phụ
+## Bản đồ các mục con
 
-Quality of Service ảnh hưởng trực tiếp tới việc hệ robot có hoạt động đúng với mạng, sensor và timing thực tế hay không.
+### 1. Robot Stack Architecture & Middleware
 
-Các chiều quan trọng:
+Trọng tâm:
 
-- reliability
-- durability
-- history depth
-- deadline
-- liveliness
+- các lớp của phần mềm robotics hiện đại
+- middleware đứng ở đâu trong stack
+- sensing, planning, control, và safety nối với nhau thế nào
+- vì sao orchestration quan trọng hơn một monolith khổng lồ
 
-Nếu xem QoS là chi tiết nhỏ, perception pipeline và control pipeline phân tán sẽ rất dễ gãy.
+Dùng mục này khi bạn muốn một mental model ở cấp hệ thống cho robot software.
 
----
+### 2. ROS 2 Communication, QoS & Lifecycle
 
-## TF, URDF và robot description
+Trọng tâm:
 
-Ba ý tưởng xuất hiện gần như mọi nơi:
+- nodes, topics, services, và actions
+- QoS policies và hành vi khi có lỗi
+- lifecycle nodes và launch orchestration
+- hình dạng thực tế của distributed robot software
 
-- **URDF / Xacro** mô tả links, joints, sensors và geometry
-- **TF2** theo dõi transform giữa các coordinate frames
-- **Calibration** giúp các frame đó đúng trong đời thực
+Dùng mục này khi câu hỏi chính là ROS 2 chạy ra sao dưới điều kiện runtime thật.
 
-Nếu transform sai thì gần như mọi thứ phía trên đều sai:
+### 3. TF2, URDF, Frames & Calibration
 
-- localization lệch
-- perception bị misaligned
-- grasp target sai
-- planner va chạm bất ngờ
+Trọng tâm:
 
----
+- robot description và frame trees
+- intrinsics, extrinsics, và calibration drift
+- TF2 correctness và cách debug
+- vì sao lỗi frame lan sang hầu hết tầng phía trên
 
-## ros2_control và hardware interfaces
+Dùng mục này khi perception và motion phải khớp với hình học thật.
 
-Trong robotics nghiêm túc, cần ranh giới rõ giữa phần mềm mức cao và lớp điều khiển phần cứng.
+### 4. Kinematics, ros2_control & Integration
 
-`ros2_control` quan trọng vì nó chuẩn hóa:
+Trọng tâm:
 
-- hardware interfaces
-- controller manager
-- command/state interfaces
-- controller switching
+- forward và inverse kinematics
+- Jacobians, singularities, và limits
+- ros2_control và hardware abstraction
+- tích hợp với navigation, manipulation, và controllers
 
-Nhờ đó planner và behavior có thể nối xuống actuator thật mà không phải viết lại toàn bộ control layer cho từng robot.
-
-Trong một stack ROS 2 hiện đại, các mảnh ghép thường khớp với nhau như sau:
-
-- **ros2_control** cho hardware abstraction và control loop
-- **Nav2** cho navigation behavior, costmap, planner và recovery
-- **MoveIt 2** cho manipulation, planning scene, kinematics và motion planning
+Dùng mục này khi software phải thực sự làm robot di chuyển an toàn và có thể dự đoán được.
 
 ---
 
-## Kinematics và dynamics
+## Thứ tự học gợi ý
 
-Không cần ngày nào cũng suy lại công thức, nhưng phải hiểu các khái niệm:
+Một lộ trình thực dụng là:
 
-- forward kinematics
-- inverse kinematics
-- Jacobian
-- singularity
-- joint limits
-- rigid-body dynamics
-- torque, force và acceleration constraints
+1. robot stack và middleware basics
+2. ROS 2 communication và QoS
+3. frames, URDF, và calibration
+4. kinematics và control integration
 
-Những khái niệm này đi thẳng vào bài toán:
-
-- arm manipulator
-- mobile manipulator
-- legged robot
-- humanoid
+Thứ tự này thường xây trực giác tốt hơn nhiều so với bắt đầu từ các lệnh ROS rời rạc.
 
 ---
 
-## Behavior orchestration
+## Liên hệ với các topic AI-Robotics khác
 
-Robot hiếm khi chạy như một model duy nhất.
+Phần Robotics Foundations này có giao nhau, nhưng không thay thế:
 
-Hệ thống thật thường phối hợp:
+- **Robot Perception, Localization & SLAM** cho state estimation và mapping
+- **Motion Planning, Manipulation & Control** cho planning và control sâu hơn
+- **Robot Systems, Safety & Deployment** cho vận hành trên phần cứng thật
+- **Robot Learning & Embodied AI** cho các learned policies chạy phía trên lớp nền này
 
-- perception nodes
-- navigation hoặc manipulation servers
-- behavior trees hoặc task graphs
-- recovery actions
-- đường override cho operator
-
-Đó là lý do orchestration tường minh vẫn rất quan trọng kể cả trong thời đại foundation model.
-
----
-
-## Nên học theo thứ tự nào
-
-Nếu mới vào AI-robotics, thứ tự học hợp lý là:
-
-1. Linux, Python/C++, Git, debugging
-2. ROS 2 cơ bản
-3. Frames, URDF, TF2, sensor pipeline
-4. State estimation và localization
-5. Planning và control
-6. Simulation
-7. Robot learning và embodied AI
-
-Bỏ qua các lớp ở giữa thường dẫn tới hiểu biết rất nông về sau.
+Robotics foundations là lớp substrate vận hành nằm dưới phần còn lại của stack.
 
 ---
 
 ## Câu hỏi Phỏng vấn
 
-### 1. Vì sao ROS 2 hữu ích hơn việc tự viết robot software từ đầu?
+### 1) Vì sao nên tách Robotics Foundations thành nhiều mục nhỏ?
 
-Vì nó cung cấp communication, tooling, lifecycle management và integration pattern dùng lại được, giúp tiết kiệm rất nhiều thời gian kỹ thuật.
+Vì architecture, hành vi runtime của ROS 2, transforms, và control integration là các miền liên quan nhưng khác nhau, với failure modes riêng.
 
-### 2. Vì sao TF2 thường là nguồn bug rất hay gặp?
+### 2) Vì sao ROS 2 vẫn còn đáng học trong 2026?
 
-Vì transform tree chính là "sự thật hình học" của robot. Sai frame nhỏ có thể lan ra perception, navigation và manipulation.
+Vì nhiều robot thực tế vẫn dùng ROS 2 làm lớp tích hợp giữa perception, planning, control, và tooling.
 
-### 3. Trước khi học robot foundation model thì nên nắm gì?
+### 3) Vì sao robotics team vẫn tốn rất nhiều thời gian cho transforms và calibration?
 
-Nên nắm sensing, transforms, control boundary và cách phần mềm robot vận hành dưới timing cùng hardware constraint thật.
+Vì sai lệch không gian sẽ phá hỏng gần như mọi năng lực phía trên, từ localization tới grasping và safe motion execution.

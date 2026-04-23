@@ -177,6 +177,83 @@ function collectTopicPreview(topic: Topic, language: "vi" | "en", limit = 4): st
   return preview;
 }
 
+function TopicTreeList({
+  topics,
+  language,
+  onTopicSelect,
+  depth = 0,
+}: {
+  topics: Topic[];
+  language: "vi" | "en";
+  onTopicSelect?: (topic: Topic) => void;
+  depth?: number;
+}) {
+  return (
+    <div className="space-y-3">
+      {topics.map((topic) => {
+        const hasSubtopics = Boolean(topic.subtopics?.length);
+
+        return (
+          <div key={topic.id}>
+            <button
+              type="button"
+              onClick={() => onTopicSelect?.(topic)}
+              className="w-full rounded-lg border border-border bg-card px-4 py-3 text-left transition-colors hover:border-primary hover:bg-accent"
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <h3 className="text-foreground">{topic.name[language]}</h3>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    {hasSubtopics
+                      ? `${countNestedTopics(topic)} ${
+                          language === "vi" ? "chủ đề bên trong" : "topics inside"
+                        }`
+                      : language === "vi"
+                        ? "Chủ đề độc lập"
+                        : "Standalone topic"}
+                  </p>
+                </div>
+                {hasSubtopics && (
+                  <span className="text-xs text-muted-foreground">
+                    {language === "vi" ? "Nhóm chủ đề" : "Topic group"}
+                  </span>
+                )}
+              </div>
+
+              {hasSubtopics && (
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {collectTopicPreview(topic, language, 6).map((name) => (
+                    <span
+                      key={`${topic.id}-${name}`}
+                      className="inline-flex items-center rounded-full bg-accent px-2.5 py-1 text-xs text-muted-foreground"
+                    >
+                      {name}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </button>
+
+            {hasSubtopics && (
+              <div
+                className="mt-3 border-l border-border/70 pl-4"
+                style={{ marginLeft: `${depth * 0.5}rem` }}
+              >
+                <TopicTreeList
+                  topics={topic.subtopics!}
+                  language={language}
+                  onTopicSelect={onTopicSelect}
+                  depth={depth + 1}
+                />
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 export function ContentArea({
   selectedCategory,
   selectedTopic,
@@ -185,16 +262,19 @@ export function ContentArea({
   onTopicSelect,
 }: ContentAreaProps) {
   const [content, setContent] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
 
     if (!selectedCategory || !selectedTopic) {
       setContent("");
+      setIsLoading(false);
       return;
     }
 
     setContent("");
+    setIsLoading(true);
 
     getContentForTopicAsync(
       language,
@@ -204,6 +284,7 @@ export function ContentArea({
     ).then((c) => {
       if (!cancelled) {
         setContent(c);
+        setIsLoading(false);
       }
     });
 
@@ -293,58 +374,60 @@ export function ContentArea({
             </p>
           </div>
 
-          <div className="grid gap-3 sm:gap-4">
-            {selectedCategory.topics.map((topic) => {
-              const handleClick = () => {
-                if (onTopicSelect) {
-                  onTopicSelect(topic);
-                }
-              };
+          <TopicTreeList
+            topics={selectedCategory.topics}
+            language={language}
+            onTopicSelect={onTopicSelect}
+          />
+        </div>
+      </main>
+    );
+  }
 
-              return (
-                <div
-                  key={topic.id}
-                  onClick={handleClick}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") {
-                      handleClick();
-                    }
-                  }}
-                  role="button"
-                  tabIndex={0}
-                  className="p-4 bg-card border border-border rounded-lg hover:border-primary hover:shadow-sm transition-all cursor-pointer"
-                >
-                  <h3 className="text-foreground mb-1">
-                    {topic.name[language]}
-                  </h3>
-                  {topic.subtopics?.length ? (
-                    <div className="space-y-3">
-                      <p className="text-sm text-muted-foreground">
-                        {countNestedTopics(topic)}{" "}
-                        {language === "vi" ? "chủ đề bên trong" : "topics inside"}
-                      </p>
-                      <div className="flex flex-wrap gap-2">
-                        {collectTopicPreview(topic, language).map((name) => (
-                          <span
-                            key={`${topic.id}-${name}`}
-                            className="inline-flex items-center rounded-full bg-accent px-2.5 py-1 text-xs text-muted-foreground"
-                          >
-                            {name}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  ) : (
-                    <p className="text-sm text-muted-foreground">
-                      {language === "vi"
-                        ? "Chủ đề độc lập"
-                        : "Standalone topic"}
-                    </p>
-                  )}
-                </div>
-              );
-            })}
+  if (!isLoading && !content && selectedTopic.subtopics?.length) {
+    return (
+      <main className="flex-1 p-4 sm:p-6 lg:p-10 overflow-y-auto">
+        <div className="max-w-4xl mx-auto space-y-6">
+          <div>
+            <h1 className="text-2xl sm:text-3xl text-foreground">
+              {selectedTopic.name[language]}
+            </h1>
+            <p className="mt-2 text-muted-foreground">
+              {language === "vi"
+                ? "Đây là trang tổng quan cho một nhóm chủ đề. Chọn trực tiếp một mục con bên dưới để đi vào nội dung chi tiết, hoặc mở trang overview của topic cha nếu topic đó có tài liệu riêng."
+                : "This is an overview for a topic group. Pick a child topic below for detailed content, or open the parent overview when that parent has its own document."}
+            </p>
           </div>
+
+          <div className="rounded-lg border border-border bg-accent p-4 sm:p-6">
+            <p className="text-sm text-muted-foreground">
+              {countNestedTopics(selectedTopic)}{" "}
+              {language === "vi"
+                ? "chủ đề đang nằm trong nhóm này"
+                : "topics are included in this group"}
+            </p>
+          </div>
+
+          <TopicTreeList
+            topics={selectedTopic.subtopics}
+            language={language}
+            onTopicSelect={onTopicSelect}
+          />
+        </div>
+      </main>
+    );
+  }
+
+  if (!isLoading && !content) {
+    return (
+      <main className="flex-1 p-4 sm:p-6 lg:p-10 overflow-y-auto">
+        <div className="max-w-3xl mx-auto rounded-lg border border-border bg-card p-6">
+          <h1 className="text-2xl text-foreground">{selectedTopic.name[language]}</h1>
+          <p className="mt-3 text-muted-foreground">
+            {language === "vi"
+              ? "Chưa tìm thấy nội dung markdown cho chủ đề này. Cần bổ sung tài liệu hoặc kiểm tra lại mapping topic id -> filename."
+              : "No markdown content was found for this topic. Add the document or verify the topic id -> filename mapping."}
+          </p>
         </div>
       </main>
     );

@@ -2,169 +2,119 @@
 
 ## Tổng quan
 
-Perception trong robotics không chỉ là computer vision chạy trên robot. Đó là toàn bộ bài toán biến các luồng sensor nhiễu, có delay thành ước lượng ổn định về:
+Robot perception rộng hơn nhiều so với camera models hay thư viện SLAM đơn lẻ.
 
-- robot đang ở đâu
-- môi trường trông như thế nào
-- có object và obstacle gì
-- cái gì có thể tác động vào một cách an toàn
+Trong thực tế, chủ đề này dễ học hơn nếu chia thành bốn lớp kết nối với nhau:
 
-Chủ đề này nằm giữa sensing thô và planning.
+1. sensors, calibration, và fusion
+2. localization, state estimation, và SLAM
+3. maps và world models phục vụ navigation
+4. manipulation perception và semantic grounding
 
----
-
-## Các loại sensor
-
-Các sensor phổ biến:
-
-| Sensor | Điểm mạnh | Điểm yếu |
-|---|---|---|
-| **RGB camera** | semantics, rẻ, giàu texture | nhạy sáng, không có depth trực tiếp |
-| **Stereo / RGB-D** | có geometry lẫn semantics | tầm hoạt động hạn chế, kém với bề mặt phản chiếu |
-| **LiDAR** | khoảng cách chính xác, hình học mạnh | semantics kém hơn, chi phí cao |
-| **IMU** | motion estimate nhanh | drift theo thời gian |
-| **Wheel odometry** | rẻ, có tín hiệu chuyển động local | trượt bánh và drift tích lũy |
-| **Force/torque** | hiểu contact | cục bộ, phụ thuộc task |
-
-Perception tốt thường là multimodal chứ không dựa vào một sensor.
+Đó là lý do chủ đề này được tách thành các mục con riêng.
 
 ---
 
-## Sensor fusion
+## Vì sao nó quan trọng với Physical AI
 
-Fusion quan trọng vì từng sensor riêng lẻ đều có giới hạn.
+Robot phải biến sensor streams nhiễu thành một niềm tin về thế giới đủ ổn định để hành động.
 
-Các tổ hợp hay gặp:
+Điều đó có nghĩa perception phải chịu trách nhiệm cho:
 
-- camera + IMU cho visual-inertial odometry
-- LiDAR + IMU cho localization ổn định
-- wheel odometry + IMU + map matching cho mobile robot
-- camera + depth + force sensing cho manipulation
+- tính nhất quán không gian
+- tính nhất quán theo thời gian
+- confidence dưới uncertainty
+- khả năng nối được với planner và controller
+- degraded mode khi sensor lỗi hoặc drift
 
-Các vấn đề cốt lõi:
-
-- calibration
-- timestamp alignment
-- frame consistency
-- latency compensation
-- xử lý outlier
-
-Rất nhiều bug nhìn như "AI kém" thực ra là bug của calibration hoặc fusion.
+Đó là lý do perception cho robot là một bài toán hệ thống, không chỉ là bài toán model.
 
 ---
 
-## Localization vs Mapping vs SLAM
+## Bản đồ các mục con
 
-Ba khái niệm liên quan nhưng khác nhau:
+### 1. Sensors, Calibration & Sensor Fusion
 
-| Bài toán | Ý nghĩa |
-|---|---|
-| **Localization** | ước lượng pose trong map đã biết |
-| **Mapping** | xây dựng map môi trường |
-| **SLAM** | vừa localize vừa build map cùng lúc |
+Trọng tâm:
 
-Trong thực tế:
+- RGB, depth, LiDAR, IMU, odometry, và force sensing
+- điểm mạnh và failure modes của từng sensor
+- timestamp alignment và extrinsic calibration
+- vì sao multi-sensor fusion thường mạnh hơn một modality đơn lẻ
 
-- kiểu AMCL rất hay dùng khi indoor map đã biết
-- visual SLAM và LiDAR SLAM hợp khi map chưa có hoặc thay đổi
-- factor-graph method xuất hiện nhiều trong pipeline độ chính xác cao
+Dùng mục này khi thách thức chính là tạo đầu vào perception đáng tin.
 
----
+### 2. Localization, State Estimation & SLAM
 
-## State estimation
+Trọng tâm:
 
-State estimation là lớp nền dưới localization và control.
+- localization khác mapping và SLAM thế nào
+- EKF, UKF, particle filters, và factor graphs
+- visual, LiDAR, và visual-inertial odometry
+- tradeoff giữa filtering, smoothing, và mapping pipelines
 
-Các khái niệm quan trọng:
+Dùng mục này khi hệ cần pose estimate ổn định trong thế giới thay đổi.
 
-- Extended Kalman Filter (EKF)
-- Unscented Kalman Filter (UKF)
-- particle filters
-- factor graphs
-- smoothing vs filtering
+### 3. Maps, Scene Representation & Navigation Perception
 
-Chọn gì phụ thuộc vào:
+Trọng tâm:
 
-- độ phi tuyến của hệ
-- chất lượng sensor
-- budget compute
-- ràng buộc real-time
+- occupancy grids, costmaps, voxel maps, và semantic maps
+- xử lý dynamic obstacles
+- world representation phục vụ navigation
+- vì sao map đơn giản vẫn rất quan trọng trong production
 
----
+Dùng mục này khi perception phải nuôi motion planning và traversability decisions.
 
-## Map và scene representation
+### 4. Manipulation Perception & Semantic Grounding
 
-Robot có thể reason trên nhiều dạng world model:
+Trọng tâm:
 
-- occupancy grid
-- costmap
-- point cloud
-- voxel map
-- TSDF / ESDF
-- semantic map
-- object-centric scene graph
+- hand-eye calibration và object pose estimation
+- grasp affordances và contact-aware perception
+- semantic grounding cho object-centric action
+- foundation models giúp ở đâu và deterministic scaffolding vẫn cần ở đâu
 
-Năm 2026, các biểu diễn 3D phong phú hơn đã phổ biến hơn, nhưng map đơn giản vẫn thống trị ở hệ navigation deploy thực tế vì chúng dễ debug và dễ bảo trì hơn.
+Dùng mục này khi perception phải hỗ trợ tương tác chính xác, không chỉ navigation.
 
 ---
 
-## Navigation perception
+## Thứ tự học gợi ý
 
-Với mobile robot, perception phải cấp dữ liệu sạch cho navigation:
+Một thứ tự thực dụng là:
 
-- phát hiện obstacle tĩnh
-- nhận biết obstacle động
-- duy trì local và global costmap
-- phân biệt vùng đi được và không đi được
-- update map mà không làm planner bất ổn
+1. sensors và fusion
+2. localization và SLAM
+3. maps và navigation perception
+4. manipulation perception và semantic grounding
 
-Đó là lý do perception và navigation nên được thiết kế cùng nhau, không nên tách hoàn toàn.
-
----
-
-## Manipulation perception
-
-Manipulation nhấn mạnh các bài toán khác:
-
-- hand-eye calibration
-- object detection và tracking
-- pose estimation
-- grasp affordance estimation
-- contact và force feedback
-
-Mobile robot thường chịu được một chút lỗi localization. Nhưng arm robot đang gắp, cắm, lắp hoặc align vật thể thì thường không chịu được.
+Thứ tự này thường phản ánh cách robot thật được xây và debug.
 
 ---
 
-## Foundation model giúp ở đâu
+## Liên hệ với các topic AI-Robotics khác
 
-Perception stack hiện đại ngày càng dùng:
+Phần Robot Perception này có giao nhau, nhưng không thay thế:
 
-- vision-language model cho scene understanding
-- foundation model cho segmentation và grounding
-- learned 3D representation cho pose hoặc affordance prediction
+- **Computer Vision** cho các phương pháp perception rộng hơn
+- **Robotics Foundations & ROS 2** cho middleware, transforms, và hardware integration
+- **Motion Planning, Manipulation & Control** cho phần action phía sau perception
+- **Simulation, Sim2Real & Synthetic Data** cho evaluation và data generation
 
-Nhưng câu hỏi deploy vẫn rất thực tế:
-
-- latency
-- độ bền dưới thay đổi ánh sáng và clutter
-- calibration drift
-- fallback behavior
-
-Learned perception cho nhiều sức mạnh hơn, nhưng robot deploy vẫn cần lớp deterministic bọc bên ngoài.
+Perception là cầu nối từ sensing sang action, không phải toàn bộ robot stack.
 
 ---
 
 ## Câu hỏi Phỏng vấn
 
-### 1. Odometry khác localization như thế nào?
+### 1) Vì sao nên tách Robot Perception thành nhiều mục nhỏ?
 
-Odometry ước lượng chuyển động theo kiểu incremental và tích lũy drift. Localization ước lượng pose so với world hoặc map đã biết.
+Vì sensing, state estimation, mapping, và manipulation perception là các concern kỹ thuật riêng với công cụ và failure patterns khác nhau.
 
-### 2. Vì sao calibration quan trọng trong robotics perception?
+### 2) Vì sao calibration luôn là điểm đau lặp đi lặp lại?
 
-Vì robot hành động trong không gian vật lý. Detector mạnh vẫn vô dụng nếu output của nó lệch so với frame thật của robot.
+Vì robot hành động trong tọa độ vật lý thật, nên model tốt cũng vô dụng nếu sensor frames và timestamps bị sai.
 
-### 3. Vì sao nhiều robot production vẫn dùng map đơn giản?
+### 3) Vì sao map đơn giản vẫn còn phổ biến trong production robots?
 
-Vì biểu diễn đơn giản dễ debug hơn, rẻ hơn khi vận hành và thường đã đủ cho độ tin cậy cần thiết.
+Vì chúng dễ debug, dễ maintain, và thường đã đủ cho navigation ổn định.

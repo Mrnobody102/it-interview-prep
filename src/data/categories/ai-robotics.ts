@@ -23,14 +23,121 @@ export const aiRobotics: Category = {
         {
           id: "machine-learning",
           name: { vi: "Machine Learning", en: "Machine Learning" },
+          expanded: true,
+          subtopics: [
+            {
+              id: "machine-learning-supervised-basics",
+              name: {
+                vi: "Supervised Learning & Core Baselines",
+                en: "Supervised Learning & Core Baselines",
+              },
+            },
+            {
+              id: "machine-learning-tree-ensemble",
+              name: {
+                vi: "Trees, Ensembles & Tabular ML",
+                en: "Trees, Ensembles & Tabular ML",
+              },
+            },
+            {
+              id: "machine-learning-unsupervised-evaluation",
+              name: {
+                vi: "Unsupervised Learning, Metrics & Validation",
+                en: "Unsupervised Learning, Metrics & Validation",
+              },
+            },
+            {
+              id: "machine-learning-uncertainty-robotics",
+              name: {
+                vi: "Uncertainty, Time-Series & ML for Robotics",
+                en: "Uncertainty, Time-Series & ML for Robotics",
+              },
+            },
+          ],
         },
         {
           id: "deep-learning",
           name: { vi: "Deep Learning", en: "Deep Learning" },
+          expanded: true,
+          subtopics: [
+            {
+              id: "deep-learning-fundamentals",
+              name: {
+                vi: "DL Fundamentals & Optimization",
+                en: "DL Fundamentals & Optimization",
+              },
+            },
+            {
+              id: "deep-learning-architectures",
+              name: {
+                vi: "CNNs, RNNs & Core Architectures",
+                en: "CNNs, RNNs & Core Architectures",
+              },
+            },
+            {
+              id: "deep-learning-transformers",
+              name: {
+                vi: "Transformers, Foundation Models & Fine-tuning",
+                en: "Transformers, Foundation Models & Fine-tuning",
+              },
+            },
+            {
+              id: "deep-learning-multimodal-embodied",
+              name: {
+                vi: "Multimodal, World Models & Embodied DL",
+                en: "Multimodal, World Models & Embodied DL",
+              },
+            },
+          ],
         },
         {
           id: "computer-vision",
           name: { vi: "Computer Vision", en: "Computer Vision" },
+          expanded: true,
+          subtopics: [
+            {
+              id: "computer-vision-fundamentals",
+              name: {
+                vi: "CV Fundamentals & Classical Vision",
+                en: "CV Fundamentals & Classical Vision",
+              },
+            },
+            {
+              id: "computer-vision-detection-segmentation",
+              name: {
+                vi: "Detection, Segmentation & Recognition",
+                en: "Detection, Segmentation & Recognition",
+              },
+            },
+            {
+              id: "computer-vision-video-tracking",
+              name: {
+                vi: "Video Understanding & Tracking",
+                en: "Video Understanding & Tracking",
+              },
+            },
+            {
+              id: "computer-vision-3d-geometry",
+              name: {
+                vi: "3D Vision, Geometry & Pose",
+                en: "3D Vision, Geometry & Pose",
+              },
+            },
+            {
+              id: "computer-vision-vlm-grounding",
+              name: {
+                vi: "VLMs, Grounding & Open-Vocabulary Vision",
+                en: "VLMs, Grounding & Open-Vocabulary Vision",
+              },
+            },
+            {
+              id: "computer-vision-production-robotics",
+              name: {
+                vi: "Production CV for Robotics",
+                en: "Production CV for Robotics",
+              },
+            },
+          ],
         },
       ],
     },
@@ -48,6 +155,37 @@ export const aiRobotics: Category = {
             vi: "NLP, LLMs & Transformers",
             en: "NLP, LLMs & Transformers",
           },
+          expanded: true,
+          subtopics: [
+            {
+              id: "nlp-foundations",
+              name: {
+                vi: "NLP Foundations & Text Representation",
+                en: "NLP Foundations & Text Representation",
+              },
+            },
+            {
+              id: "nlp-transformers-llms",
+              name: {
+                vi: "Transformers, LLMs & Context Windows",
+                en: "Transformers, LLMs & Context Windows",
+              },
+            },
+            {
+              id: "nlp-adaptation-alignment",
+              name: {
+                vi: "Fine-tuning, Alignment & Model Adaptation",
+                en: "Fine-tuning, Alignment & Model Adaptation",
+              },
+            },
+            {
+              id: "nlp-applications-production",
+              name: {
+                vi: "Applications, Prompting & Production NLP",
+                en: "Applications, Prompting & Production NLP",
+              },
+            },
+          ],
         },
         {
           id: "ai-agents-rag",
@@ -62,6 +200,37 @@ export const aiRobotics: Category = {
             vi: "MLOps & AI Production",
             en: "MLOps & AI Production",
           },
+          expanded: true,
+          subtopics: [
+            {
+              id: "mlops-data-experimentation",
+              name: {
+                vi: "Data Quality, Versioning & Experimentation",
+                en: "Data Quality, Versioning & Experimentation",
+              },
+            },
+            {
+              id: "mlops-platform-registry",
+              name: {
+                vi: "Feature Stores, Registry & Governance",
+                en: "Feature Stores, Registry & Governance",
+              },
+            },
+            {
+              id: "mlops-serving-orchestration",
+              name: {
+                vi: "Serving, CI/CD & Orchestration",
+                en: "Serving, CI/CD & Orchestration",
+              },
+            },
+            {
+              id: "mlops-monitoring-llmops",
+              name: {
+                vi: "Monitoring, LLMOps & Fleet Learning",
+                en: "Monitoring, LLMOps & Fleet Learning",
+              },
+            },
+          ],
         },
       ],
     },
@@ -79,6 +248,37 @@ export const aiRobotics: Category = {
             vi: "Robotics Foundations & ROS 2",
             en: "Robotics Foundations & ROS 2",
           },
+          expanded: true,
+          subtopics: [
+            {
+              id: "robotics-foundations-robot-stack",
+              name: {
+                vi: "Robot Stack Architecture & Middleware",
+                en: "Robot Stack Architecture & Middleware",
+              },
+            },
+            {
+              id: "robotics-foundations-ros2-communication",
+              name: {
+                vi: "ROS 2 Communication, QoS & Lifecycle",
+                en: "ROS 2 Communication, QoS & Lifecycle",
+              },
+            },
+            {
+              id: "robotics-foundations-tf-urdf-calibration",
+              name: {
+                vi: "TF2, URDF, Frames & Calibration",
+                en: "TF2, URDF, Frames & Calibration",
+              },
+            },
+            {
+              id: "robotics-foundations-kinematics-control",
+              name: {
+                vi: "Kinematics, ros2_control & Integration",
+                en: "Kinematics, ros2_control & Integration",
+              },
+            },
+          ],
         },
         {
           id: "robot-perception-localization",
@@ -86,6 +286,37 @@ export const aiRobotics: Category = {
             vi: "Robot Perception, Localization & SLAM",
             en: "Robot Perception, Localization & SLAM",
           },
+          expanded: true,
+          subtopics: [
+            {
+              id: "robot-perception-localization-sensors-fusion",
+              name: {
+                vi: "Sensors, Calibration & Sensor Fusion",
+                en: "Sensors, Calibration & Sensor Fusion",
+              },
+            },
+            {
+              id: "robot-perception-localization-localization-slam",
+              name: {
+                vi: "Localization, State Estimation & SLAM",
+                en: "Localization, State Estimation & SLAM",
+              },
+            },
+            {
+              id: "robot-perception-localization-maps-navigation",
+              name: {
+                vi: "Maps, Scene Representation & Navigation Perception",
+                en: "Maps, Scene Representation & Navigation Perception",
+              },
+            },
+            {
+              id: "robot-perception-localization-manipulation-semantic",
+              name: {
+                vi: "Manipulation Perception & Semantic Grounding",
+                en: "Manipulation Perception & Semantic Grounding",
+              },
+            },
+          ],
         },
       ],
     },

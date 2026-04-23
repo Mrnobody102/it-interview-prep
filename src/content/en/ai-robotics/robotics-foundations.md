@@ -2,183 +2,117 @@
 
 ## Overview
 
-The current AI-heavy robotics stack still rests on classical foundations:
+Modern robotics is still built on classical system foundations.
 
-- frames and transforms
-- kinematics and dynamics
-- state estimation
-- planning and control
-- hardware interfaces
-- reliable middleware
+In practice, the knowledge cluster usually breaks into four layers:
 
-As of April 2026, serious robotics learning still benefits from mastering these layers before jumping into robot foundation models or embodied agents.
+1. robot stack architecture and middleware boundaries
+2. ROS 2 communication, QoS, and lifecycle behavior
+3. frames, robot description, and calibration
+4. kinematics, control interfaces, and system integration
 
----
-
-## The Modern Robotics Stack
-
-A practical robot stack can be viewed as layers:
-
-1. Sensors and actuators
-2. Real-time control and hardware interfaces
-3. Middleware and messaging
-4. Robot description and transforms
-5. Perception and state estimation
-6. Planning and behavior orchestration
-7. Learned policies or foundation models
-8. Safety, supervision, and deployment
-
-The system gets harder, not easier, as learned components are added.
+That is why this topic is now split into child topics instead of staying as one compressed page.
 
 ---
 
-## Why ROS 2 Matters
+## Why This Matters Before Embodied AI
 
-ROS 2 remains the default integration layer for a large part of the ecosystem:
+Robot foundation models and learned policies do not remove the need to understand:
 
-- pub/sub communication
-- services and actions
-- lifecycle-managed nodes
-- launch orchestration
-- DDS-based transport abstraction
-- strong integration with navigation, manipulation, and control stacks
+- distributed software architecture
+- timing and message semantics
+- transform correctness
+- hardware-control boundaries
+- failure recovery and orchestration
 
-For interviews and real projects, ROS 2 is less about "knowing commands" and more about understanding distributed robot software architecture.
-
-As of April 2026, it is reasonable to think in terms of:
-
-- **Kilted Kaiju** as the latest released ROS 2 distribution
-- **Jazzy Jalisco** as a major active LTS-style target in production
-- **Lyrical Luth** as the next development/release line approaching May 2026
-
-### What to know in practice
-
-- nodes, topics, services, actions
-- QoS settings
-- TF2 transform tree
-- launch files
-- parameters and lifecycle nodes
-- rosbag recording and replay
+Without those layers, even strong perception or policy models become hard to trust and hard to debug.
 
 ---
 
-## QoS Is Not Optional Knowledge
+## Map of the Subtopics
 
-Quality of Service settings affect whether robotics systems behave correctly under real network and sensor conditions.
+### 1. Robot Stack Architecture & Middleware
 
-Important dimensions:
+Focus:
 
-- reliability
-- durability
-- history depth
-- deadline
-- liveliness
+- modern robotics software layers
+- where middleware sits in the stack
+- how sensing, planning, control, and safety connect
+- why orchestration matters more than one giant monolith
 
-If you treat QoS as an afterthought, distributed perception and control pipelines become brittle.
+Use this when you want a systems-level mental model of robot software.
 
----
+### 2. ROS 2 Communication, QoS & Lifecycle
 
-## TF, URDF, and Robot Description
+Focus:
 
-Three ideas appear constantly:
+- nodes, topics, services, and actions
+- QoS policies and failure behavior
+- lifecycle nodes and launch orchestration
+- what distributed robot software looks like in practice
 
-- **URDF / Xacro** describe links, joints, sensors, and geometry
-- **TF2** tracks transforms between coordinate frames
-- **Calibration** makes those frames trustworthy in practice
+Use this when the question is how ROS 2 behaves under real runtime conditions.
 
-If transforms are wrong, almost everything above them becomes wrong:
+### 3. TF2, URDF, Frames & Calibration
 
-- localization drifts
-- perception is misaligned
-- grasp targets fail
-- planners collide unexpectedly
+Focus:
 
----
+- robot description and frame trees
+- intrinsics, extrinsics, and calibration drift
+- TF2 correctness and debugging
+- why frame mistakes propagate into every higher layer
 
-## ros2_control and Hardware Interfaces
+Use this when perception and motion must line up with physical geometry.
 
-In serious robotics work, you need a clear boundary between high-level software and hardware control.
+### 4. Kinematics, ros2_control & Integration
 
-`ros2_control` is important because it standardizes:
+Focus:
 
-- hardware interfaces
-- controller managers
-- command/state interfaces
-- controller switching
+- forward and inverse kinematics
+- Jacobians, singularities, and limits
+- ros2_control and hardware abstraction
+- integration with navigation, manipulation, and controllers
 
-That makes it much easier to connect planners and behaviors to real actuators without rewriting the whole stack for each robot.
-
-In a modern ROS 2 stack, the ecosystem pieces fit together roughly like this:
-
-- **ros2_control** for hardware abstraction and control loops
-- **Nav2** for navigation behavior, costmaps, planners, and recovery
-- **MoveIt 2** for manipulation, planning scenes, kinematics, and motion planning
+Use this when software must actually move a robot safely and predictably.
 
 ---
 
-## Kinematics and Dynamics
+## Recommended Learning Order
 
-You do not need to derive every equation by hand every day, but you do need the concepts:
+A practical progression is:
 
-- forward kinematics
-- inverse kinematics
-- Jacobians
-- singularities
-- joint limits
-- rigid-body dynamics
-- torque, force, and acceleration constraints
+1. robot stack and middleware basics
+2. ROS 2 communication and QoS
+3. frames, URDF, and calibration
+4. kinematics and control integration
 
-These concepts matter directly for:
-
-- manipulators
-- mobile manipulators
-- legged robots
-- humanoids
+This order usually builds much stronger intuition than starting from isolated ROS commands.
 
 ---
 
-## Behavior Orchestration
+## Relationship to Other AI-Robotics Topics
 
-Robots rarely run as one monolithic model.
+This Robotics Foundations section overlaps with, but does not replace:
 
-Real systems coordinate:
+- **Robot Perception, Localization & SLAM** for state estimation and mapping
+- **Motion Planning, Manipulation & Control** for deeper planning and control algorithms
+- **Robot Systems, Safety & Deployment** for operations on real hardware
+- **Robot Learning & Embodied AI** for learned policies on top of this system base
 
-- perception nodes
-- navigation or manipulation servers
-- behavior trees or task graphs
-- recovery actions
-- operator override paths
-
-This is one reason explicit orchestration is still central even in the foundation-model era.
-
----
-
-## What Is Worth Prioritizing First
-
-If you are entering AI-robotics now, a strong order is:
-
-1. Linux, Python/C++, Git, debugging
-2. ROS 2 basics
-3. Frames, URDF, TF2, sensor pipelines
-4. State estimation and localization
-5. Planning and control
-6. Simulation
-7. Robot learning and embodied AI
-
-Skipping the middle layers usually creates shallow understanding later.
+Robotics foundations are the operating substrate under the rest of the stack.
 
 ---
 
 ## Interview Q&A
 
-### 1. Why is ROS 2 more useful than writing robot software from scratch?
+### 1) Why split Robotics Foundations into smaller subtopics?
 
-Because it gives reusable communication, tooling, lifecycle management, and integration patterns that would otherwise consume a large amount of engineering time.
+Because architecture, ROS 2 runtime behavior, transforms, and control integration are related but distinct domains with different failure modes.
 
-### 2. Why is TF2 such a common source of bugs?
+### 2) Why is ROS 2 knowledge still valuable in 2026?
 
-Because transform trees encode the spatial truth of the robot. Small frame mistakes propagate into perception, navigation, and manipulation failures.
+Because many real robots still rely on ROS 2 as the integration layer connecting perception, planning, control, and tooling.
 
-### 3. What should a robotics engineer know before learning robot foundation models?
+### 3) Why do robotics teams still spend so much time on transforms and calibration?
 
-They should already understand sensing, transforms, control boundaries, and how robot software behaves under real timing and hardware constraints.
+Because spatial inconsistency breaks almost every higher-level capability, from localization to grasping to safe motion execution.
