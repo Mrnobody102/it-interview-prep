@@ -35,7 +35,13 @@ export function Sidebar({
   // Use selectedCategoryId as dep so this only runs on category switch
   useEffect(() => {
     if (!selectedTopic) {
-      setExpandedKeys(new Set());
+      const next = new Set<string>();
+      category.topics.forEach((topic) => {
+        if (topic.expanded) {
+          next.add(topic.id);
+        }
+      });
+      setExpandedKeys(next);
       return;
     }
 
@@ -138,7 +144,9 @@ export function Sidebar({
           }`}
           style={{ paddingLeft: `${1 + level * 1}rem` }}
         >
-          <span className="flex-1">{topic.name[language]}</span>
+          <span className="flex-1 min-w-0 break-words leading-snug">
+            {topic.name[language]}
+          </span>
           {hasSubtopics && (
             <span className="ml-2">
               {isExpanded ? (
@@ -163,7 +171,7 @@ export function Sidebar({
 
   return (
     <aside
-      className="sticky top-16 shrink-0 w-64 h-[calc(100vh-4rem)] bg-card border-r border-border flex flex-col"
+      className="sticky top-16 shrink-0 w-72 max-w-[85vw] h-[calc(100vh-4rem)] bg-card border-r border-border flex flex-col"
     >
       <div className="shrink-0 bg-card border-b border-border px-4 py-3">
         <div className="flex items-center gap-2">

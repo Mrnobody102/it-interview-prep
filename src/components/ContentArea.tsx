@@ -146,6 +146,37 @@ interface ContentAreaProps {
   onTopicSelect?: (topic: Topic) => void;
 }
 
+function countNestedTopics(topic: Topic): number {
+  if (!topic.subtopics?.length) {
+    return 0;
+  }
+
+  return topic.subtopics.reduce(
+    (total, subtopic) => total + 1 + countNestedTopics(subtopic),
+    0
+  );
+}
+
+function collectTopicPreview(topic: Topic, language: "vi" | "en", limit = 4): string[] {
+  if (!topic.subtopics?.length) {
+    return [];
+  }
+
+  const preview: string[] = [];
+  const queue = [...topic.subtopics];
+
+  while (queue.length > 0 && preview.length < limit) {
+    const current = queue.shift()!;
+    preview.push(current.name[language]);
+
+    if (current.subtopics?.length) {
+      queue.push(...current.subtopics);
+    }
+  }
+
+  return preview;
+}
+
 export function ContentArea({
   selectedCategory,
   selectedTopic,
@@ -286,10 +317,28 @@ export function ContentArea({
                   <h3 className="text-foreground mb-1">
                     {topic.name[language]}
                   </h3>
-                  {topic.subtopics && (
+                  {topic.subtopics?.length ? (
+                    <div className="space-y-3">
+                      <p className="text-sm text-muted-foreground">
+                        {countNestedTopics(topic)}{" "}
+                        {language === "vi" ? "chủ đề bên trong" : "topics inside"}
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        {collectTopicPreview(topic, language).map((name) => (
+                          <span
+                            key={`${topic.id}-${name}`}
+                            className="inline-flex items-center rounded-full bg-accent px-2.5 py-1 text-xs text-muted-foreground"
+                          >
+                            {name}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  ) : (
                     <p className="text-sm text-muted-foreground">
-                      {topic.subtopics.length}{" "}
-                      {language === "vi" ? "chủ đề con" : "subtopics"}
+                      {language === "vi"
+                        ? "Chủ đề độc lập"
+                        : "Standalone topic"}
                     </p>
                   )}
                 </div>
