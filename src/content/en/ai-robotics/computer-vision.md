@@ -490,6 +490,126 @@ cv2.destroyAllWindows()
 
 ---
 
+## 3D Vision and Geometry for Robotics
+
+Computer vision for robots is often a 3D problem, not only a 2D recognition problem.
+
+Important building blocks:
+
+- camera intrinsics and extrinsics
+- depth estimation
+- stereo geometry
+- triangulation
+- pose estimation
+- point clouds and voxel representations
+
+Why this matters:
+
+- navigation needs spatially consistent obstacle understanding
+- manipulation needs object pose, not just class labels
+- mobile manipulators need perception that aligns with the robot frame
+
+If 2D detections are not grounded into 3D space correctly, the robot still cannot act reliably.
+
+---
+
+## Video Understanding and Tracking
+
+Many deployed CV systems are not single-image systems. They operate over time.
+
+Common tasks:
+
+- multi-object tracking
+- re-identification
+- action recognition
+- event detection
+- temporal segmentation
+
+In robotics, temporal consistency often matters more than top-1 frame accuracy:
+
+- tracking an object over several seconds
+- predicting motion
+- filtering noisy detections
+- reasoning over contact or hand-object interaction
+
+That is why video models and tracking pipelines remain important even in the era of giant vision-language models.
+
+---
+
+## Vision-Language Models and Grounded Perception
+
+Modern vision systems increasingly support:
+
+- open-vocabulary detection
+- referring expression grounding
+- phrase-to-region alignment
+- segmentation from natural language prompts
+
+These capabilities are especially useful for human-robot interaction:
+
+- "pick up the blue cup near the keyboard"
+- "go to the open doorway on the left"
+- "find the wrench under the bench"
+
+But grounded vision for robotics still depends on:
+
+- calibration
+- latency
+- 3D alignment
+- fallback behavior under ambiguity
+
+Language-conditioned perception is powerful, but it must still connect back to geometry and control.
+
+---
+
+## Pose Estimation, Mapping, and Occupancy
+
+For robotics, recognizing an object is often not enough. The system may need:
+
+- 6DoF object pose
+- camera-to-world alignment
+- depth-consistent segmentation
+- occupancy or voxel maps
+- semantic maps that stay consistent over time
+
+This is the bridge from "seeing" to "acting."
+
+Typical building blocks:
+
+- keypoint detection and PnP
+- RGB-D fusion
+- point cloud registration
+- semantic occupancy prediction
+- pose tracking over time
+
+Benchmark vision can look strong while still failing deployment if the outputs are not stable in the robot frame.
+
+---
+
+## Failure Modes in Real-World Robotics Vision
+
+Robotics vision fails in ways that many offline datasets underrepresent:
+
+- calibration drift
+- motion blur and rolling shutter
+- transparent or reflective objects
+- clutter and heavy occlusion
+- lighting transitions across rooms or time of day
+- long-tail object variants
+- sensor latency and dropped frames
+
+That is why deployable vision needs more than model accuracy:
+
+- confidence estimation
+- temporal smoothing
+- fallback policies
+- health checks on sensors and calibration
+- safe degraded behavior when perception is uncertain
+
+In physical systems, perception quality must be judged by downstream action reliability, not only benchmark scores.
+
+---
+
 ## Interview Q&A
 
 ### 1) How does Canny edge detection work?
@@ -518,3 +638,19 @@ Images have high dimensionality and models learn complex visual patterns. Augmen
 ### 6) When would you use YOLO vs Faster R-CNN?
 
 YOLO for real-time applications (video, robotics, autonomous driving) where speed is critical. Faster R-CNN when accuracy is the priority and inference time is less constrained. YOLOv8 and later versions have largely closed the accuracy gap for many tasks.
+
+### 7) Why is 3D perception harder than 2D detection?
+
+Because the system must recover geometry, scale, pose, and spatial consistency under occlusion, noisy sensing, and calibration errors, not only classify pixels or boxes.
+
+### 8) Why are VLMs not enough by themselves for robotics perception?
+
+Because robots still need grounded spatial outputs, timing guarantees, and reliable behavior under ambiguity. Semantic understanding alone does not produce safe action.
+
+### 9) What is the difference between detection and 6DoF pose estimation?
+
+Detection says where an object appears in the image. 6DoF pose estimation tries to recover its full position and orientation in 3D space, which is what manipulation often needs.
+
+### 10) What makes a vision model deployable on a robot, not just benchmark-strong?
+
+Stable calibration, bounded latency, robustness to environmental shifts, confidence-aware outputs, and behavior that degrades safely when perception becomes uncertain.

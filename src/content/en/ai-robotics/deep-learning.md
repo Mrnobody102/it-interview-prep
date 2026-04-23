@@ -486,6 +486,142 @@ Best practice: unfreeze progressively (last layers first) with lower learning ra
 
 ---
 
+## Multimodal and Embodied Deep Learning
+
+Deep learning in 2026 is no longer dominated by one modality at a time.
+
+Important combinations now include:
+
+- text + image
+- image + depth
+- video + language
+- vision + proprioception + action
+- audio + video + text
+
+This matters because modern robotics and physical AI systems often need to combine:
+
+- perception
+- instruction understanding
+- memory of recent context
+- action prediction
+
+Architectures in this space are increasingly built around transformers, cross-attention, tokenized action spaces, and shared latent representations.
+
+---
+
+## Diffusion Models, World Models, and Action Models
+
+Beyond classification and generation, newer deep learning systems increasingly learn structured dynamics.
+
+### Diffusion models
+
+Diffusion models are used not only for images, but also for:
+
+- trajectory generation
+- action sequence generation
+- policy priors
+- synthetic data generation
+
+They are attractive because they model rich multimodal outputs better than simple deterministic regressors.
+
+### World models
+
+World models try to learn latent dynamics of an environment:
+
+- what happens next
+- which states are reachable
+- which plans are plausible
+
+This is useful for:
+
+- model-based RL
+- planning in latent space
+- video prediction
+- embodied reasoning over future outcomes
+
+### Action models
+
+In robotics, the key question is not only "what is in the scene?" but also "what sequence of actions should follow?"
+
+That is why sequence models over actions, trajectories, and skills are becoming central.
+
+---
+
+## Sequence Modeling for Control and Policy Tokenization
+
+Many embodied models now treat control as a sequence modeling problem.
+
+Typical ingredients:
+
+- observation tokens from images, depth, proprioception, or force sensing
+- action tokens or continuous action chunks
+- autoregressive, diffusion, or latent-action decoding
+- receding-horizon prediction instead of one-step action regression
+
+Action chunking is especially useful because real control often benefits from:
+
+- smoother short-horizon plans
+- lower planner overhead per control step
+- better temporal consistency
+- easier integration with higher-level supervisors
+
+But sequence models also introduce new risks:
+
+- compounding error across the horizon
+- latency growth if decoding is too slow
+- hidden instability when training and deployment action distributions differ
+
+That is why modern robot policies are often paired with controllers, constraints, or safety filters instead of being trusted in isolation.
+
+---
+
+## Data Strategy and Scaling for Physical AI
+
+For physical AI, bigger models are only one part of the story.
+
+Teams also need:
+
+- diverse demonstrations
+- intervention and recovery data
+- failure mining from deployed systems
+- balanced real and simulated data
+- coverage across hardware variants, scenes, and tasks
+
+In practice, dataset quality often matters more than another small gain in parameter count.
+
+Strong scaling usually comes from combining:
+
+- better data curation
+- better labeling of success, failure, and contact events
+- wider task diversity
+- more replayable logs
+- stronger evaluation on action outcomes, not just prediction loss
+
+This is one reason embodied AI progress depends so much on systems engineering around the model.
+
+---
+
+## Efficient Adaptation and Deployment
+
+State-of-the-art models are large, but deployment usually has constraints:
+
+- memory
+- latency
+- power budget
+- edge hardware limits
+
+That is why teams increasingly rely on:
+
+- LoRA and parameter-efficient fine-tuning
+- quantization
+- distillation
+- smaller specialist models
+- cascading systems with small model first, large model fallback
+
+In robotics, this matters even more because inference often sits inside a control or decision loop.
+
+---
+
 ## Interview Q&A
 
 ### 1) What causes vanishing/exploding gradients?
@@ -511,3 +647,19 @@ CNNs are efficient, inductive bias (locality + translation equivariance) reduces
 ### 6) What is the role of the CLS token in BERT?
 
 The `[CLS]` token is prepended to every input sequence. Its final hidden state is used as the aggregate sequence representation for classification tasks. Because BERT is bidirectional, the `[CLS]` representation captures context from both directions.
+
+### 7) Why are diffusion or sequence models interesting for robotics?
+
+Because robot actions are often multimodal and temporally structured. Diffusion and sequence models can represent richer action distributions than simple one-step regression.
+
+### 8) What is a world model in practical terms?
+
+It is a learned model of environment dynamics that helps predict future states or latent outcomes, which can support planning, control, or policy learning.
+
+### 9) Why are action chunks useful in robot policies?
+
+Because they let the policy plan over a short horizon instead of predicting one tiny action at a time. This can improve smoothness, temporal consistency, and robustness to noisy observations.
+
+### 10) Why does dataset quality often matter more than a bigger policy model in robotics?
+
+Because robot failures are driven by coverage gaps, rare edge cases, bad synchronization, and weak supervision. A larger model cannot reliably recover knowledge that the dataset never captured well.

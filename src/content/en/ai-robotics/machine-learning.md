@@ -381,6 +381,88 @@ print("Best CV F1:", search.best_score_)
 
 ---
 
+## Probabilistic ML and Uncertainty
+
+In physical AI systems, confidence matters almost as much as prediction quality.
+
+Important uncertainty ideas:
+
+- **Aleatoric uncertainty:** noise inherent in the data or sensor
+- **Epistemic uncertainty:** uncertainty because the model has not seen enough relevant data
+- **Calibration:** whether predicted probabilities match real-world frequency
+
+Why this matters in robotics:
+
+- perception outputs may be noisy or partially occluded
+- planners should react differently to low-confidence detections
+- safety systems need thresholds tied to real confidence, not only raw scores
+
+Common tools:
+
+- probabilistic classifiers
+- ensembles
+- Monte Carlo dropout
+- conformal prediction
+- Bayesian filtering on top of learned outputs
+
+If a robot policy or detector is overconfident in unfamiliar conditions, failure handling becomes much harder.
+
+---
+
+## Time-Series, Sequential Data, and Decision Signals
+
+A lot of real AI data is not i.i.d. tabular data. It is sequential:
+
+- sensor streams
+- telemetry
+- trajectories
+- user sessions
+- logs over time
+
+This changes the ML problem substantially.
+
+Common sequence concerns:
+
+- temporal leakage
+- delayed labels
+- non-stationarity
+- autocorrelation
+- distribution shifts over environments or tasks
+
+For robotics and embodied systems, features often come from:
+
+- velocity and acceleration histories
+- contact or force traces
+- controller state
+- battery and thermal behavior
+- event timing and failure sequences
+
+That is one reason a strong ML engineer should understand more than standard random train/test split logic.
+
+---
+
+## ML for Robotics and Physical AI
+
+Classical ML still appears in robotics even when deep learning gets more attention.
+
+Examples:
+
+- anomaly detection on telemetry
+- predictive maintenance
+- failure classification
+- trajectory clustering
+- mode detection and behavior segmentation
+- learned cost or heuristic estimation
+
+In many robotics products, a simple gradient boosting model on good operational features can create more business value than an expensive end-to-end model.
+
+The main lesson is practical:
+
+- use deep learning when representation learning is the bottleneck
+- use classical ML when the signal is already structured and the system needs speed, interpretability, or easier retraining
+
+---
+
 ## Interview Q&A
 
 ### 1) Why can accuracy be misleading?
@@ -406,3 +488,11 @@ Apply all preprocessing steps (imputation, scaling, encoding, selection) **insid
 ### 6) What does a good ML baseline look like?
 
 A reproducible pipeline with simple models, clear metrics, stratified split/CV, and a documented error analysis before moving to complex architectures.
+
+### 7) Why does uncertainty estimation matter more in robotics than in many web ML tasks?
+
+Because the system acts in the physical world. A low-confidence wrong prediction can cause unsafe planning or control decisions unless downstream layers understand confidence properly.
+
+### 8) Why is random shuffling often wrong for sequential ML data?
+
+Because it can leak future information into training and make evaluation unrealistically optimistic. Time-aware splitting is often required.

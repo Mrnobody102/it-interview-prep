@@ -490,6 +490,126 @@ cv2.destroyAllWindows()
 
 ---
 
+## 3D Vision và Geometry cho Robotics
+
+Computer vision cho robot thường là bài toán 3D chứ không chỉ là bài toán nhận diện 2D.
+
+Các khối kiến thức quan trọng:
+
+- camera intrinsics và extrinsics
+- depth estimation
+- stereo geometry
+- triangulation
+- pose estimation
+- point cloud và voxel representation
+
+Vì sao nó quan trọng:
+
+- navigation cần hiểu obstacle nhất quán trong không gian
+- manipulation cần object pose chứ không chỉ object class
+- mobile manipulator cần perception ăn khớp với frame của robot
+
+Nếu detection 2D không được grounding đúng xuống không gian 3D thì robot vẫn không hành động đáng tin cậy được.
+
+---
+
+## Video Understanding và Tracking
+
+Rất nhiều hệ CV deploy thực tế không phải hệ xử lý từng ảnh đơn lẻ. Chúng hoạt động theo thời gian.
+
+Các task hay gặp:
+
+- multi-object tracking
+- re-identification
+- action recognition
+- event detection
+- temporal segmentation
+
+Trong robotics, temporal consistency thường quan trọng hơn top-1 accuracy của từng frame:
+
+- theo dõi object trong vài giây
+- dự đoán chuyển động
+- lọc detection bị nhiễu
+- reason trên contact hoặc hand-object interaction
+
+Đó là lý do video model và tracking pipeline vẫn rất quan trọng dù vision-language model ngày càng mạnh.
+
+---
+
+## Vision-Language Models và Grounded Perception
+
+Các hệ vision hiện đại ngày càng hỗ trợ:
+
+- open-vocabulary detection
+- grounding theo referring expression
+- phrase-to-region alignment
+- segmentation từ natural language prompt
+
+Các khả năng này đặc biệt hữu ích cho human-robot interaction:
+
+- "nhặt cái cốc xanh gần bàn phím"
+- "đi tới khung cửa đang mở bên trái"
+- "tìm cái cờ-lê dưới băng ghế"
+
+Nhưng grounded vision cho robotics vẫn phụ thuộc mạnh vào:
+
+- calibration
+- latency
+- căn chỉnh 3D
+- fallback behavior khi mơ hồ
+
+Perception có điều kiện theo ngôn ngữ rất mạnh, nhưng cuối cùng vẫn phải nối lại với geometry và control.
+
+---
+
+## Pose estimation, mapping và occupancy
+
+Trong robotics, nhận ra object thường là chưa đủ. Hệ thống có thể còn cần:
+
+- 6DoF object pose
+- camera-to-world alignment
+- segmentation nhất quán với depth
+- occupancy map hoặc voxel map
+- semantic map giữ được tính nhất quán theo thời gian
+
+Đây là cây cầu từ "nhìn thấy" sang "hành động".
+
+Các khối xây dựng thường gặp:
+
+- keypoint detection và PnP
+- RGB-D fusion
+- point cloud registration
+- semantic occupancy prediction
+- pose tracking theo thời gian
+
+Model vision có benchmark đẹp vẫn có thể fail khi deploy nếu output không ổn định trong robot frame.
+
+---
+
+## Failure modes của robotics vision ngoài đời thực
+
+Vision cho robotics hỏng theo những kiểu mà nhiều offline dataset chưa phản ánh đủ:
+
+- calibration drift
+- motion blur và rolling shutter
+- vật thể trong suốt hoặc phản chiếu
+- clutter và che khuất nặng
+- ánh sáng thay đổi giữa các phòng hoặc các thời điểm trong ngày
+- biến thể object thuộc long-tail
+- sensor latency và dropped frames
+
+Đó là lý do hệ vision deploy được cần nhiều hơn model accuracy:
+
+- confidence estimation
+- temporal smoothing
+- fallback policy
+- health check cho sensor và calibration
+- degraded behavior an toàn khi perception không chắc chắn
+
+Trong hệ vật lý, chất lượng perception phải được đánh giá bằng độ tin cậy của hành động downstream, không chỉ bằng benchmark score.
+
+---
+
 ## Câu hỏi Phỏng vấn
 
 ### 1) Canny edge detection hoạt động như thế nào?
@@ -518,3 +638,19 @@ Hình ảnh có dimensionality cao và models học các visual patterns phức 
 ### 6) Khi nào dùng YOLO vs Faster R-CNN?
 
 YOLO cho các ứng dụng real-time (video, robotics, autonomous driving) khi tốc độ là yếu tố quan trọng. Faster R-CNN khi độ chính xác là ưu tiên và thời gian inference ít bị ràng buộc. YOLOv8 và các phiên bản sau đã phần lớn thu hẹp khoảng cách accuracy cho nhiều tasks.
+
+### 7) Vì sao 3D perception khó hơn 2D detection?
+
+Vì hệ thống phải khôi phục geometry, scale, pose và tính nhất quán không gian dưới điều kiện che khuất, sensor nhiễu và calibration lỗi, chứ không chỉ phân loại pixel hay box.
+
+### 8) Vì sao VLM không tự nó đủ cho robotics perception?
+
+Vì robot vẫn cần output có grounding không gian, timing guarantee và hành vi đáng tin cậy khi gặp ambiguity. Hiểu semantics thôi chưa tạo ra action an toàn.
+
+### 9) Khác nhau giữa detection và 6DoF pose estimation là gì?
+
+Detection cho biết object xuất hiện ở đâu trong ảnh. 6DoF pose estimation cố gắng khôi phục đầy đủ vị trí và hướng của nó trong không gian 3D, thứ mà manipulation thường cần.
+
+### 10) Điều gì làm một vision model có thể deploy lên robot, chứ không chỉ mạnh trên benchmark?
+
+Calibration ổn định, latency có giới hạn, robustness trước environmental shift, output biết thể hiện độ tự tin, và hành vi degrade an toàn khi perception trở nên không chắc chắn.

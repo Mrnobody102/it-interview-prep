@@ -1,8 +1,8 @@
-# NLP & Transformers
+# NLP, LLMs & Transformers
 
 ## Overview
 
-Natural Language Processing (NLP) enables computers to understand, interpret, and generate human language. The field has undergone a revolution with the introduction of the Transformer architecture, which now powers virtually all state-of-the-art language models including large language models (LLMs).
+Natural Language Processing (NLP) enables computers to understand, interpret, and generate human language. The field has undergone a revolution with the introduction of the Transformer architecture, which now powers virtually all state-of-the-art language models including large language models (LLMs), multimodal models, and many tool-using AI systems.
 
 The progression of NLP:
 
@@ -593,6 +593,77 @@ training_args = TrainingArguments(
 
 ---
 
+## Multimodal Language Systems and Grounding
+
+By 2026, many "language" systems are no longer text-only. They operate over:
+
+- text
+- images and video
+- audio streams
+- UI state and documents
+- tool observations and execution traces
+
+This changes NLP engineering in practice. The system may need to:
+
+- read diagrams, tables, or screenshots
+- follow spoken instructions
+- ground referring expressions into objects or regions
+- reason over tool outputs instead of raw natural language alone
+- map human intent into a structured action space
+
+In robotics and physical AI, language is valuable only when it is grounded into:
+
+- the current scene
+- the robot's capabilities
+- the task state
+- safe next actions
+
+That is why modern NLP increasingly overlaps with multimodal modeling, perception, and action orchestration.
+
+---
+
+## Long Context vs Retrieval vs Memory
+
+These ideas are related, but they solve different problems:
+
+- **Long context** helps when all relevant information fits into the current model context window and the task needs joint reasoning over that material.
+- **Retrieval** helps when knowledge is too large, dynamic, or expensive to place in every prompt.
+- **Memory** helps when the system must preserve user, task, or environment state across turns or sessions.
+
+Practical guidance:
+
+- use long context for bounded artifacts such as one codebase slice, one contract, or one short robot mission log
+- use retrieval for large document sets, manuals, tickets, knowledge bases, and changing operational data
+- use explicit memory for preferences, plans, prior tool results, and persistent agent state
+
+Strong systems often combine all three. Long context is powerful, but it is not a complete replacement for retrieval quality, ranking, or state management.
+
+---
+
+## Tool-Augmented Reasoning and Structured Outputs
+
+Modern NLP systems often need to emit something more reliable than free-form prose:
+
+- JSON following a schema
+- SQL or graph queries
+- workflow arguments
+- API parameters
+- planner or robot task requests
+
+This changes the design target from "good text generation" to "correct structured behavior."
+
+Good practices:
+
+- define narrow schemas
+- validate arguments before execution
+- use explicit tool choice and stop conditions
+- separate reasoning traces from executable outputs
+- log tool results for replay and audit
+
+For production systems, structured outputs are often what make NLP operationally useful.
+
+---
+
 ## Interview Q&A
 
 ### 1) How does self-attention scale with sequence length?
@@ -618,3 +689,15 @@ Greedy: always picks the most likely token (fast but can produce repetitive text
 ### 6) When would you fine-tune vs use RAG?
 
 Fine-tune when you need the model to learn a specific format, tone, or task structure that general instructions can't capture. Use RAG when you need up-to-date information, factual accuracy, or when the knowledge base changes frequently.
+
+### 7) Why is long context not a full replacement for RAG?
+
+Because long context does not solve indexing, retrieval quality, freshness, filtering, or provenance by itself. It only increases how much information can fit once selected.
+
+### 8) What makes tool use safer than letting the model emit free-form commands?
+
+Tool use can be constrained by schemas, validators, approval gates, and typed outputs. Free-form commands are much harder to verify before execution.
+
+### 9) Why is grounding especially important for robotics or multimodal assistants?
+
+Because the system must connect language to real entities, scene state, and executable actions. Without grounding, fluent responses can still produce incorrect or unsafe behavior.

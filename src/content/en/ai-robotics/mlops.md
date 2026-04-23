@@ -1,8 +1,8 @@
-# MLOps
+# MLOps & AI Production
 
 ## Overview
 
-MLOps (Machine Learning Operations) applies DevOps principles to the machine learning lifecycle. It addresses the unique challenges of ML systems: data dependency management, model reproducibility, continuous training, monitoring for model degradation, and the gap between data science experimentation and production reliability.
+MLOps (Machine Learning Operations) applies DevOps principles to the machine learning lifecycle. In 2026, the topic also overlaps heavily with AI production concerns such as LLMOps, evaluation pipelines, retrieval quality, prompt and model versioning, and operational observability for model-powered systems.
 
 The core principle: treat ML models like software artifacts, with version control, testing, CI/CD, and monitoring.
 
@@ -753,6 +753,138 @@ print(f"Statistically significant: {result['significant']}")
 
 ---
 
+## LLMOps and GenAI Evaluation
+
+In 2026, MLOps often extends into LLMOps and general AI production.
+
+That introduces new operational objects:
+
+- prompts and system instructions
+- retrieval indexes and chunkers
+- tool schemas
+- evaluation sets for agent workflows
+- safety policies and moderation rules
+
+Important metrics now include:
+
+- answer quality
+- groundedness
+- hallucination rate
+- retrieval precision
+- tool-call correctness
+- latency and cost per task
+
+For model-powered systems, classic model metrics are no longer enough.
+
+---
+
+## Embodied AI Operations and Fleet Learning
+
+Robotics adds operational complexity beyond standard ML deployment.
+
+Important concerns:
+
+- robot telemetry collection
+- synchronized sensor and action logs
+- intervention logging
+- shadow evaluation before autonomy
+- fleet-wide rollout and rollback
+- dataset curation from real robot experience
+
+This often creates a learning loop:
+
+1. deploy cautiously
+2. collect failures and interventions
+3. label and curate the data
+4. retrain or refine policies
+5. replay and validate
+6. redeploy gradually
+
+In robotics, this loop is often more valuable than chasing one more benchmark point.
+
+---
+
+## Human Feedback and Data Flywheels
+
+Many modern AI systems improve through operational feedback:
+
+- annotation pipelines
+- preference labels
+- demonstrations
+- corrective interventions
+- incident review
+
+The "data flywheel" is powerful only when the data is:
+
+- timestamped correctly
+- reproducible
+- traceable to model or policy versions
+- filtered for quality
+
+Without these foundations, more data can simply create more noise.
+
+---
+
+## Robot Data Lakes and Time-Synchronized Logging
+
+Robotics MLOps needs a stronger data contract than many standard ML stacks.
+
+Important logged artifacts include:
+
+- camera frames
+- depth or lidar streams
+- proprioception and force data
+- transforms and calibration versions
+- action commands and controller states
+- interventions, overrides, and incidents
+- software version, model version, and hardware metadata
+
+The critical point is synchronization.
+
+If timestamps drift or sensors are not aligned correctly, downstream training can silently learn the wrong state-action relationship.
+
+That is why good robotics data platforms emphasize:
+
+- replayable logs
+- versioned calibration
+- consistent clock sources
+- traceability from model behavior back to raw episodes
+
+In practice, many hard robotics bugs are data integrity bugs before they are model bugs.
+
+---
+
+## Shadow Mode, Safety Gates, and Simulation-Backed Evaluation
+
+Before giving a learned system more autonomy, teams usually want several layers of evidence:
+
+1. offline replay on historical logs
+2. simulation regression on known scenarios
+3. shadow mode alongside the existing policy
+4. gradual rollout on bounded tasks
+5. explicit approval or rollback gates
+
+Useful metrics include:
+
+- intervention rate
+- near-miss count
+- disagreement with baseline policy
+- recovery success rate
+- end-to-end latency under realistic load
+
+For physical AI, evaluation must answer more than "does it work on average?"
+
+It must also answer:
+
+- when does it fail?
+- how observable is failure?
+- how quickly can the system fall back?
+- can the failure be reproduced and audited?
+
+Those are deployment questions, not only modeling questions.
+
+---
+
 ## Interview Q&A
 
 ### 1) Data Drift vs Concept Drift: what is the practical difference?
@@ -778,3 +910,19 @@ Apply all preprocessing transformations within cross-validation folds, not on th
 ### 6) When would you choose Kubeflow vs a simpler orchestrator like Prefect?
 
 Kubeflow for enterprise-scale, multi-team Kubernetes-native environments with complex distributed training needs. Prefect for simpler pipelines, faster iteration, and smaller teams that want Python-native workflow orchestration without Kubernetes overhead.
+
+### 7) Why is LLMOps different from classic MLOps?
+
+Because the deployed system quality depends not only on model weights, but also on prompts, retrieval, tools, policies, and workflow orchestration.
+
+### 8) Why is robotics MLOps especially hard?
+
+Because data is multimodal, time-synchronized, hardware-dependent, safety-sensitive, and often expensive to collect or replay correctly.
+
+### 9) Why is timestamp integrity a first-class MLOps concern in robotics?
+
+Because the model learns from relationships between observation, action, and outcome over time. Misaligned timestamps can corrupt that relationship even when each sensor log looks individually correct.
+
+### 10) What is shadow mode and why is it valuable before autonomous rollout?
+
+Shadow mode lets a new model observe live inputs and produce decisions without controlling the robot. This reveals disagreement patterns, edge cases, and safety risks before the model is allowed to act.

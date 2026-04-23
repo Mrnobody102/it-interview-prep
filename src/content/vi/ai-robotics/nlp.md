@@ -1,8 +1,8 @@
-# NLP & Transformers
+# NLP, LLMs & Transformers
 
 ## Tổng quan
 
-Natural Language Processing (NLP) cho phép máy tính hiểu, diễn giải và tạo ra ngôn ngữ con người. Lĩnh vực này đã trải qua cuộc cách mạng với sự ra đời của kiến trúc Transformer, hiện đang hỗ trợ hầu như tất cả các mô hình ngôn ngữ state-of-the-art bao gồm các large language models (LLMs).
+Natural Language Processing (NLP) cho phép máy tính hiểu, diễn giải và tạo ra ngôn ngữ con người. Lĩnh vực này đã trải qua cuộc cách mạng với sự ra đời của kiến trúc Transformer, hiện đang hỗ trợ hầu như tất cả các mô hình ngôn ngữ state-of-the-art bao gồm large language models (LLMs), multimodal models và nhiều AI system có khả năng dùng tool.
 
 Quá trình phát triển của NLP:
 
@@ -593,6 +593,77 @@ training_args = TrainingArguments(
 
 ---
 
+## Hệ ngôn ngữ đa phương thức và grounding
+
+Đến năm 2026, nhiều hệ "ngôn ngữ" không còn là text-only. Chúng vận hành trên:
+
+- văn bản
+- hình ảnh và video
+- luồng âm thanh
+- trạng thái UI và tài liệu
+- quan sát từ tool và execution trace
+
+Điều này thay đổi NLP engineering trong thực tế. Hệ thống có thể phải:
+
+- đọc diagram, bảng, hoặc screenshot
+- làm theo spoken instruction
+- grounding referring expression vào object hoặc region
+- reason trên tool output thay vì chỉ trên natural language thuần
+- ánh xạ ý định của con người sang action space có cấu trúc
+
+Trong robotics và physical AI, ngôn ngữ chỉ thực sự có giá trị khi được grounding xuống:
+
+- scene hiện tại
+- capability của robot
+- task state
+- hành động kế tiếp an toàn
+
+Đó là lý do NLP hiện đại ngày càng chồng lấn với multimodal modeling, perception và action orchestration.
+
+---
+
+## Long context vs retrieval vs memory
+
+Ba ý này liên quan với nhau nhưng giải quyết các vấn đề khác nhau:
+
+- **Long context** phù hợp khi toàn bộ thông tin liên quan có thể nhét vào context window hiện tại và task cần reason chung trên khối đó.
+- **Retrieval** phù hợp khi tri thức quá lớn, thay đổi liên tục, hoặc quá tốn nếu luôn đưa vào mọi prompt.
+- **Memory** phù hợp khi hệ thống phải giữ user state, task state, hoặc environment state qua nhiều turn hay nhiều session.
+
+Hướng dẫn thực dụng:
+
+- dùng long context cho artifact có phạm vi giới hạn như một lát codebase, một hợp đồng, hoặc một mission log ngắn của robot
+- dùng retrieval cho tập tài liệu lớn, manual, ticket, knowledge base, và dữ liệu vận hành thay đổi liên tục
+- dùng explicit memory cho preferences, plan, kết quả tool trước đó, và persistent agent state
+
+Hệ mạnh thường kết hợp cả ba. Long context rất mạnh, nhưng không tự thay thế được retrieval quality, ranking, hay state management.
+
+---
+
+## Tool-augmented reasoning và structured outputs
+
+Hệ NLP hiện đại thường phải sinh ra thứ đáng tin hơn free-form prose:
+
+- JSON theo schema
+- SQL hoặc graph query
+- workflow arguments
+- API parameters
+- planner request hoặc robot task request
+
+Điều này làm mục tiêu thiết kế chuyển từ "generate text hay" sang "hành vi có cấu trúc và đúng".
+
+Best practices:
+
+- định nghĩa schema hẹp
+- validate arguments trước khi execute
+- dùng tool choice và stop condition tường minh
+- tách reasoning trace khỏi output có thể thực thi
+- log tool result để replay và audit
+
+Với production systems, structured output thường là thứ biến NLP thành công cụ vận hành được.
+
+---
+
 ## Câu hỏi Phỏng vấn
 
 ### 1) Self-attention scale như thế nào với sequence length?
@@ -618,3 +689,15 @@ Greedy: luôn chọn token có khả năng cao nhất (nhanh nhưng có thể t�
 ### 6) Khi nào nên fine-tune vs dùng RAG?
 
 Fine-tune khi bạn cần model học một format cụ thể, tone, hoặc cấu trúc task mà các general instructions không thể capture. Dùng RAG khi bạn cần thông tin cập nhật, factual accuracy, hoặc khi knowledge base thay đổi thường xuyên.
+
+### 7) Vì sao long context không thay thế hoàn toàn RAG?
+
+Vì long context không tự giải quyết được indexing, retrieval quality, freshness, filtering, hay provenance. Nó chỉ tăng lượng thông tin có thể đưa vào sau khi đã chọn xong.
+
+### 8) Vì sao tool use an toàn hơn việc để model phát lệnh tự do?
+
+Vì tool use có thể bị ràng buộc bằng schema, validator, approval gate, và typed output. Free-form command khó kiểm tra trước khi thực thi hơn nhiều.
+
+### 9) Vì sao grounding đặc biệt quan trọng với robotics hoặc multimodal assistant?
+
+Vì hệ thống phải nối ngôn ngữ với thực thể thật, scene state, và hành động có thể thực thi. Nếu không grounding thì câu trả lời có thể rất trôi chảy nhưng vẫn sai hoặc không an toàn.

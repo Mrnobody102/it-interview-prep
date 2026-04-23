@@ -1,8 +1,8 @@
-# MLOps
+# MLOps & AI Production
 
 ## Tổng quan
 
-MLOps (Machine Learning Operations) áp dụng các nguyên tắc DevOps vào vòng đời machine learning. Nó giải quyết các thách thức đặc biệt của các hệ thống ML: quản lý data dependency, model reproducibility, continuous training, monitoring model degradation, và khoảng cách giữa data science experimentation và production reliability.
+MLOps (Machine Learning Operations) áp dụng các nguyên tắc DevOps vào vòng đời machine learning. Đến năm 2026, chủ đề này cũng chồng lấn mạnh với AI production như LLMOps, evaluation pipeline, retrieval quality, prompt và model versioning, cùng observability cho các hệ thống chạy bằng model.
 
 Nguyên tắc cốt lõi: đối xử với các ML models như software artifacts, với version control, testing, CI/CD, và monitoring.
 
@@ -753,6 +753,138 @@ print(f"Statistically significant: {result['significant']}")
 
 ---
 
+## LLMOps và GenAI Evaluation
+
+Đến năm 2026, MLOps thường mở rộng thành cả LLMOps và AI production nói chung.
+
+Điều đó đưa thêm nhiều "đối tượng vận hành" mới:
+
+- prompt và system instruction
+- retrieval index và chunker
+- tool schema
+- evaluation set cho agent workflow
+- safety policy và moderation rule
+
+Các metric quan trọng bây giờ gồm:
+
+- chất lượng câu trả lời
+- groundedness
+- hallucination rate
+- retrieval precision
+- độ đúng của tool-call
+- latency và cost trên mỗi task
+
+Với model-powered systems, metric kiểu cổ điển cho model thôi là không đủ.
+
+---
+
+## Embodied AI Operations và Fleet Learning
+
+Robotics thêm độ phức tạp vận hành vượt xa deploy ML thông thường.
+
+Các mối quan tâm quan trọng:
+
+- thu thập robot telemetry
+- log sensor và action đã được đồng bộ
+- intervention logging
+- shadow evaluation trước khi cấp quyền autonomy
+- rollout và rollback theo cả fleet
+- dataset curation từ kinh nghiệm chạy robot thật
+
+Điều này thường tạo thành learning loop:
+
+1. deploy cẩn thận
+2. thu thập failure và intervention
+3. label và curate dữ liệu
+4. retrain hoặc refine policy
+5. replay và validate
+6. redeploy dần dần
+
+Trong robotics, learning loop này thường có giá trị hơn việc cố kiếm thêm một chút benchmark score.
+
+---
+
+## Human Feedback và Data Flywheels
+
+Nhiều hệ AI hiện đại cải thiện nhờ operational feedback:
+
+- annotation pipeline
+- preference label
+- demonstrations
+- corrective interventions
+- incident review
+
+"Data flywheel" chỉ thực sự mạnh khi dữ liệu:
+
+- có timestamp đúng
+- có thể reproduce
+- truy vết được tới model hoặc policy version
+- được lọc chất lượng
+
+Nếu thiếu các nền tảng đó thì nhiều data hơn chỉ tạo thêm nhiễu.
+
+---
+
+## Robot data lake và log đồng bộ theo thời gian
+
+Robotics MLOps cần một data contract chặt hơn nhiều standard ML stack.
+
+Các artifact quan trọng cần được log gồm:
+
+- camera frames
+- depth hoặc lidar streams
+- proprioception và force data
+- transforms và calibration version
+- action commands và controller states
+- interventions, override, và incidents
+- software version, model version, và hardware metadata
+
+Điểm then chốt là đồng bộ thời gian.
+
+Nếu timestamp bị lệch hoặc sensor không được căn chỉnh đúng, quá trình train downstream có thể âm thầm học sai quan hệ state-action.
+
+Đó là lý do nền tảng dữ liệu tốt cho robotics thường nhấn mạnh:
+
+- replayable logs
+- calibration có version
+- clock source nhất quán
+- khả năng truy vết từ hành vi của model ngược về raw episode
+
+Trong thực tế, rất nhiều bug khó trong robotics là bug về data integrity trước khi là bug của model.
+
+---
+
+## Shadow mode, safety gate, và evaluation dựa trên mô phỏng
+
+Trước khi cấp thêm quyền autonomy cho một hệ học được, team thường muốn nhiều lớp bằng chứng:
+
+1. offline replay trên historical logs
+2. simulation regression trên các scenario đã biết
+3. shadow mode chạy song song với policy hiện tại
+4. rollout dần trên các task bị giới hạn
+5. approval gate hoặc rollback gate tường minh
+
+Các metric hữu ích gồm:
+
+- intervention rate
+- số near-miss
+- mức bất đồng với baseline policy
+- recovery success rate
+- end-to-end latency dưới tải thực tế
+
+Với physical AI, evaluation phải trả lời nhiều hơn câu hỏi "trung bình có chạy được không?"
+
+Nó còn phải trả lời:
+
+- khi nào hệ thất bại?
+- failure quan sát được tới mức nào?
+- hệ có thể fall back nhanh ra sao?
+- failure có thể reproduce và audit được không?
+
+Đó là câu hỏi về deployment, không chỉ là câu hỏi modeling.
+
+---
+
 ## Câu hỏi Phỏng vấn
 
 ### 1) Data Drift vs Concept Drift: khác biệt thực tế là gì?
@@ -778,3 +910,19 @@ Batch serving xử lý khối lượng lớn theo schedule (tiết kiệm chi ph
 ### 6) Khi nào chọn Kubeflow vs một orchestrator đơn giản hơn như Prefect?
 
 Kubeflow cho enterprise-scale, multi-team Kubernetes-native environments với complex distributed training needs. Prefect cho simpler pipelines, faster iteration, và smaller teams muốn Python-native workflow orchestration mà không có Kubernetes overhead.
+
+### 7) Vì sao LLMOps khác classic MLOps?
+
+Vì chất lượng hệ deploy không chỉ phụ thuộc vào model weights mà còn phụ thuộc vào prompt, retrieval, tools, policy và workflow orchestration.
+
+### 8) Vì sao robotics MLOps đặc biệt khó?
+
+Vì dữ liệu là dữ liệu đa modality, cần đồng bộ theo thời gian, phụ thuộc phần cứng, nhạy cảm về safety, và thường đắt khi thu thập hoặc replay đúng cách.
+
+### 9) Vì sao tính toàn vẹn timestamp là mối quan tâm MLOps hạng nhất trong robotics?
+
+Vì model học từ quan hệ giữa observation, action, và outcome theo thời gian. Timestamp lệch có thể làm hỏng quan hệ đó dù từng sensor log riêng lẻ nhìn vẫn đúng.
+
+### 10) Shadow mode là gì và vì sao nó có giá trị trước khi rollout autonomy?
+
+Shadow mode cho phép model mới quan sát input thật và sinh quyết định mà chưa điều khiển robot. Nhờ đó team thấy được pattern bất đồng, edge case, và rủi ro safety trước khi model được phép hành động.

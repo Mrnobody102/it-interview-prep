@@ -381,6 +381,88 @@ print("Best CV F1:", search.best_score_)
 
 ---
 
+## Probabilistic ML và Uncertainty
+
+Trong physical AI systems, confidence gần như quan trọng ngang với chất lượng dự đoán.
+
+Các ý tưởng uncertainty quan trọng:
+
+- **Aleatoric uncertainty:** nhiễu vốn có của dữ liệu hoặc sensor
+- **Epistemic uncertainty:** bất định vì model chưa thấy đủ dữ liệu phù hợp
+- **Calibration:** xác suất dự đoán có khớp với tần suất thật ngoài đời không
+
+Vì sao nó quan trọng trong robotics:
+
+- output từ perception có thể nhiễu hoặc bị che khuất
+- planner phải phản ứng khác nhau với detection confidence thấp
+- safety system cần threshold gắn với confidence thật, không chỉ raw score
+
+Các công cụ hay gặp:
+
+- probabilistic classifier
+- ensemble
+- Monte Carlo dropout
+- conformal prediction
+- Bayesian filtering đặt trên learned output
+
+Nếu robot policy hoặc detector quá tự tin trong tình huống lạ, failure handling sẽ khó hơn rất nhiều.
+
+---
+
+## Time-Series, Sequential Data và Decision Signals
+
+Rất nhiều dữ liệu AI thực tế không phải dữ liệu i.i.d. dạng bảng. Nó là dữ liệu chuỗi:
+
+- sensor streams
+- telemetry
+- trajectories
+- user sessions
+- logs theo thời gian
+
+Điều đó làm bài toán ML thay đổi khá mạnh.
+
+Các vấn đề thường gặp:
+
+- temporal leakage
+- delayed labels
+- non-stationarity
+- autocorrelation
+- distribution shift theo môi trường hoặc task
+
+Với robotics và embodied systems, feature thường đến từ:
+
+- lịch sử velocity và acceleration
+- force trace hoặc contact trace
+- controller state
+- pin, nhiệt độ và trạng thái phần cứng
+- thứ tự sự kiện và chuỗi failure
+
+Đó là lý do ML engineer tốt không thể chỉ biết mỗi random train/test split.
+
+---
+
+## ML cho Robotics và Physical AI
+
+Classical ML vẫn xuất hiện nhiều trong robotics dù deep learning được chú ý hơn.
+
+Ví dụ:
+
+- anomaly detection trên telemetry
+- predictive maintenance
+- failure classification
+- trajectory clustering
+- mode detection và behavior segmentation
+- learned cost hoặc heuristic estimation
+
+Trong nhiều sản phẩm robotics, một gradient boosting model đơn giản trên feature vận hành tốt có thể tạo giá trị thực tế hơn một end-to-end model đắt đỏ.
+
+Bài học thực dụng là:
+
+- dùng deep learning khi representation learning là bottleneck
+- dùng classical ML khi tín hiệu đã có cấu trúc và hệ thống cần tốc độ, interpretability hoặc retraining dễ hơn
+
+---
+
 ## Câu hỏi Phỏng vấn
 
 ### 1) Tại sao accuracy có thể gây hiểu nhầm?
@@ -406,3 +488,11 @@ Các phép tính khoảng cách và margin nhạy cảm với scale. Nếu khôn
 ### 6) Một ML baseline tốt trông như thế nào?
 
 Một pipeline có thể reproduce với các mô hình đơn giản, metrics rõ ràng, stratified split/CV, và phân tích lỗi có tài liệu trước khi chuyển sang các kiến trúc phức tạp.
+
+### 7) Vì sao uncertainty estimation quan trọng hơn trong robotics so với nhiều web ML task?
+
+Vì hệ thống hành động trong thế giới vật lý. Một dự đoán sai nhưng confidence thấp cần được downstream layer hiểu đúng để tránh planner hoặc controller đưa ra quyết định không an toàn.
+
+### 8) Vì sao random shuffle thường sai với dữ liệu chuỗi?
+
+Vì nó có thể làm lộ thông tin tương lai vào training và khiến evaluation lạc quan giả tạo. Với dữ liệu theo thời gian, cần time-aware split.

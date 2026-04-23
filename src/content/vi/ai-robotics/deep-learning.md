@@ -486,6 +486,142 @@ Best practice: unfreeze từ từ (last layers trước) với learning rates th
 
 ---
 
+## Multimodal và Embodied Deep Learning
+
+Deep learning năm 2026 không còn bị chi phối bởi từng modality riêng lẻ.
+
+Các tổ hợp quan trọng hiện nay gồm:
+
+- text + image
+- image + depth
+- video + language
+- vision + proprioception + action
+- audio + video + text
+
+Điều này quan trọng vì robotics và physical AI system hiện đại thường phải kết hợp:
+
+- perception
+- hiểu instruction
+- memory của context gần đây
+- action prediction
+
+Kiến trúc trong vùng này ngày càng xoay quanh transformer, cross-attention, tokenized action space và shared latent representation.
+
+---
+
+## Diffusion Models, World Models và Action Models
+
+Ngoài classification và generation, các hệ deep learning mới ngày càng học cả động học có cấu trúc.
+
+### Diffusion models
+
+Diffusion model không chỉ dùng cho ảnh, mà còn cho:
+
+- trajectory generation
+- action sequence generation
+- policy prior
+- synthetic data generation
+
+Chúng hấp dẫn vì biểu diễn được output đa đỉnh phong phú tốt hơn deterministic regressor thông thường.
+
+### World models
+
+World model cố học latent dynamics của môi trường:
+
+- chuyện gì sẽ xảy ra tiếp theo
+- trạng thái nào có thể đạt được
+- plan nào hợp lý
+
+Điều này hữu ích cho:
+
+- model-based RL
+- planning trong latent space
+- video prediction
+- embodied reasoning về kết quả tương lai
+
+### Action models
+
+Trong robotics, câu hỏi quan trọng không chỉ là "trong cảnh có gì?" mà còn là "tiếp theo nên hành động theo chuỗi nào?"
+
+Đó là lý do sequence model cho action, trajectory và skill ngày càng trung tâm hơn.
+
+---
+
+## Sequence modeling cho control và policy tokenization
+
+Nhiều embodied model hiện nay xem control như một bài toán sequence modeling.
+
+Các thành phần thường gặp:
+
+- observation tokens từ image, depth, proprioception, hoặc force sensing
+- action tokens hoặc continuous action chunks
+- autoregressive, diffusion, hoặc latent-action decoding
+- receding-horizon prediction thay cho one-step action regression
+
+Action chunking đặc biệt hữu ích vì control thực tế thường hưởng lợi từ:
+
+- short-horizon plan mượt hơn
+- chi phí planner trên mỗi control step thấp hơn
+- temporal consistency tốt hơn
+- tích hợp dễ hơn với supervisor ở tầng cao
+
+Nhưng sequence model cũng tạo thêm rủi ro:
+
+- compounding error trên cả horizon
+- latency tăng nếu decoding quá chậm
+- bất ổn ẩn khi phân phối action lúc train và lúc deploy khác nhau
+
+Đó là lý do policy robot hiện đại thường đi kèm controller, constraint, hoặc safety filter thay vì bị tin tuyệt đối như một khối đơn lẻ.
+
+---
+
+## Chiến lược dữ liệu và scaling cho Physical AI
+
+Với physical AI, model lớn hơn chỉ là một phần của câu chuyện.
+
+Team còn cần:
+
+- demonstration đa dạng
+- dữ liệu intervention và recovery
+- failure mining từ hệ đã deploy
+- dữ liệu thật và mô phỏng được cân bằng
+- coverage qua nhiều biến thể phần cứng, scene, và task
+
+Trong thực tế, chất lượng dataset thường quan trọng hơn việc tăng thêm một ít parameter count.
+
+Scaling tốt thường đến từ việc kết hợp:
+
+- data curation tốt hơn
+- label tốt hơn cho success, failure, và contact events
+- task diversity rộng hơn
+- log dễ replay hơn
+- evaluation mạnh hơn trên action outcome, không chỉ prediction loss
+
+Đó cũng là lý do tiến bộ của embodied AI phụ thuộc rất nhiều vào systems engineering xung quanh model.
+
+---
+
+## Efficient Adaptation và Deployment
+
+Model state-of-the-art rất lớn, nhưng deploy thường bị ràng buộc bởi:
+
+- bộ nhớ
+- latency
+- điện năng
+- giới hạn của edge hardware
+
+Vì vậy các team ngày càng dựa vào:
+
+- LoRA và parameter-efficient fine-tuning
+- quantization
+- distillation
+- model nhỏ chuyên biệt
+- hệ cascading với model nhỏ chạy trước, model lớn fallback
+
+Trong robotics, chuyện này còn quan trọng hơn vì inference thường nằm ngay trong decision loop hoặc control loop.
+
+---
+
 ## Câu hỏi Phỏng vấn
 
 ### 1) Nguyên nhân nào gây ra vanishing/exploding gradients?
@@ -511,3 +647,19 @@ CNNs hiệu quả, inductive bias (locality + translation equivariance) giảm n
 ### 6) Vai trò của CLS token trong BERT là gì?
 
 Token `[CLS]` được thêm vào đầu mỗi input sequence. Hidden state cuối cùng của nó được dùng như aggregate sequence representation cho các classification tasks. Vì BERT là bidirectional, representation của `[CLS]` nắm bắt context từ cả hai hướng.
+
+### 7) Vì sao diffusion hoặc sequence model đáng chú ý trong robotics?
+
+Vì action của robot thường có tính đa phương án và phụ thuộc thời gian. Diffusion model và sequence model biểu diễn được phân phối action giàu hơn so với one-step regression đơn giản.
+
+### 8) World model hiểu thực dụng là gì?
+
+Đó là learned model của dynamics môi trường, giúp dự đoán future state hoặc latent outcome để hỗ trợ planning, control hoặc policy learning.
+
+### 9) Vì sao action chunks hữu ích trong robot policy?
+
+Vì chúng cho phép policy lập kế hoạch trên một horizon ngắn thay vì dự đoán từng action rất nhỏ riêng lẻ. Điều này có thể cải thiện độ mượt, temporal consistency, và độ bền trước quan sát nhiễu.
+
+### 10) Vì sao chất lượng dataset thường quan trọng hơn một policy model lớn hơn trong robotics?
+
+Vì failure của robot thường đến từ coverage gap, edge case hiếm, đồng bộ dữ liệu kém, và supervision yếu. Model lớn hơn không thể tự bù cho tri thức mà dataset chưa từng ghi lại tốt.
