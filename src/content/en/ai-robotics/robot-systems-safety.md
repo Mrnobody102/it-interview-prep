@@ -2,131 +2,111 @@
 
 ## Overview
 
-A robot is a deployed cyber-physical system. That means success is not only about model quality. It is about whether the whole stack behaves safely and predictably in the real world.
+Robot deployment is broader than "put the model on the robot".
 
-This topic includes:
+In practice, this area breaks into four connected layers:
 
-- system architecture
-- runtime supervision
-- failure handling
-- safety layers
-- observability
-- fleet or field deployment
+1. production architecture and runtime boundaries
+2. safety layers, guardrails, and supervision
+3. observability, incident response, and operations
+4. deployment patterns and human-in-the-loop control
 
----
-
-## Production Robot Architecture
-
-Real robots often split responsibilities across layers:
-
-- on-robot low-latency compute
-- middleware and control processes
-- higher-level planning or AI services
-- cloud logging, monitoring, and fleet management
-- teleoperation or human override paths
-
-Not every robot needs the cloud in the control loop. In many systems, the safest design is to keep time-critical behavior on the robot.
+That is why this topic is now split into child topics.
 
 ---
 
-## Safety Layers
+## Why This Matters
 
-Safety is not one feature. It is layered:
+Physical systems have different stakes from pure software systems.
 
-1. mechanical limits
-2. actuator and controller limits
-3. emergency stop paths
-4. software watchdogs
-5. perception-based safety zones
-6. operator override
-7. rollout and recovery procedures
+Failures can cause:
 
-If a robot relies on one learned model as the only safety layer, the architecture is weak.
+- unsafe motion
+- hardware damage
+- downtime in operations
+- loss of operator trust
+- hard-to-reproduce incidents
 
----
-
-## Runtime Supervision
-
-A strong deployed robot needs supervisors that answer:
-
-- is perception healthy?
-- is localization still trustworthy?
-- is the control loop stable?
-- are sensors stale or delayed?
-- is the policy proposing unsafe actions?
-- should the robot degrade, stop, or request help?
-
-Supervision is often more important than making the main model slightly smarter.
+So reliability, supervision, and deployment discipline must be designed explicitly.
 
 ---
 
-## Observability
+## Map of the Subtopics
 
-Good robotics observability includes:
+### 1. Production Architecture & Runtime Boundaries
 
-- timestamps and clock sync
-- structured logs
-- rosbag or equivalent replay
-- sensor health metrics
-- latency tracing
-- controller and actuator diagnostics
-- intervention and safety-event logs
+Focus:
 
-If you cannot replay a failure, you will debug slowly.
+- process boundaries and execution ownership
+- what should run on edge vs cloud
+- failure containment
+- safe architecture for physical systems
 
----
+### 2. Safety Layers, Guardrails & Supervision
 
-## Deployment Patterns
+Focus:
 
-Common rollout patterns:
+- hard and soft safety boundaries
+- runtime guards and watchdogs
+- fallback modes and stop conditions
+- how learned systems should be supervised
 
-- lab-only internal testing
-- shadow mode with no actuation authority
-- geofenced limited deployment
-- human-supervised operation
-- staged autonomous rollout
+### 3. Observability, Incident Response & Operations
 
-This mirrors mature practices from distributed systems, but the consequences are physical.
+Focus:
 
----
+- telemetry and health monitoring
+- event logging and replay
+- incident triage and root-cause workflows
+- operational readiness of deployed fleets
 
-## Human-in-the-Loop Design
+### 4. Deployment Patterns & Human-in-the-Loop
 
-Human supervision is still central in many advanced robotics systems:
+Focus:
 
-- teleoperation fallback
-- intervention labeling
-- demonstration collection
-- approval gates for risky actions
-- incident review
-
-The goal is not to prove the robot never fails. The goal is to make failure observable, recoverable, and bounded.
+- staged rollout and rollback
+- shadow mode and limited autonomy
+- operator override and approval loops
+- where human intervention should remain in the system
 
 ---
 
-## The Physical AI Perspective
+## Recommended Learning Order
 
-"Physical AI" is useful as a systems term because it reminds teams that:
+A practical order is:
 
-- models live inside physical loops
-- embodiment changes the data and policy interface
-- latency, safety, and hardware constraints are first-class concerns
-- success depends on integration, not model quality alone
+1. runtime architecture
+2. safety and supervision
+3. observability and operations
+4. deployment and human oversight
 
-This is the right mental model for 2026 robotics work.
+This order mirrors the path from safe design to safe long-term operation.
+
+---
+
+## Relationship to Other AI-Robotics Topics
+
+This section overlaps with, but does not replace:
+
+- **Robotics Foundations & ROS 2** for the integration substrate
+- **Motion Planning, Manipulation & Control** for execution behavior
+- **Simulation, Sim2Real & Synthetic Data** for predeployment testing
+- **MLOps & AI Production** for experiment and model operations
+
+Safety and deployment are the disciplines that turn a prototype into a usable robot system.
 
 ---
 
 ## Interview Q&A
 
-### 1. Why is robotics deployment harder than deploying an LLM web app?
+### 1) Why split robot systems safety into smaller subtopics?
 
-Because the system interacts with the physical world, where timing, actuation, safety, and hardware uncertainty directly matter.
+Because architecture, safety supervision, operations, and deployment governance are distinct responsibilities with different failure modes.
 
-### 2. What is the value of a watchdog or supervisor?
+### 2) Why is runtime supervision essential for robots?
 
-It provides an independent layer that can detect degraded conditions and trigger stop, fallback, or recovery behavior.
+Because even a good planner or model can drift into unsafe behavior without explicit monitoring and fallback logic.
 
-### 3. Why is observability especially important in robotics?
+### 3) Why is human-in-the-loop still important in advanced robot systems?
 
-Because failures are multi-modal and time-dependent. You often need synchronized logs, sensor data, and action traces to understand what really happened.
+Because many real deployments still need approval, override, or recovery from a human when uncertainty or risk exceeds safe autonomy.

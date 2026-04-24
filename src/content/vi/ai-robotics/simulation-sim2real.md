@@ -2,154 +2,109 @@
 
 ## Tổng quan
 
-Simulation giờ là trụ cột của phát triển robotics chứ không còn chỉ là công cụ phụ trợ.
+Simulation giờ không còn chỉ là công cụ tiện lợi cho robotics.
 
-Nó được dùng cho:
+Trong thực tế, chủ đề này tách thành bốn mảng kết nối:
 
-- phát triển controller
-- test navigation
-- train policy
-- debug perception
-- kiểm tra safety
-- sinh synthetic data
+1. simulation foundations và physics fidelity
+2. domain randomization và chuyển giao Sim2Real
+3. synthetic data generation và scenario design
+4. evaluation ladders, replay, và benchmarking
 
-Tính đến tháng 4/2026, embodied AI nghiêm túc gần như luôn phụ thuộc vào một simulation stack.
+Đó là lý do chủ đề này được tách thành các mục con riêng.
 
 ---
 
-## Vì sao simulation quan trọng
+## Vì sao nó quan trọng
 
-Simulation có giá trị vì robot thật:
+Simulation hỗ trợ robotics team bằng cách làm rẻ hơn:
 
-- đắt
-- reset chậm
-- dễ hỏng
-- nguy hiểm nếu chạy sai
-- rất khó parallelize
+- prototype behaviors
+- test các rare failures
+- train policies an toàn hơn
+- tạo perception data
+- so sánh các version hệ trước khi rollout lên hardware
 
-Simulation cho phép scale mà hardware thật thường không làm được.
-
----
-
-## Các mục đích chính của simulation
-
-| Use case | Vì sao simulation hữu ích |
-|---|---|
-| **Algorithm prototyping** | iterate nhanh hơn hardware thật |
-| **Regression testing** | kịch bản deterministic, replay được |
-| **RL / policy learning** | rollout song song quy mô lớn |
-| **Synthetic data** | dữ liệu có nhãn rẻ cho perception |
-| **Safety checks** | test các failure case hiếm |
-
-Mỗi team robotics sẽ quan tâm những hàng khác nhau, nhưng ai cũng hưởng lợi từ môi trường có thể replay.
+Nhưng simulation chỉ hữu ích nếu bạn hiểu lúc nào fidelity quan trọng và lúc nào không.
 
 ---
 
-## Physics và độ trung thực của thế giới
+## Bản đồ các mục con
 
-Không có simulator nào hoàn hảo.
+### 1. Simulation Foundations & Physics Fidelity
 
-Bạn luôn phải trade giữa:
+Trọng tâm:
 
-- độ trung thực vật lý
-- chất lượng render
-- độ thực của sensor
-- tốc độ
-- mức dễ tích hợp
+- simulation tốt cho việc gì
+- physics engines và contact realism
+- tradeoff khi mô hình hóa thế giới
+- khi nào high fidelity đáng giá và khi nào chỉ tốn chi phí
 
-Các khái niệm quan trọng:
+### 2. Domain Randomization & Sim2Real Strategies
 
-- contact realism
-- actuator modeling
-- friction và compliance
-- sensor noise model
-- timing fidelity
+Trọng tâm:
 
-Nếu simulator nhanh nhưng sai đúng chỗ bạn cần quan tâm thì transfer sẽ hỏng.
+- randomization của texture, lighting, và dynamics
+- system identification và adaptation
+- policy transfer dưới model mismatch
+- giảm overfitting vào simulator
 
-Hệ sinh thái hiện tại thường phối hợp:
+### 3. Synthetic Data, Rendering & Scenario Generation
 
-- **Isaac Lab / Isaac Sim** cho GPU simulation quy mô lớn và policy training
-- **MuJoCo** cho thí nghiệm control và learning nhanh
-- **Gazebo / Webots** cho tích hợp kiểu ROS và system prototyping
+Trọng tâm:
 
----
+- synthetic perception datasets
+- độ đa dạng của scenario và labeling
+- rendering pipelines và domain coverage
+- synthetic data giúp mạnh nhất ở đâu trong AI systems
 
-## Các chiến lược sim2real
+### 4. Evaluation Ladders, Replay & Benchmarking
 
-Bộ công cụ cổ điển vẫn còn nguyên giá trị:
+Trọng tâm:
 
-- system identification
-- domain randomization
-- curriculum learning
-- privileged information trong giai đoạn train
-- deploy thật với safety limit
-- calibration liên tục sau khi transfer
-
-Không có cái gọi là "bật công tắc sim2real". Transfer là kỷ luật của cả pipeline.
+- staged evaluation trước khi deploy thật
+- log replay và regression testing
+- benchmark design và scenario suites
+- cách nối simulator với bằng chứng từ thế giới thật
 
 ---
 
-## Synthetic data
+## Thứ tự học gợi ý
 
-Synthetic data ngày càng quan trọng cho:
+Một thứ tự thực dụng là:
 
-- segmentation
-- detection
-- pose estimation
-- coverage các tình huống hiếm
-- domain adaptation
+1. simulation foundations
+2. sim2real strategies
+3. synthetic data generation
+4. evaluation ladders và replay
 
-Nó phát huy nhất khi:
-
-- label ngoài đời đắt
-- long-tail scene quan trọng
-- có thể kiểm soát scene generation chặt chẽ
-
-Nó phát huy kém nếu bỏ qua visual domain gap.
+Thứ tự này giúp bạn nhìn simulation như một phần của systems engineering thay vì một tool đứng riêng.
 
 ---
 
-## Evaluation ladder
+## Liên hệ với các topic AI-Robotics khác
 
-Một lộ trình đánh giá hợp lý:
+Phần này có giao nhau, nhưng không thay thế:
 
-1. unit tests
-2. simulator scenario tests
-3. batch offline evaluation
-4. hardware-in-the-loop hoặc shadow evaluation
-5. rollout thật có guard
+- **Robot Learning & Embodied AI** cho train learned policies
+- **Computer Vision** cho synthetic perception data
+- **Robot Systems, Safety & Deployment** cho kỷ luật rollout
+- **MLOps & AI Production** cho reproducibility và evaluation pipelines
 
-Team mạnh không nhảy từ notebook sang full real-robot deployment ngay.
-
----
-
-## Hệ sinh thái đang đi về đâu
-
-Xu hướng 2025-2026 khá rõ:
-
-- batched simulation lớn hơn để train policy
-- tích hợp chặt hơn giữa sim và learning pipeline
-- workflow synthetic data tốt hơn
-- digital-twin-style operational testing phổ biến hơn
-- hỗ trợ tốt hơn cho mobile manipulation và humanoid task
-
-Simulation đang dần trở thành một phần của product lifecycle, không chỉ của research loop.
-
-Một ví dụ cụ thể là **Isaac Lab 3.0**, nơi năm 2026 chuyển sang hướng multi-backend architecture và tiếp tục đẩy mạnh manager-based environment, batched simulation và tích hợp chặt hơn với learning pipeline.
+Simulation chỉ là force multiplier khi nó được nối chặt với bằng chứng deployment thật.
 
 ---
 
 ## Câu hỏi Phỏng vấn
 
-### 1. Vì sao sim2real vẫn khó dù physics engine đã tốt hơn?
+### 1) Vì sao nên tách simulation và sim2real thành nhiều mục nhỏ?
 
-Vì transfer không chỉ phụ thuộc rigid-body physics mà còn phụ thuộc sensing, actuation delay, contact detail, calibration và distribution shift ngoài đời thực.
+Vì simulator fidelity, transfer strategy, synthetic data, và evaluation là các concern kỹ thuật riêng dù có liên quan chặt chẽ.
 
-### 2. Domain randomization dùng để làm gì?
+### 2) Vì sao high-fidelity simulation không phải lúc nào cũng là đáp án?
 
-Nó cố tình thay đổi điều kiện trong simulation để policy học được không overfit vào một thế giới ảo quá hẹp.
+Vì nó đắt, chậm iterate, và đôi khi kém hữu ích hơn randomization có mục tiêu khi mục tiêu sau cùng là transfer robust.
 
-### 3. Vì sao synthetic data hữu ích cho robotics perception?
+### 3) Vì sao replay quan trọng trước deployment?
 
-Vì nó tạo được dataset lớn có nhãn với chi phí thấp và phủ được nhiều tình huống hiếm hoặc khó thu thập ngoài đời.
+Vì nó cho team so sánh thay đổi của hệ trên các scenario thực tế mà chưa phải đánh đổi bằng failure mới trên hardware.

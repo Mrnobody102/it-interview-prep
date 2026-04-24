@@ -2,169 +2,109 @@
 
 ## Overview
 
-Embodied AI is the study of agents that perceive, reason, and act in the physical world. In robotics, that means turning data into policies that map observations to actions.
+Robot learning is broader than reinforcement learning or flashy demo policies.
 
-By April 2026, this space is defined by a mix of:
+In practice, the space is easier to understand through four connected layers:
 
-- imitation learning
-- reinforcement learning
-- offline and hybrid policy learning
-- vision-language-action (VLA) models
-- robot foundation models
+1. robot learning paradigms and policy learning
+2. policy representations, skills, and action spaces
+3. VLA models, world models, and embodied foundation models
+4. data scaling, evaluation, and real-world constraints
 
-The field is moving quickly, but the hard problems are still physical:
-
-- data quality
-- latency
-- safety
-- action grounding
-- distribution shift
+That is why this topic is now split into child topics.
 
 ---
 
-## Learning Paradigms in Robotics
+## Why This Matters
 
-| Paradigm | Main idea | Strength | Weakness |
-|---|---|---|---|
-| **Behavior cloning** | imitate demonstrations directly | simple and strong with good data | distribution drift |
-| **Imitation learning with corrections** | learn from demos plus intervention | more robust | expensive human time |
-| **Reinforcement learning** | optimize reward through interaction | can discover novel strategies | sample inefficiency |
-| **Offline RL / hybrid methods** | learn from logged data | safer and cheaper than online RL | sensitive to data quality |
+Embodied AI tries to connect:
 
-In deployed robotics, pure online RL is still much less common than papers can make it seem.
+- perception
+- memory
+- task understanding
+- planning
+- action
 
----
-
-## Policy Representations
-
-Modern robot policies may output:
-
-- low-level joint commands
-- end-effector actions
-- base velocity commands
-- skill tokens or subgoals
-- language-conditioned actions
-
-Choosing the action space is not a minor detail. It affects:
-
-- sample efficiency
-- safety envelope
-- transferability across robots
-- ease of human intervention
+But the limiting factors are rarely only model size. They are often data quality, evaluation design, and the gap between demos and real deployment.
 
 ---
 
-## Vision-Language-Action Models
+## Map of the Subtopics
 
-VLA models are important because they unify:
+### 1. Robot Learning Paradigms & Policy Learning
 
-- visual input
-- language instructions
-- action prediction
+Focus:
 
-They are attractive for generalization:
+- imitation learning, reinforcement learning, and offline RL
+- policy optimization basics
+- where each paradigm fits in robotics
+- why sample efficiency is such a bottleneck
 
-- "pick up the red mug"
-- "open the drawer and place the object inside"
-- "move to the charging dock"
+### 2. Policy Representations, Skills & Action Spaces
 
-But real systems still need:
+Focus:
 
-- safety wrappers
-- action filtering
-- task-level recovery
-- fallback behaviors
+- low-level vs high-level policies
+- action parameterization and skill abstraction
+- hierarchical policies and options
+- the tradeoff between expressiveness and controllability
 
-Generalization in demos does not automatically mean deployment readiness.
+### 3. VLA Models, World Models & Embodied FMs
 
-Representative systems in the 2025-2026 wave include:
+Focus:
 
-- **Gemini Robotics / Gemini Robotics-ER / ER-1.6**
-- **NVIDIA Isaac GR00T N1 and N1.5**
-- **LeRobot policies and community-trained VLAs such as SmolVLA**
+- vision-language-action models
+- action-token prediction and chunking
+- world models and latent planning
+- what changed in 2025-2026 for embodied systems
 
----
+### 4. Data Scaling, Evaluation & Real-World Constraints
 
-## The 2025-2026 Shift
+Focus:
 
-Recent robotics progress has emphasized:
-
-- larger cross-robot datasets
-- open policy training stacks
-- smaller efficient policies for edge deployment
-- stronger simulation-to-real pipelines
-- foundation models that combine language, vision, and action
-
-This is why "robot learning" is no longer a niche topic separate from systems engineering.
-
-Open tooling also improved materially:
-
-- LeRobot expanded hardware and policy support
-- smaller VLAs became more practical on commodity hardware
-- data and evaluation pipelines became more reproducible
+- demonstration quality and coverage
+- recovery data and failure mining
+- offline vs online evaluation
+- why real robots remain much harder than benchmark videos
 
 ---
 
-## Data Is the Real Bottleneck
+## Recommended Learning Order
 
-Robot learning quality depends heavily on:
+A practical order is:
 
-- demonstration quality
-- sensor synchronization
-- action labeling correctness
-- reset diversity
-- coverage of failure cases
-- embodiment consistency
+1. learning paradigms
+2. policy representation and skills
+3. VLA and world-model families
+4. data scaling and evaluation
 
-In practice, many robotics teams become data-engineering teams.
-
-That is one reason open datasets and tooling matter so much now.
+This order separates the ideas of learning, action structure, foundation-model trends, and deployment reality.
 
 ---
 
-## Where Classical Robotics Still Wins
+## Relationship to Other AI-Robotics Topics
 
-Learned policies are powerful, but classical methods still dominate when you need:
+This section overlaps with, but does not replace:
 
-- hard safety guarantees
-- precise constraint handling
-- strong interpretability
-- low-data setup
-- predictable certification-style behavior
+- **Deep Learning** for model-building fundamentals
+- **Motion Planning, Manipulation & Control** for classical action generation
+- **Simulation, Sim2Real & Synthetic Data** for data generation and safe experimentation
+- **Robot Systems, Safety & Deployment** for what happens when learned policies meet hardware
 
-The strongest systems are often hybrid:
-
-- classical planning for structure
-- learned policies for skill priors or perception
-- supervisors and controllers for safety
-
----
-
-## What to Learn in This Area
-
-A good progression is:
-
-1. imitation learning basics
-2. policy evaluation and failure analysis
-3. offline RL and hybrid approaches
-4. VLA architectures
-5. dataset curation and robot telemetry
-6. safety-constrained deployment
-
-If you skip evaluation and safety, you do not really understand robot learning.
+Robot learning is one route to behavior, not the only route.
 
 ---
 
 ## Interview Q&A
 
-### 1. Why is behavior cloning still so important in robotics?
+### 1) Why split Robot Learning into smaller subtopics?
 
-Because strong demonstrations can produce useful policies with far less engineering complexity than full online RL.
+Because learning paradigms, policy design, embodied foundation models, and evaluation discipline are separate engineering questions.
 
-### 2. What is the main promise of VLA models?
+### 2) Why is data often a bigger bottleneck than model design?
 
-They aim to improve instruction-following and skill transfer by learning a shared representation over language, perception, and action.
+Because robot learning depends on diverse, synchronized, failure-rich data that is expensive to collect and hard to label well.
 
-### 3. Why are hybrid robot stacks still dominant?
+### 3) Why do classical robotics methods still matter in embodied AI?
 
-Because learning improves flexibility, but classical robotics still provides structure, constraints, and safer execution boundaries.
+Because learned policies often still need guardrails, controllers, planners, and geometric constraints around them.

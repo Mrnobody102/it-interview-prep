@@ -2,131 +2,111 @@
 
 ## Tổng quan
 
-Robot là một cyber-physical system được deploy ngoài đời thật. Vì vậy thành công không chỉ nằm ở chất lượng model, mà còn ở việc toàn bộ stack có hành xử an toàn và dễ dự đoán hay không.
+Deploy robot rộng hơn rất nhiều so với "đưa model lên robot".
 
-Chủ đề này bao gồm:
+Trong thực tế, mảng này tách thành bốn lớp kết nối:
 
-- kiến trúc hệ thống
-- runtime supervision
-- failure handling
-- safety layers
-- observability
-- fleet hoặc field deployment
+1. production architecture và runtime boundaries
+2. safety layers, guardrails, và supervision
+3. observability, incident response, và operations
+4. deployment patterns và human-in-the-loop control
 
----
-
-## Kiến trúc robot production
-
-Robot thật thường tách trách nhiệm theo lớp:
-
-- compute latency thấp trên robot
-- middleware và control processes
-- planning hoặc AI service ở mức cao
-- cloud logging, monitoring và fleet management
-- teleoperation hoặc đường override của con người
-
-Không phải robot nào cũng nên để cloud nằm trong control loop. Với nhiều hệ, thiết kế an toàn nhất là giữ time-critical behavior ở ngay trên robot.
+Đó là lý do chủ đề này được tách thành các mục con riêng.
 
 ---
 
-## Các lớp safety
+## Vì sao nó quan trọng
 
-Safety không phải một tính năng đơn lẻ. Nó là nhiều lớp:
+Physical systems có mức độ rủi ro khác hẳn pure software systems.
 
-1. giới hạn cơ khí
-2. giới hạn actuator và controller
-3. đường emergency stop
-4. software watchdog
-5. vùng an toàn dựa trên perception
-6. operator override
-7. rollout và recovery procedure
+Failures có thể gây ra:
 
-Nếu robot chỉ dựa vào một learned model làm lớp safety duy nhất thì kiến trúc đó rất yếu.
+- unsafe motion
+- hỏng phần cứng
+- downtime vận hành
+- mất niềm tin của operator
+- incident khó tái hiện
 
----
-
-## Runtime supervision
-
-Robot deploy tốt cần supervisor trả lời được:
-
-- perception có còn khỏe không
-- localization có còn đáng tin không
-- control loop có ổn định không
-- sensor có bị stale hoặc delayed không
-- policy có đang đề xuất action không an toàn không
-- robot nên degrade, stop hay request help
-
-Supervision thường quan trọng hơn việc làm model chính thông minh hơn một chút.
+Vì thế reliability, supervision, và deployment discipline phải được thiết kế tường minh.
 
 ---
 
-## Observability
+## Bản đồ các mục con
 
-Observability tốt trong robotics thường gồm:
+### 1. Production Architecture & Runtime Boundaries
 
-- timestamp và clock sync
-- structured logs
-- rosbag hoặc công cụ replay tương đương
-- sensor health metrics
-- latency tracing
-- controller và actuator diagnostics
-- log của intervention và safety event
+Trọng tâm:
 
-Nếu không replay được failure thì tốc độ debug sẽ rất chậm.
+- process boundaries và execution ownership
+- thứ gì nên chạy ở edge và thứ gì nên chạy ở cloud
+- failure containment
+- kiến trúc an toàn cho physical systems
 
----
+### 2. Safety Layers, Guardrails & Supervision
 
-## Deployment patterns
+Trọng tâm:
 
-Các pattern rollout phổ biến:
+- hard và soft safety boundaries
+- runtime guards và watchdogs
+- fallback modes và stop conditions
+- learned systems nên được supervision ra sao
 
-- test nội bộ trong lab
-- shadow mode không có quyền actuation
-- deploy giới hạn trong geofence
-- vận hành có giám sát bởi con người
-- rollout tự động hóa theo từng giai đoạn
+### 3. Observability, Incident Response & Operations
 
-Nó khá giống distributed systems hiện đại, nhưng hậu quả ở đây là hậu quả vật lý.
+Trọng tâm:
 
----
+- telemetry và health monitoring
+- event logging và replay
+- incident triage và root-cause workflows
+- mức độ sẵn sàng vận hành của robot fleets
 
-## Human-in-the-loop design
+### 4. Deployment Patterns & Human-in-the-Loop
 
-Con người vẫn giữ vai trò trung tâm trong nhiều hệ robotics tiên tiến:
+Trọng tâm:
 
-- teleoperation fallback
-- intervention labeling
-- demo collection
-- approval gate cho hành động rủi ro
-- incident review
-
-Mục tiêu không phải là chứng minh robot không bao giờ fail. Mục tiêu là làm cho failure có thể quan sát, recover được và bị giới hạn phạm vi.
+- staged rollout và rollback
+- shadow mode và limited autonomy
+- operator override và approval loops
+- chỗ nào trong hệ vẫn nên giữ human intervention
 
 ---
 
-## Góc nhìn Physical AI
+## Thứ tự học gợi ý
 
-"Physical AI" là thuật ngữ hữu ích ở cấp hệ thống vì nó nhắc rằng:
+Một thứ tự thực dụng là:
 
-- model sống bên trong vòng lặp vật lý
-- embodiment làm thay đổi data và action interface
-- latency, safety và hardware constraint là first-class concern
-- thành công phụ thuộc vào integration chứ không chỉ vào model quality
+1. runtime architecture
+2. safety và supervision
+3. observability và operations
+4. deployment và human oversight
 
-Đây là mental model đúng cho robotics năm 2026.
+Thứ tự này phản ánh đúng con đường từ thiết kế an toàn tới vận hành an toàn lâu dài.
+
+---
+
+## Liên hệ với các topic AI-Robotics khác
+
+Phần này có giao nhau, nhưng không thay thế:
+
+- **Robotics Foundations & ROS 2** cho integration substrate
+- **Motion Planning, Manipulation & Control** cho execution behavior
+- **Simulation, Sim2Real & Synthetic Data** cho predeployment testing
+- **MLOps & AI Production** cho experiment và model operations
+
+Safety và deployment là các kỷ luật biến prototype thành robot system dùng được.
 
 ---
 
 ## Câu hỏi Phỏng vấn
 
-### 1. Vì sao deploy robotics khó hơn deploy một ứng dụng LLM web?
+### 1) Vì sao nên tách robot systems safety thành nhiều mục nhỏ?
 
-Vì hệ thống tương tác với thế giới vật lý, nơi timing, actuation, safety và bất định phần cứng ảnh hưởng trực tiếp tới kết quả.
+Vì architecture, safety supervision, operations, và deployment governance là các trách nhiệm khác nhau với failure modes khác nhau.
 
-### 2. Watchdog hoặc supervisor có giá trị gì?
+### 2) Vì sao runtime supervision là bắt buộc với robot?
 
-Nó tạo ra một lớp độc lập để phát hiện trạng thái suy giảm và kích hoạt stop, fallback hoặc recovery behavior.
+Vì ngay cả planner hoặc model tốt cũng có thể trôi vào hành vi nguy hiểm nếu không có monitoring và fallback logic rõ ràng.
 
-### 3. Vì sao observability đặc biệt quan trọng trong robotics?
+### 3) Vì sao human-in-the-loop vẫn quan trọng trong hệ robot tiên tiến?
 
-Vì lỗi thường là multi-modal và phụ thuộc thời gian. Muốn hiểu chuyện gì xảy ra, thường phải có log, sensor data và action trace được đồng bộ.
+Vì nhiều deployment thật vẫn cần approval, override, hoặc recovery từ con người khi uncertainty hoặc risk vượt quá mức autonomy an toàn.

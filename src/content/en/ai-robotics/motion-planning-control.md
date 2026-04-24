@@ -2,148 +2,109 @@
 
 ## Overview
 
-Robots need more than perception. They must choose feasible actions that respect:
+Robot motion is too broad to treat as one page.
 
-- kinematic constraints
-- dynamics
-- collisions
-- environment structure
-- timing and safety limits
+In practice, the topic breaks into four connected layers:
 
-This is the domain of planning and control.
+1. kinematics, feasibility, and planning hierarchy
+2. mobile navigation and trajectory planning
+3. manipulation planning and contact-aware trajectories
+4. control, real-time execution, and tracking
 
----
-
-## Kinematics First
-
-Planning starts with geometry:
-
-- forward kinematics
-- inverse kinematics
-- workspace limits
-- singularities
-- joint constraints
-
-For manipulators, inverse kinematics is often the first hard constraint between "desired task" and "actually reachable pose".
+That is why this topic is now split into focused child topics.
 
 ---
 
-## Planning Layers
+## Why This Matters
 
-A useful mental model is:
+A robot does not need only a good path on paper. It needs motion that is:
 
-| Layer | Goal |
-|---|---|
-| **Task planning** | choose what to do |
-| **Motion planning** | compute collision-free motion |
-| **Trajectory generation** | assign time, velocity, acceleration |
-| **Control** | track the motion on real hardware |
+- feasible
+- stable
+- safe
+- time-consistent
+- robust to execution error
 
-Confusing these layers leads to bad system design.
-
----
-
-## Mobile Robot Planning
-
-For navigation, the stack usually includes:
-
-- global planning on a map
-- local planning / local control
-- obstacle avoidance
-- recovery behaviors
-- behavior-tree or task-level orchestration
-
-Good navigation is not just shortest-path search. It is stable behavior under noisy sensing, dynamic obstacles, and imperfect localization.
-
-That is why modern navigation stacks such as **Nav2** emphasize behavior trees, planner/controller separation, costmaps, recovery actions, and lifecycle-aware servers.
+This is why planning and control should be learned together instead of as disconnected chapters.
 
 ---
 
-## Manipulation Planning
+## Map of the Subtopics
 
-Manipulation planning adds:
+### 1. Kinematics, Feasibility & Planning Layers
 
-- collision checking in high-dimensional joint space
-- reachability analysis
-- grasp generation
-- approach and retreat paths
-- constraints on orientation and contact
+Focus:
 
-This is why MoveIt 2 and planning-scene reasoning matter so much in modern robotics stacks.
+- kinematic constraints and reachability
+- planning hierarchy from task to trajectory
+- feasibility before optimization
+- how planners reason over state and action spaces
 
-In practice, **MoveIt 2** is the most important manipulation framework to know in the ROS 2 world because it combines planning pipelines, constraints, collision checking, and trajectory generation around a maintained plugin architecture.
+### 2. Mobile Navigation & Trajectory Planning
 
----
+Focus:
 
-## Control Strategies
+- global and local planning
+- graph search and trajectory smoothing
+- dynamic obstacles and replanning
+- navigation stacks under uncertainty
 
-Important control families:
+### 3. Manipulation Planning & Trajectory Generation
 
-| Controller | Best for | Tradeoff |
-|---|---|---|
-| **PID** | simple setpoint control | limited for complex dynamics |
-| **Feedforward + PID** | practical tracking | still model-limited |
-| **MPC** | constrained optimization and preview | heavier compute |
-| **Impedance / admittance** | contact-rich interaction | tuning complexity |
-| **Whole-body control** | legged and humanoid systems | system complexity |
+Focus:
 
-In many real robots, the control stack is layered. High-level planners do not run at the same rate as low-level controllers.
+- grasp sequencing and pick-place logic
+- collision-aware planning
+- motion constraints for arms and end effectors
+- contact-rich tasks and execution sensitivity
 
----
+### 4. Control, Real-Time Systems & Execution
 
-## Real-Time Thinking
+Focus:
 
-Planning and control are constrained by:
-
-- control loop frequency
-- actuator bandwidth
-- network delay
-- compute jitter
-- safety supervisors
-
-An elegant planner that misses deadlines can be worse than a simpler planner that is stable and predictable.
+- PID, MPC, tracking control, and execution loops
+- latency, update frequency, and stability
+- execution monitoring and recovery
+- how planned motion becomes real actuator behavior
 
 ---
 
-## Learned Policies vs Classical Planning
+## Recommended Learning Order
 
-By 2026, many teams combine both:
+A practical order is:
 
-- classical planners for constraints and safety envelopes
-- learned components for perception, grasping, or skill priors
-- model predictive or reactive control beneath policy outputs
+1. kinematics and planning hierarchy
+2. mobile navigation
+3. manipulation planning
+4. control and execution
 
-This hybrid approach is usually stronger than trying to replace the whole stack with one learned policy.
-
-That hybrid idea also shows up in **MoveIt hybrid planning** and in navigation stacks that mix global planners with reactive or model-predictive local control.
+This order usually produces better systems intuition than starting directly from advanced controllers.
 
 ---
 
-## What to Learn Deeply
+## Relationship to Other AI-Robotics Topics
 
-Prioritize:
+This section overlaps with, but does not replace:
 
-1. frames and transforms
-2. kinematics and Jacobians
-3. collision checking and motion planning
-4. trajectory generation
-5. PID, MPC, impedance ideas
-6. how controllers map to actual hardware loops
+- **Robotics Foundations & ROS 2** for middleware and hardware integration
+- **Robot Perception** for the world state that planning depends on
+- **Robot Learning & Embodied AI** for learned policy alternatives
+- **Robot Systems, Safety & Deployment** for runtime constraints and supervision
 
-These are transferable across arms, mobile robots, legged robots, and humanoids.
+Motion planning is the bridge from perceived world state to executable robot action.
 
 ---
 
 ## Interview Q&A
 
-### 1. What is the difference between motion planning and control?
+### 1) Why split motion planning and control into smaller subtopics?
 
-Motion planning decides a feasible path or trajectory. Control makes the real robot follow that trajectory under physical disturbances.
+Because feasibility reasoning, navigation, manipulation, and closed-loop execution are related but distinct technical domains.
 
-### 2. Why is inverse kinematics not the same as planning?
+### 2) Why is planning alone not enough?
 
-Inverse kinematics finds joint configurations for a target pose. Planning also needs collision avoidance, continuity, constraints, and time feasibility.
+Because a planned path is only useful if the robot can track it robustly under real timing, sensing, and actuator constraints.
 
-### 3. Why are hybrid stacks common in 2026 robotics?
+### 3) Why are manipulation and mobile navigation often treated separately?
 
-Because classical planning gives structure and safety, while learned components improve perception and skill generalization.
+Because they have different geometry, constraints, contact patterns, and execution risks even though both are motion problems.

@@ -2,185 +2,108 @@
 
 ## Overview
 
-By April 2026, AI application design is no longer just "pick a model and add a prompt". Real systems usually combine:
+Modern agent systems are broader than "LLM plus retrieval".
 
-- a base model or multimodal model
-- retrieval over private knowledge
-- tool calling into APIs, databases, and workflows
-- orchestration logic for multi-step tasks
-- evaluation, guardrails, and observability
+In practice, this area splits naturally into four connected layers:
 
-This topic matters because a large share of modern AI products are not trained end-to-end from scratch. They are assembled as systems.
+1. retrieval foundations and RAG architecture
+2. tool calling and structured external actions
+3. agent orchestration across multi-step workflows
+4. memory, context management, and evaluation
 
----
-
-## Retrieval vs Tool Use vs Agents
-
-The concepts are related but not identical:
-
-| Pattern | Core idea | Best for | Main failure mode |
-|---|---|---|---|
-| **RAG** | Retrieve context before generation | knowledge grounding, enterprise Q&A | bad chunking and low-quality retrieval |
-| **Tool use** | Model calls external functions | structured actions, APIs, calculators | schema drift, tool selection errors |
-| **Agentic workflow** | System plans and executes multi-step tasks | longer tasks, automation, research flows | looping, weak stop conditions, hidden state |
-
-Practical rule:
-
-- use plain prompting for simple tasks
-- add RAG when the problem is knowledge freshness or private context
-- add tool use when the answer requires external action or authoritative data
-- add agents only when the task really needs multi-step planning
+That is why this topic is now split into dedicated child topics.
 
 ---
 
-## Modern RAG Stack
+## Why This Matters for AI-Robotics
 
-A production RAG pipeline usually includes:
+Agentic systems now support:
 
-1. Document ingestion
-2. Parsing and cleanup
-3. Chunking
-4. Embedding generation
-5. Indexing in a vector or hybrid search system
-6. Retrieval and reranking
-7. Context assembly
-8. Generation
-9. Offline and online evaluation
+- enterprise knowledge workflows
+- coding and operations copilots
+- embodied planning interfaces
+- multi-step decision systems with tools and state
 
-### Chunking still matters
-
-Even with stronger long-context models, chunking remains a systems problem:
-
-- chunks that are too small lose meaning
-- chunks that are too large reduce retrieval precision
-- metadata quality strongly affects filtering
-- tables, code, diagrams, and PDFs often need custom parsing
-
-### Retrieval strategies
-
-Common choices:
-
-- dense retrieval for semantic similarity
-- sparse retrieval for exact keyword matching
-- hybrid retrieval for enterprise search
-- rerankers for improving top-k quality before generation
-
-The retrieval stage often determines quality more than model size.
+In robotics, the same ideas appear when language interfaces, scene understanding, planning tools, and execution constraints must work together.
 
 ---
 
-## Tool Calling Patterns
+## Map of the Subtopics
 
-Tool use is now a core application primitive.
+### 1. Retrieval Foundations & RAG Architecture
 
-Typical tools:
+Focus:
 
-- SQL or analytics queries
-- web search
-- CRM or ticketing actions
-- filesystem and code tools
-- robotics APIs and control endpoints
+- indexing, chunking, embeddings, and retrieval quality
+- RAG pipeline design
+- retrieval failure modes and hallucination boundaries
+- where retrieval helps more than long context alone
 
-Design principles:
+### 2. Tool Calling, APIs & Structured Actions
 
-- keep tool schemas explicit and narrow
-- validate inputs before execution
-- return structured results, not free-form text
-- separate "reasoning" from "execution"
-- log every tool call for replay and debugging
+Focus:
 
-If a model can directly hit side-effecting tools, you need approval gates, idempotency, and rollback thinking.
+- function calling and tool schema design
+- external APIs, planners, and execution boundaries
+- structured arguments and validation
+- when a tool call is safer than free-form text
 
----
+### 3. Agent Orchestration & Multi-Step Systems
 
-## Agent Architectures
+Focus:
 
-Popular patterns in practice:
+- planning loops and agent control flow
+- decomposition, delegation, and tool sequencing
+- stateful workflows and task routing
+- why orchestration dominates raw model quality in many systems
 
-| Pattern | Description | When it works well |
-|---|---|---|
-| **Router** | dispatches tasks to specialized tools/models | clear task classes |
-| **Planner + Executor** | one module decomposes, another executes | multi-step tasks with stable tools |
-| **State machine / graph** | explicit nodes, transitions, retries | production workflows |
-| **Multi-agent** | several role-based agents cooperate | bounded, inspectable subtasks |
+### 4. Memory, Context & Agent Evaluation
 
-In 2026, strong teams prefer explicit workflow graphs over "fully autonomous" black-box loops for production systems.
+Focus:
 
-Reliability usually improves when:
-
-- state is externalized
-- retry logic is explicit
-- termination conditions are deterministic
-- humans can inspect intermediate outputs
+- short-term context and long-term memory
+- retrieval vs memory vs state tracking
+- agent evaluation, reliability, and cost
+- how to test agent systems in realistic workflows
 
 ---
 
-## Memory and Context Management
+## Recommended Learning Order
 
-"Memory" can mean different things:
+For most engineers, the practical order is:
 
-- conversation history
-- retrieved long-term facts
-- user profile and preferences
-- workflow state
-- external knowledge base entries
+1. retrieval foundations
+2. tool calling and structured actions
+3. orchestration patterns
+4. memory and evaluation
 
-Do not overload the prompt with everything.
-
-Use separate layers:
-
-- short-term context for the current task
-- retrieval for durable knowledge
-- structured state for workflow progress
-- external source of truth for business data
+This order helps separate what the model knows from what the surrounding system should handle.
 
 ---
 
-## Evaluation in 2026
+## Relationship to Other AI-Robotics Topics
 
-Modern AI eval is multi-layered:
+This section overlaps with, but does not replace:
 
-- task success rate
-- retrieval precision and recall
-- tool-call accuracy
-- latency and cost
-- hallucination rate
-- policy and safety violations
-- human preference or review outcomes
+- **NLP, LLMs & Transformers** for the model layer
+- **MLOps & AI Production** for deployment and monitoring
+- **Computer Vision** and **Robot Perception** when tools act on grounded world state
+- **Robot Learning & Embodied AI** when agents must connect language to action
 
-For agentic systems, "exact match" is often too weak. Better metrics include:
-
-- whether the right tool was chosen
-- whether the final state is correct
-- whether the system stopped at the right point
-- whether it recovered from intermediate failures
-
----
-
-## Where This Connects to Robotics
-
-RAG and agents are increasingly relevant to robotics because robots are becoming more language-conditioned and multimodal:
-
-- instruction understanding
-- planning over knowledge and affordances
-- grounding commands into actions
-- combining symbolic tools with learned policies
-- human-in-the-loop supervision
-
-In embodied systems, language should not replace control. It should coordinate perception, planning, and policy execution.
+Agent systems are orchestration systems around models, not just models by themselves.
 
 ---
 
 ## Interview Q&A
 
-### 1. What problem does RAG solve better than fine-tuning?
+### 1) Why split RAG and agents into smaller subtopics?
 
-RAG is usually better when the problem is private knowledge, freshness, or provenance rather than changing the model's core behavior.
+Because retrieval, tool use, orchestration, and evaluation are distinct engineering problems with different failure modes.
 
-### 2. When are agents a bad idea?
+### 2) Why is tool use often safer than free-form generation?
 
-Agents are a bad idea when the task is short, deterministic, and can be solved with one prompt or one fixed workflow step.
+Because tool calls force structured actions, explicit arguments, and validation boundaries that reduce ambiguity.
 
-### 3. What is the biggest production risk in agentic systems?
+### 3) Why are agents relevant to robotics?
 
-Unbounded execution with hidden state. That is why explicit workflows, strong logging, and tool constraints matter.
+Because robotics increasingly needs language-conditioned planning, external tool access, memory, and controlled multi-step decision flow.

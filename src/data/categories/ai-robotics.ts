@@ -193,6 +193,37 @@ export const aiRobotics: Category = {
             vi: "RAG, Agents & Tool Use",
             en: "RAG, Agents & Tool Use",
           },
+          expanded: true,
+          subtopics: [
+            {
+              id: "ai-agents-rag-retrieval-foundations",
+              name: {
+                vi: "Retrieval Foundations & RAG Architecture",
+                en: "Retrieval Foundations & RAG Architecture",
+              },
+            },
+            {
+              id: "ai-agents-rag-tool-calling",
+              name: {
+                vi: "Tool Calling, APIs & Structured Actions",
+                en: "Tool Calling, APIs & Structured Actions",
+              },
+            },
+            {
+              id: "ai-agents-rag-agent-orchestration",
+              name: {
+                vi: "Agent Orchestration & Multi-Step Systems",
+                en: "Agent Orchestration & Multi-Step Systems",
+              },
+            },
+            {
+              id: "ai-agents-rag-memory-evaluation",
+              name: {
+                vi: "Memory, Context & Agent Evaluation",
+                en: "Memory, Context & Agent Evaluation",
+              },
+            },
+          ],
         },
         {
           id: "mlops",
@@ -334,6 +365,37 @@ export const aiRobotics: Category = {
             vi: "Motion Planning, Manipulation & Control",
             en: "Motion Planning, Manipulation & Control",
           },
+          expanded: true,
+          subtopics: [
+            {
+              id: "motion-planning-control-kinematics-planning",
+              name: {
+                vi: "Kinematics, Feasibility & Planning Layers",
+                en: "Kinematics, Feasibility & Planning Layers",
+              },
+            },
+            {
+              id: "motion-planning-control-mobile-navigation",
+              name: {
+                vi: "Mobile Navigation & Trajectory Planning",
+                en: "Mobile Navigation & Trajectory Planning",
+              },
+            },
+            {
+              id: "motion-planning-control-manipulation-trajectories",
+              name: {
+                vi: "Manipulation Planning & Trajectory Generation",
+                en: "Manipulation Planning & Trajectory Generation",
+              },
+            },
+            {
+              id: "motion-planning-control-control-realtime",
+              name: {
+                vi: "Control, Real-Time Systems & Execution",
+                en: "Control, Real-Time Systems & Execution",
+              },
+            },
+          ],
         },
         {
           id: "robot-learning-embodied-ai",
@@ -341,6 +403,37 @@ export const aiRobotics: Category = {
             vi: "Robot Learning & Embodied AI",
             en: "Robot Learning & Embodied AI",
           },
+          expanded: true,
+          subtopics: [
+            {
+              id: "robot-learning-embodied-ai-learning-paradigms",
+              name: {
+                vi: "Robot Learning Paradigms & Policy Learning",
+                en: "Robot Learning Paradigms & Policy Learning",
+              },
+            },
+            {
+              id: "robot-learning-embodied-ai-policy-representations",
+              name: {
+                vi: "Policy Representations, Skills & Action Spaces",
+                en: "Policy Representations, Skills & Action Spaces",
+              },
+            },
+            {
+              id: "robot-learning-embodied-ai-vla-foundation-models",
+              name: {
+                vi: "VLA Models, World Models & Embodied FMs",
+                en: "VLA Models, World Models & Embodied FMs",
+              },
+            },
+            {
+              id: "robot-learning-embodied-ai-data-evaluation",
+              name: {
+                vi: "Data Scaling, Evaluation & Real-World Constraints",
+                en: "Data Scaling, Evaluation & Real-World Constraints",
+              },
+            },
+          ],
         },
       ],
     },
@@ -358,6 +451,37 @@ export const aiRobotics: Category = {
             vi: "Simulation, Sim2Real & Synthetic Data",
             en: "Simulation, Sim2Real & Synthetic Data",
           },
+          expanded: true,
+          subtopics: [
+            {
+              id: "simulation-sim2real-simulation-foundations",
+              name: {
+                vi: "Simulation Foundations & Physics Fidelity",
+                en: "Simulation Foundations & Physics Fidelity",
+              },
+            },
+            {
+              id: "simulation-sim2real-sim2real-strategies",
+              name: {
+                vi: "Domain Randomization & Sim2Real Strategies",
+                en: "Domain Randomization & Sim2Real Strategies",
+              },
+            },
+            {
+              id: "simulation-sim2real-synthetic-data",
+              name: {
+                vi: "Synthetic Data, Rendering & Scenario Generation",
+                en: "Synthetic Data, Rendering & Scenario Generation",
+              },
+            },
+            {
+              id: "simulation-sim2real-evaluation-benchmarking",
+              name: {
+                vi: "Evaluation Ladders, Replay & Benchmarking",
+                en: "Evaluation Ladders, Replay & Benchmarking",
+              },
+            },
+          ],
         },
         {
           id: "robot-systems-safety",
@@ -365,6 +489,37 @@ export const aiRobotics: Category = {
             vi: "Robot Systems, Safety & Deployment",
             en: "Robot Systems, Safety & Deployment",
           },
+          expanded: true,
+          subtopics: [
+            {
+              id: "robot-systems-safety-architecture-runtime",
+              name: {
+                vi: "Production Architecture & Runtime Boundaries",
+                en: "Production Architecture & Runtime Boundaries",
+              },
+            },
+            {
+              id: "robot-systems-safety-safety-supervision",
+              name: {
+                vi: "Safety Layers, Guardrails & Supervision",
+                en: "Safety Layers, Guardrails & Supervision",
+              },
+            },
+            {
+              id: "robot-systems-safety-observability-operations",
+              name: {
+                vi: "Observability, Incident Response & Operations",
+                en: "Observability, Incident Response & Operations",
+              },
+            },
+            {
+              id: "robot-systems-safety-deployment-human-loop",
+              name: {
+                vi: "Deployment Patterns & Human-in-the-Loop",
+                en: "Deployment Patterns & Human-in-the-Loop",
+              },
+            },
+          ],
         },
       ],
     },

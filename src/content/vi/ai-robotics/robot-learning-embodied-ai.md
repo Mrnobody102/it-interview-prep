@@ -2,169 +2,109 @@
 
 ## Tổng quan
 
-Embodied AI nghiên cứu các agent có thể cảm nhận, suy luận và hành động trong thế giới vật lý. Trong robotics, điều đó có nghĩa là biến dữ liệu thành policy ánh xạ observation thành action.
+Robot learning rộng hơn nhiều so với reinforcement learning hoặc các demo policy bắt mắt.
 
-Đến tháng 4/2026, mảng này được định hình bởi sự kết hợp của:
+Trong thực tế, không gian này dễ hiểu hơn khi chia thành bốn lớp:
 
-- imitation learning
-- reinforcement learning
-- offline và hybrid policy learning
-- vision-language-action (VLA) models
-- robot foundation models
+1. robot learning paradigms và policy learning
+2. policy representations, skills, và action spaces
+3. VLA models, world models, và embodied foundation models
+4. data scaling, evaluation, và real-world constraints
 
-Lĩnh vực này đi rất nhanh, nhưng các bài toán khó vẫn là bài toán vật lý:
-
-- chất lượng dữ liệu
-- latency
-- safety
-- action grounding
-- distribution shift
+Đó là lý do chủ đề này được tách thành các mục con riêng.
 
 ---
 
-## Các hướng học chính trong robotics
+## Vì sao nó quan trọng
 
-| Hướng | Ý tưởng chính | Điểm mạnh | Điểm yếu |
-|---|---|---|---|
-| **Behavior cloning** | bắt chước demo trực tiếp | đơn giản, mạnh nếu data tốt | dễ lệch khi ra khỏi phân phối |
-| **Imitation learning có correction** | học từ demo cộng intervention | robust hơn | tốn nhiều thời gian con người |
-| **Reinforcement learning** | tối ưu reward qua tương tác | có thể tìm chiến lược mới | sample inefficiency |
-| **Offline RL / hybrid methods** | học từ log có sẵn | an toàn và rẻ hơn online RL | nhạy với chất lượng dữ liệu |
+Embodied AI cố nối:
 
-Trong robotics deploy thực tế, pure online RL vẫn hiếm hơn cảm giác khi chỉ đọc paper.
+- perception
+- memory
+- task understanding
+- planning
+- action
 
----
-
-## Policy representation
-
-Policy hiện đại có thể output:
-
-- low-level joint command
-- end-effector action
-- base velocity command
-- skill token hoặc subgoal
-- language-conditioned action
-
-Chọn action space không phải chi tiết nhỏ. Nó ảnh hưởng trực tiếp tới:
-
-- sample efficiency
-- safety envelope
-- khả năng chuyển qua robot khác
-- mức độ dễ can thiệp bởi con người
+Nhưng nút thắt thật sự hiếm khi chỉ là model size. Thường đó là data quality, evaluation design, và khoảng cách giữa demo với deployment thật.
 
 ---
 
-## Vision-Language-Action models
+## Bản đồ các mục con
 
-VLA model quan trọng vì nó thống nhất:
+### 1. Robot Learning Paradigms & Policy Learning
 
-- input hình ảnh
-- instruction ngôn ngữ
-- dự đoán action
+Trọng tâm:
 
-Chúng hứa hẹn tăng khả năng generalization:
+- imitation learning, reinforcement learning, và offline RL
+- các nguyên lý tối ưu policy
+- mỗi paradigm hợp ở đâu trong robotics
+- vì sao sample efficiency là nút thắt lớn
 
-- "pick up the red mug"
-- "open the drawer and place the object inside"
-- "move to the charging dock"
+### 2. Policy Representations, Skills & Action Spaces
 
-Nhưng hệ thống thật vẫn cần:
+Trọng tâm:
 
-- safety wrapper
-- action filtering
-- recovery ở mức task
-- fallback behavior
+- low-level vs high-level policies
+- action parameterization và skill abstraction
+- hierarchical policies và options
+- tradeoff giữa expressiveness và controllability
 
-Generalization trong demo không tự động đồng nghĩa với deploy-ready.
+### 3. VLA Models, World Models & Embodied FMs
 
-Các hệ đại diện của làn sóng 2025-2026 gồm:
+Trọng tâm:
 
-- **Gemini Robotics / Gemini Robotics-ER / ER-1.6**
-- **NVIDIA Isaac GR00T N1 và N1.5**
-- **LeRobot policies và các VLA cộng đồng như SmolVLA**
+- vision-language-action models
+- action-token prediction và chunking
+- world models và latent planning
+- điều gì đã thay đổi trong 2025-2026 với embodied systems
 
----
+### 4. Data Scaling, Evaluation & Real-World Constraints
 
-## Dịch chuyển 2025-2026
+Trọng tâm:
 
-Các tiến bộ gần đây nhấn mạnh:
-
-- dataset cross-robot lớn hơn
-- open training stack cho robot policy
-- policy nhỏ hơn, hiệu quả hơn để deploy ở edge
-- pipeline simulation-to-real mạnh hơn
-- foundation model kết hợp language, vision và action
-
-Đó là lý do "robot learning" không còn là nhánh riêng tách biệt khỏi systems engineering nữa.
-
-Open tooling cũng đã tiến bộ rõ:
-
-- LeRobot mở rộng support cho hardware và policy
-- VLA nhỏ hơn trở nên thực tế hơn trên phần cứng phổ thông
-- pipeline dữ liệu và evaluation dễ tái lập hơn trước
+- demonstration quality và coverage
+- recovery data và failure mining
+- offline vs online evaluation
+- vì sao robot thật vẫn khó hơn benchmark videos rất nhiều
 
 ---
 
-## Data mới là bottleneck thật
+## Thứ tự học gợi ý
 
-Chất lượng robot learning phụ thuộc mạnh vào:
+Một thứ tự thực dụng là:
 
-- chất lượng demo
-- sensor synchronization
-- độ đúng của action label
-- đa dạng reset
-- coverage của failure case
-- mức nhất quán giữa các embodiment
+1. learning paradigms
+2. policy representation và skills
+3. VLA và world-model families
+4. data scaling và evaluation
 
-Trong thực tế, nhiều robotics team dần trở thành data-engineering team.
-
-Đó cũng là lý do open dataset và tooling ngày càng quan trọng.
+Thứ tự này giúp tách rõ ý tưởng về learning, cấu trúc action, xu hướng foundation models, và thực tế deployment.
 
 ---
 
-## Khi nào classical robotics vẫn thắng
+## Liên hệ với các topic AI-Robotics khác
 
-Learned policy rất mạnh, nhưng phương pháp cổ điển vẫn thắng khi cần:
+Phần này có giao nhau, nhưng không thay thế:
 
-- safety guarantee cứng
-- xử lý constraint chính xác
-- interpretability cao
-- thiết lập với ít data
-- hành vi dễ dự đoán kiểu certification
+- **Deep Learning** cho nền tảng xây model
+- **Motion Planning, Manipulation & Control** cho action generation theo hướng cổ điển
+- **Simulation, Sim2Real & Synthetic Data** cho tạo dữ liệu và thử nghiệm an toàn
+- **Robot Systems, Safety & Deployment** cho những gì xảy ra khi learned policies gặp hardware thật
 
-Hệ thống mạnh nhất thường là hybrid:
-
-- classical planning cho cấu trúc
-- learned policy cho skill prior hoặc perception
-- supervisor và controller cho safety
-
----
-
-## Nên học theo thứ tự nào
-
-Thứ tự hợp lý:
-
-1. imitation learning cơ bản
-2. policy evaluation và failure analysis
-3. offline RL và hybrid approach
-4. kiến trúc VLA
-5. dataset curation và robot telemetry
-6. deploy có ràng buộc safety
-
-Nếu bỏ qua evaluation và safety thì thực ra chưa hiểu robot learning.
+Robot learning là một con đường tạo hành vi, không phải con đường duy nhất.
 
 ---
 
 ## Câu hỏi Phỏng vấn
 
-### 1. Vì sao behavior cloning vẫn rất quan trọng trong robotics?
+### 1) Vì sao nên tách Robot Learning thành nhiều mục nhỏ?
 
-Vì demo tốt có thể tạo ra policy hữu ích với độ phức tạp kỹ thuật thấp hơn nhiều so với full online RL.
+Vì learning paradigms, policy design, embodied foundation models, và kỷ luật evaluation là các câu hỏi kỹ thuật khác nhau.
 
-### 2. Giá trị chính của VLA model là gì?
+### 2) Vì sao data thường là bottleneck lớn hơn model design?
 
-Nó cố gắng tăng instruction-following và skill transfer bằng cách học biểu diễn chung trên language, perception và action.
+Vì robot learning cần dữ liệu đa dạng, đồng bộ, giàu failure cases, rất đắt để thu thập và khó gán nhãn tốt.
 
-### 3. Vì sao hybrid robot stack vẫn chiếm ưu thế?
+### 3) Vì sao classical robotics methods vẫn quan trọng trong embodied AI?
 
-Vì learning tăng độ linh hoạt, còn classical robotics vẫn cung cấp cấu trúc, constraint và execution boundary an toàn hơn.
+Vì learned policies thường vẫn cần guardrails, controllers, planners, và geometric constraints bao quanh.
