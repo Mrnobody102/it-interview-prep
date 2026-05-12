@@ -188,7 +188,7 @@ public class OrderService {
 }
 ```
 
-### Bước 7: Database Layer
+### Bước 7: Layer database
 
 | Thành phần | Vai trò | Ví dụ |
 |-----------|---------|-------|
@@ -257,7 +257,7 @@ TỐI ƯU: 1. Validate request (DTO validation)
 
 ---
 
-## 6. Performance Optimization Points
+## 6. Điểm tối ưu hiệu năng
 
 | Vị trí | Kỹ thuật | Hiệu quả |
 |--------|----------|---------|

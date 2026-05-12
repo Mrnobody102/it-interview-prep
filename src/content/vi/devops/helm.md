@@ -1,38 +1,40 @@
 # DevOps - Helm
 
-## 1. Helm la gi?
+## 1. Helm là gì?
 
-**Helm** la trinh quan ly goi (package manager) cho Kubernetes. Helm dong goi cac manifest Kubernetes (file YAML) thanh mot don vi co the phan phoi goi la **Chart**, giup viec cai dat, nang cap va quan ly ung dung tren Kubernetes cluster tro nen de dang.
+**Helm** là package manager cho Kubernetes. Thay vì tự apply nhiều file YAML rời rạc, bạn đóng gói chúng thành một **Chart** rồi dùng Helm để cài, nâng cấp, rollback.
 
-### 1.1. Tai sao nen dung Helm?
+Nói đơn giản: Helm giống `npm` hoặc `apt`, nhưng dành cho ứng dụng chạy trên Kubernetes.
 
-| Tinh nang | Loi ich |
+### 1.1. Tại sao nên dùng Helm?
+
+| Tính năng | Lợi ích |
 |-----------|---------|
-| **Quan ly goi** | Dong goi, tao phien ban, chia se ung dung Kubernetes |
-| **Templating** | Nguyen tac DRY - tai su dung template voi cac gia tri khac nhau |
-| **Quan ly release** | Theo doi lich su cai dat/nang cap, rollback de dang |
-| **Quan ly phu thuoc** | Chart co the phu thuoc vao chart khac |
-| **Thao tac nguyen tu** | Rollback neu gap loi, dam bao tinh nhat quan cua cluster |
+| **Đóng gói** | Gom nhiều YAML thành một chart có version |
+| **Template** | Dùng cùng template cho dev/staging/prod với value khác nhau |
+| **Quản lý release** | Theo dõi lịch sử cài đặt/nâng cấp, rollback dễ |
+| **Quản lý phụ thuộc** | Chart có thể dùng chart khác, ví dụ app phụ thuộc PostgreSQL |
+| **Atomic upgrade** | Nếu nâng cấp lỗi, rollback để cluster không ở trạng thái nửa vời |
 
 ---
 
-## 2. Cau truc Chart
+## 2. Cấu trúc Chart
 
-Chart la mot thu muc co cau truc cu the:
+Chart là một thư mục có cấu trúc chuẩn:
 
 ```text
 mychart/
-├── Chart.yaml          # Metadata cua chart (name, version, dependencies)
-├── values.yaml         # Gia tri cau hinh mac dinh
-├── values.schema.json  # Tuy chon: JSON schema de validate values
-├── charts/              # Cac phu thuoc chart cuc bo
-├── templates/           # Cac manifest Kubernetes dang template
+├── Chart.yaml          # Metadata của chart (name, version, dependencies)
+├── values.yaml         # Giá trị cấu hình mặc định
+├── values.schema.json  # Tùy chọn: schema để validate values
+├── charts/             # Chart phụ thuộc
+├── templates/          # Manifest Kubernetes dạng template
 │   ├── deployment.yaml
 │   ├── service.yaml
 │   ├── ingress.yaml
-│   └── _helpers.tpl    # Dinh nghia named template
-├── templates/NOTES.txt # Ghi chu sau khi cai dat hien thi cho nguoi dung
-└── .helmignore          # Cac file duoc loai tru khi dong goi
+│   └── _helpers.tpl    # Named template dùng chung
+├── templates/NOTES.txt # Ghi chú sau khi cài đặt
+└── .helmignore         # File loại trừ khi đóng gói
 ```
 
 ### 2.1. Chart.yaml
@@ -40,9 +42,9 @@ mychart/
 ```yaml
 apiVersion: v2           # Chart API version (v2 cho Helm 3)
 name: my-application
-version: 1.0.0           # Phien ban semantic cua chart
-appVersion: "2.1.0"      # Phien ban cua ung dung duoc dong goi
-description: A web application chart
+version: 1.0.0           # Phiên bản semantic của chart
+appVersion: "2.1.0"      # Phiên bản ứng dụng được đóng gói
+description: Chart cho web application
 type: application
 keywords:
   - web
@@ -54,7 +56,7 @@ sources:
 maintainers:
   - name: DevOps Team
     email: devops@myorg.com
-dependencies:            # Phu thuoc cua Chart (Helm 3)
+dependencies:            # Phụ thuộc của Chart (Helm 3)
   - name: postgresql
     version: "12.x.x"
     repository: "https://charts.bitnami.com"
@@ -64,7 +66,7 @@ dependencies:            # Phu thuoc cua Chart (Helm 3)
 ### 2.2. values.yaml
 
 ```yaml
-# Gia tri mac dinh cho my-application
+# Giá trị mặc định cho my-application
 
 replicaCount: 3
 
@@ -125,22 +127,22 @@ postgresql:
 
 ## 3. Templating
 
-Helm su dung Go's `text/template` de tao ra cac manifest Kubernetes.
+Helm sử dụng Go's `text/template` để tạo ra các manifest Kubernetes.
 
-### 3.1. Cac doi tuong tich hop san (Built-in Objects)
+### 3.1. Các đối tượng tích hợp sẵn (built-in objects)
 
 | Object | Mo ta |
 |--------|-------|
-| `.Values` | Gia tri nguoi dung cung cap (tu `values.yaml` hoac `--set`) |
-| `.Release` | Metadata cua release (name, namespace, revision, service) |
-| `.Chart` | Metadata cua chart tu `Chart.yaml` |
-| `.Files` | Truy cap cac file khong phai template trong chart |
-| `.Capabilities` | Kha nang cua cluster (K8s version, Helm version) |
-| `.Template` | Context cua template hien tai |
-| `.Release.IsUpgrade` | Boolean: true neu thao tac hien tai la upgrade |
-| `.Release.IsInstall` | Boolean: true neu thao tac hien tai la install |
+| `.Values` | Giá trị người dùng cung cấp (từ `values.yaml` hoặc `--set`) |
+| `.Release` | Metadata của release (name, namespace, revision, service) |
+| `.Chart` | Metadata của chart từ `Chart.yaml` |
+| `.Files` | Truy cập các file không phải template trong chart |
+| `.Capabilities` | Khả năng của cluster (K8s version, Helm version) |
+| `.Template` | Context của template hiện tại |
+| `.Release.IsUpgrade` | Boolean: true nếu thao tác hiện tại là upgrade |
+| `.Release.IsInstall` | Boolean: true nếu thao tác hiện tại là install |
 
-### 3.2. Ham Template
+### 3.2. Hàm template
 
 ```yaml
 # templates/deployment.yaml
@@ -185,19 +187,19 @@ spec:
               port: http
 ```
 
-### 3.3. Named Templates (Partials)
+### 3.3. Named templates (partials)
 
 ```yaml
 # templates/_helpers.tpl
 {{/*
-Expand the name of the chart.
+Mở rộng tên chart.
 */}}
 {{- define "myapp.name" -}}
 {{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
 {{/*
-Create a default fully qualified app name.
+Tạo tên app đầy đủ mặc định.
 */}}
 {{- define "myapp.fullname" -}}
 {{- if .Values.fullnameOverride }}
@@ -213,7 +215,7 @@ Create a default fully qualified app name.
 {{- end }}
 
 {{/*
-Common labels.
+Labels dùng chung.
 */}}
 {{- define "myapp.labels" -}}
 helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version }}
@@ -221,7 +223,7 @@ helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version }}
 {{- end }}
 
 {{/*
-Selector labels.
+Labels dùng cho selector.
 */}}
 {{- define "myapp.selectorLabels" -}}
 app.kubernetes.io/name: {{ include "myapp.name" . }}
@@ -229,26 +231,26 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 
 {{/*
-Create the name for the secret.
+Tạo tên secret.
 */}}
 {{- define "myapp.secretName" -}}
 {{- printf "%s-secrets" (include "myapp.fullname" .) }}
 {{- end }}
 ```
 
-### 3.4. Cac ham Template pho bien
+### 3.4. Các hàm template phổ biến
 
 ```yaml
-# Xu ly chuoi
-{{ .Values.image.repository | upper }}           # Viet hoa
-{{ .Values.image.repository | lower }}           # Viet thuong
-{{ .Values.image.repository | quote }}           # "gia tri"
-{{ .Values.image.tag | default "latest" }}     # Gia tri mac dinh neu rong
-{{ "hello-world" | replace "-" "_" }}           # Thay the
+# Xử lý chuỗi
+{{ .Values.image.repository | upper }}           # Viết hoa
+{{ .Values.image.repository | lower }}           # Viết thường
+{{ .Values.image.repository | quote }}           # "giá trị"
+{{ .Values.image.tag | default "latest" }}     # Giá trị mặc định nếu rỗng
+{{ "hello-world" | replace "-" "_" }}           # Thay thế
 {{ "hello" | printf "%s-world" }}               # printf
 
-# Cau truc dieu khien
-{{- if .Values.ingress.enabled }}              # if (dau gach ngang loai bo khoang trang)
+# Cấu trúc điều khiển
+{{- if .Values.ingress.enabled }}              # if (dấu gạch ngang loại bỏ khoảng trắng)
 ...
 {{- else if .Values.ingress.className }}
 ...
@@ -256,7 +258,7 @@ Create the name for the secret.
 ...
 {{- end }}
 
-{{- range $key, $value := .Values.env }}       # Vong lap range
+{{- range $key, $value := .Values.env }}       # Vòng lặp range
 - name: {{ $key | quote }}
   value: {{ $value | quote }}
 {{- end }}
@@ -266,148 +268,148 @@ Create the name for the secret.
   port: {{ .port }}
 {{- end }}
 
-# Xu ly YAML
-{{ .Values.configmap | toYaml }}              # Chuyen doi thanh block YAML
-{{ .Values.labels | toJson }}                  # Chuyen doi thanh JSON
-{{ .Values.resources | toYaml | nindent 8 }}   # YAML voi indent
+# Xử lý YAML
+{{ .Values.configmap | toYaml }}              # Chuyển đổi thành block YAML
+{{ .Values.labels | toJson }}                  # Chuyển đổi thành JSON
+{{ .Values.resources | toYaml | nindent 8 }}   # YAML với indent
 ```
 
 ---
 
-## 4. Cac lenh Helm
+## 4. Các lệnh Helm
 
-### 4.1. Cai dat & Nang cap
+### 4.1. Cài đặt & nâng cấp
 
 ```bash
-# Cai dat mot chart
+# Cài đặt một chart
 helm install my-release mychart/
 helm install my-release mychart/ --namespace myns --create-namespace
 
-# Cai dat voi gia tri tuy chinh
+# Cài đặt với giá trị tùy chỉnh
 helm install my-release mychart/ --set replicaCount=5
 helm install my-release mychart/ -f production.yaml
 helm install my-release mychart/ -f values.yaml --set image.tag=v1.2.3
 
-# Dry-run (xem cac template da render ma khong cai dat)
+# Dry-run (xem các template đã render mà không cài đặt)
 helm install my-release mychart/ --dry-run --debug
 
 # Render template ra stdout
 helm template my-release mychart/
 
-# Nang cap mot release
+# Nâng cấp một release
 helm upgrade my-release mychart/
 helm upgrade my-release mychart/ --set image.tag=v1.2.3 --timeout 5m
 
-# Nang cap hoac cai dat (thao tac nguyen tu)
+# Nâng cấp hoặc cài đặt (thao tác nguyên tử)
 helm upgrade --install my-release mychart/
 
-# Nang cap nguyen tu (rollback neu loi)
+# Nâng cấp nguyên tử (rollback nếu lỗi)
 helm upgrade my-release mychart/ --atomic
 
-# Cai dat phien ban cu the
+# Cài đặt phiên bản cụ thể
 helm install my-release mychart/ --version 1.0.0
 ```
 
-### 4.2. Quan ly Release
+### 4.2. Quản lý release
 
 ```bash
-# Danh sach tat ca releases
+# Danh sách tất cả releases
 helm list
-helm list --all                                  # Bao gom da xoa
+helm list --all                                  # Bao gồm đã xóa
 helm list --all --namespace myns                 # Namespace cu the
 helm list -o json                               # Dinh dang JSON
 
-# Lich su release
-helm history my-release                         # Hien thi moi phien ban
+# Lịch sử release
+helm history my-release                         # Hiển thị mọi phiên bản
 helm history my-release --output json
 
 # Rollback
-helm rollback my-release 1                      # Rollback ve phien ban 1
+helm rollback my-release 1                      # Rollback về phiên bản 1
 helm rollback my-release --dry-run              # Dry-run rollback
 helm rollback my-release 1 --timeout 5m
 
-# Go bo cai dat
-helm uninstall my-release                        # Xoa release
-helm uninstall my-release --keep-history        # Giu lai lich su de rollback
+# Gỡ bỏ cài đặt
+helm uninstall my-release                        # Xóa release
+helm uninstall my-release --keep-history        # Giữ lại lịch sử để rollback
 
-# Lay manifest
+# Lấy manifest
 helm get manifest my-release                     # Full rendered manifest
-helm get values my-release                        # Gia tri nguoi dung cung cap
+helm get values my-release                        # Giá trị người dùng cung cấp
 helm get hooks my-release                        # Hook resources
 ```
 
-### 4.3. Quan ly Repository
+### 4.3. Quản lý repository
 
 ```bash
-# Them repository
+# Thêm repository
 helm repo add bitnami https://charts.bitnami.com
 helm repo add prometheus https://prometheus-community.github.io/helm-charts
 helm repo add grafana https://grafana.github.io/helm-charts
 
-# Cap nhat chi muc repository
+# Cập nhật chỉ mục repository
 helm repo update
 
-# Tim kiem
-helm search repo nginx                           # Tim theo ten chart
+# Tìm kiếm
+helm search repo nginx                           # Tìm theo tên chart
 helm search repo bitnami/postgresql
-helm search hub wordpress                        # Tim tren Helm Hub
+helm search hub wordpress                        # Tìm trên Helm Hub
 
-# Danh sach va quan ly repos
+# Danh sách và quản lý repos
 helm repo list
 helm repo remove bitnami
 helm repo update
 
-# Build phu thuoc
-helm dependency build mychart/                   # Cai dat charts/ requirements
-helm dependency update mychart/                  # Cap nhat va cai dat
+# Build phụ thuộc
+helm dependency build mychart/                   # Cài đặt charts/ requirements
+helm dependency update mychart/                  # Cập nhật và cài đặt
 ```
 
-### 4.4. Thao tac Chart
+### 4.4. Thao tác Chart
 
 ```bash
-# Tao chart moi
+# Tạo chart mới
 helm create mychart
 
-# Dong goi chart
+# Đóng gói chart
 helm package mychart/
 
-# Lint mot chart (kiem tra cu phap va best practices)
+# Lint một chart (kiểm tra cú pháp và best practices)
 helm lint mychart/
 
-# Xac minh chart package
+# Xác minh chart package
 helm verify mychart-1.0.0.tgz
 
-# Hien thi thong tin chart
+# Hiển thị thông tin chart
 helm show chart bitnami/nginx
 helm show values bitnami/nginx
 helm show readme bitnami/nginx
 helm show all bitnami/nginx
 
-# Kiem tra chart
+# Kiểm tra chart
 helm inspect values bitnami/postgresql
 ```
 
 ---
 
-## 5. Helm Hooks
+## 5. Hook trong Helm
 
-Hooks chay tai cac thoi diem cu the trong vong doi cua mot release.
+Hooks chạy tại các thời điểm cụ thể trong vòng đời của một release.
 
-### 5.1. Cac Hook co san
+### 5.1. Các hook có sẵn
 
-| Hook | Thoi diem chay |
+| Hook | Thời điểm chạy |
 |------|----------------|
-| `pre-install` | Sau khi templates duoc render, truoc khi tao resources |
-| `post-install` | Sau khi tat ca resources duoc tai |
-| `pre-upgrade` | Sau khi templates rendered, truoc khi cap nhat resources |
-| `post-upgrade` | Sau khi tat ca resources duoc nang cap |
-| `pre-delete` | Truoc khi xoa resources |
-| `post-delete` | Sau khi xoa resources |
-| `pre-rollback` | Truoc khi khoi phuc resources |
-| `post-rollback` | Sau khi khoi phuc resources |
-| `test` | Khi chay `helm test` (legacy) |
+| `pre-install` | Sau khi template được render, trước khi tạo resources |
+| `post-install` | Sau khi tất cả resources được tải |
+| `pre-upgrade` | Sau khi template được render, trước khi cập nhật resources |
+| `post-upgrade` | Sau khi tất cả resources được nâng cấp |
+| `pre-delete` | Trước khi xóa resources |
+| `post-delete` | Sau khi xóa resources |
+| `pre-rollback` | Trước khi khôi phục resources |
+| `post-rollback` | Sau khi khôi phục resources |
+| `test` | Khi chạy `helm test` (legacy) |
 
-### 5.2. Vi du Hook (Database Migration)
+### 5.2. Ví dụ Hook (Database Migration)
 
 ```yaml
 # templates/job-migration.yaml
@@ -418,9 +420,9 @@ metadata:
   labels:
     {{- include "myapp.labels" . | nindent 4 }}
   annotations:
-    # Danh dau la hook
+    # Đánh dấu là hook
     "helm.sh/hook": pre-upgrade,pre-install
-    "helm.sh/hook-weight": "-1"         # Chay som hon (am = chay som hon)
+    "helm.sh/hook-weight": "-1"         # Chạy sớm hơn (âm = chạy sớm hơn)
     "helm.sh/hook-delete-policy": hook-succeeded,before-hook-creation
 spec:
   backoffLimit: 3
@@ -442,24 +444,24 @@ spec:
                   key: database-url
 ```
 
-### 5.3. Hook Weights & Policies
+### 5.3. Trọng số và policy của hook
 
 ```yaml
 annotations:
   "helm.sh/hook": pre-install,pre-upgrade
-  "helm.sh/hook-weight": "1"             # Thu tu thuc thi (cao hon = chay sau)
-  "helm.sh/hook-delete-policy": hook-succeeded   # Xoa neu hook thanh cong
-  # Cac tuy chon khac: hook-failed, before-hook-creation
+  "helm.sh/hook-weight": "1"             # Thứ tự thực thi (cao hơn = chạy sau)
+  "helm.sh/hook-delete-policy": hook-succeeded   # Xóa nếu hook thành công
+  # Các tùy chọn khác: hook-failed, before-hook-creation
 ```
 
 ---
 
-## 6. Chiến luọc Rollback
+## 6. Chiến lược rollback
 
-### 6.1. Rollback thu cong
+### 6.1. Rollback thủ công
 
 ```bash
-# Xem lich su
+# Xem lịch sử
 helm history my-release
 
 # REVISION  UPDATED                  STATUS     CHART           DESCRIPTION
@@ -467,41 +469,41 @@ helm history my-release
 # 2         Tue Jan 16 14:30:00 2024  superseded myapp-1.1.0   Upgrade complete
 # 3         Wed Jan 17 09:00:00 2024  deployed   myapp-1.2.0   Upgrade complete
 
-# Rollback ve phien ban truoc do
+# Rollback về phiên bản trước đó
 helm rollback my-release
 
-# Rollback ve phien ban cu the
+# Rollback về phiên bản cụ thể
 helm rollback my-release 1
 ```
 
-### 6.2. Rollback tu dong
+### 6.2. Rollback tự động
 
 ```bash
-# Rollback nguyen tu khi gap loi
+# Rollback nguyên tử khi gặp lỗi
 helm upgrade my-release mychart/ --atomic
 
-# voi timeout
+# Với timeout
 helm upgrade my-release mychart/ --timeout 5m
 
-#voi cleanup khi gap loi
+# Với cleanup khi gặp lỗi
 helm upgrade my-release mychart/ --atomic --cleanup-on-fail
 ```
 
 ---
 
-## 7. Best Practices
+## 7. Thực hành tốt
 
-### 7.1. Phat trien Chart
+### 7.1. Phát triển chart
 
-> - Su dung **semantic versioning** cho ca `version` va `appVersion`.
-> - **Khong bao gio hardcode gia tri** - luon su dung `{{ .Values }}`.
-> - Su dung `{{ .Chart.AppVersion }}` lam tag image mac dinh.
-> - Dinh nghia tat ca gia tri co the cau hinh trong `values.yaml` voi **mac dinh hop ly**.
-> - Su dung named templates (`_helpers.tpl`) de tranh lap.
-> - Su dung `nindent` cho indent dung trong YAML ben trong templates.
-> - Uu tien `include` hơn `template` de dau ra duoc indent dung.
+> - Dùng **semantic versioning** cho cả `version` và `appVersion`.
+> - **Không hardcode giá trị** - luôn dùng `{{ .Values }}`.
+> - Dùng `{{ .Chart.AppVersion }}` làm tag image mặc định.
+> - Định nghĩa tất cả giá trị có thể cấu hình trong `values.yaml` với **mặc định hợp lý**.
+> - Dùng named templates (`_helpers.tpl`) để tránh lặp.
+> - Dùng `nindent` để indent đúng trong YAML bên trong templates.
+> - Ưu tiên `include` hơn `template` để đầu ra được indent đúng.
 
-### 7.2. Bao mat
+### 7.2. Bảo mật
 
 ```yaml
 # values.yaml
@@ -525,42 +527,42 @@ containerSecurityContext:
 ### 7.3. Checklist cho Production
 
 ```bash
-# Luon lint truoc khi phat hanh
+# Luôn lint trước khi phát hành
 helm lint mychart/ --strict
 
-# Su dung --dry-run --debug de kiem tra
+# Dùng --dry-run --debug để kiểm tra
 helm install my-release mychart/ --dry-run --debug -f production.yaml
 
-# Su dung atomic upgrades trong CI/CD
+# Dùng atomic upgrades trong CI/CD
 helm upgrade --install my-release mychart/ --atomic --timeout 5m
 
-# Gan phien ban chart trong production
+# Gắn phiên bản chart trong production
 helm install my-release mychart-1.0.0.tgz
 
-# Su dung secrets manager cho gia tri nhay cam
-# Luu secrets trong Vault, tham chieu qua external-secrets operator
+# Dùng secrets manager cho giá trị nhạy cảm
+# Lưu secrets trong Vault, tham chiếu qua external-secrets operator
 ```
 
 ---
 
-## 8. Cau hoi phong van
+## 8. Câu hỏi phỏng vấn
 
-**Q: Khac biet giua Helm 2 va Helm 3?**
+**Q: Khác biệt giữa Helm 2 và Helm 3?**
 
-> Helm 3 da loai bo **Tiller** (thanh phan server-side), lam no bao mat hon. No su dung **three-way strategic merge patch** cho cac lan nang cap va ho tro **library charts**. Phu thuoc duoc quan ly khac di va luu tru secrets don gian hon.
+> Helm 3 đã loại bỏ **Tiller** (thành phần server-side), nên bảo mật hơn. Nó dùng **three-way strategic merge patch** cho các lần nâng cấp và hỗ trợ **library charts**. Phụ thuộc được quản lý khác đi, release secret cũng đơn giản hơn.
 
-**Q: Helm xu ly secrets nhu the nao?**
+**Q: Helm xử lý secrets như thế nào?**
 
-> Mac dinh, Helm luu thong tin release la ConfigMaps (khong ma hoa). Cho production, su dung **secrets encryption at rest** trong etcd, hoac tich hop voi **HashiCorp Vault** qua Vaulted plugin hoac external-secrets operator. Co the dung flag `--secrets-file` voi plugin `helm secrets`.
+> Mặc định, Helm lưu thông tin release bằng Kubernetes Secret trong Helm 3, nhưng nội dung vẫn chỉ base64 nếu cluster không bật mã hóa. Với production, nên bật **secrets encryption at rest** trong etcd, hoặc tích hợp **HashiCorp Vault** qua Vault plugin/external-secrets operator.
 
-**Q: Helm three-way merge la gi?**
+**Q: Helm three-way merge là gì?**
 
-> Khi nang cap, Helm so sanh: (1) **old manifest** (trang thai da ap dung lan cuoi), (2) **current cluster state** (trang thai hien tai cua cluster), va (3) **new desired manifest** (manifest mong muon moi). Dieu nay cho phep Helm tong hop thong minh - giu lai cac thay doi duoc thuc hien truc tiep tren cluster dong thoi ap dung cap nhat tu chart.
+> Khi nâng cấp, Helm so sánh: (1) **old manifest** (trạng thái đã áp dụng lần cuối), (2) **current cluster state** (trạng thái hiện tại của cluster), và (3) **new desired manifest** (manifest mong muốn mới). Nhờ vậy Helm có thể giữ lại thay đổi trực tiếp trên cluster nếu phù hợp, đồng thời áp dụng cập nhật từ chart.
 
-**Q: Lam the nao de quan ly Helm chart dependencies?**
+**Q: Làm thế nào để quản lý Helm chart dependencies?**
 
-> Khai bao phu thuoc trong `Chart.yaml` trong truong `dependencies`. Su dung `helm dependency build` de tai chart vao thu muc `charts/`. Cho production, can su dung **Helm repository** hoac **OCI registry** de host cac chart.
+> Khai báo phụ thuộc trong `Chart.yaml`, trong trường `dependencies`. Dùng `helm dependency build` để tải chart vào thư mục `charts/`. Với production, nên dùng **Helm repository** hoặc **OCI registry** để host chart.
 
-**Q: Library chart la gi?**
+**Q: Library chart là gì?**
 
-> Library chart la mot loai Helm chart (type: library) cung cap cac dinh nghia template co the tai su dung ma khong trien khai bat ky resource nao. No duoc su dung de chia se cac template chung (vi du: `_common.tpl`) giua nhieu application charts.
+> Library chart là loại Helm chart (`type: library`) cung cấp các định nghĩa template có thể tái sử dụng nhưng không triển khai resource nào. Nó dùng để chia sẻ template chung, ví dụ `_common.tpl`, giữa nhiều application chart.

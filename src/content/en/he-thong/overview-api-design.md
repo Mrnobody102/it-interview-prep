@@ -1,259 +1,58 @@
-# API Design
+# API Design (REST, GraphQL, gRPC)
 
-### API Styles Comparison
+## Overview
+Designing an API is like **writing a Menu for a Restaurant**. You need to define what the customer (Client) can order, how much it costs, and what they will get back.
 
-| Aspect | REST | GraphQL | gRPC |
+---
+
+## 1. REST (The Classic Buffet)
+REST uses standard HTTP methods (GET, POST, PUT, DELETE) to manage resources.
+
+**Analogy:** A Buffet. Everything is laid out clearly. You want fish? Go to the fish station. You want salad? Go to the salad station.
+- **Pros:** Standardized, easy to use, works everywhere.
+- **Cons:** **Over-fetching** (You want only one grape, but you have to take the whole fruit basket).
+
+---
+
+## 2. GraphQL (The Custom Order)
+GraphQL allows the client to ask for **exactly** what they need—nothing more, nothing less.
+
+**Analogy:** A Custom Sandwich shop. Instead of a pre-made combo, you say: *"I want bread, two slices of ham, and extra cheese."* You get exactly that.
+- **Pros:** No over-fetching, perfect for Mobile apps with limited bandwidth.
+- **Cons:** Complexity on the server-side, harder to cache.
+
+---
+
+## 3. gRPC (The Internal Secret Radio)
+gRPC uses Protocol Buffers (binary data) instead of JSON (text). It's incredibly fast.
+
+**Analogy:** A secret internal radio used by a special ops team. It's not for the public (Browsers); it's for fast, encrypted communication between team members (Microservices).
+- **Pros:** Blazing fast, low latency, strongly typed.
+- **Cons:** Hard to debug (binary is unreadable by humans), limited browser support.
+
+---
+
+## 4. Best Practices (Interview Checklist)
+
+1. **Versioning:** Always use `/v1/`, `/v2/` in the URL.
+2. **Naming:** Use nouns, not verbs. `GET /users` is good; `GET /getAllUsers` is bad.
+3. **Status Codes:** Use them correctly!
+    - `200 OK`: Success.
+    - `201 Created`: Successfully created something.
+    - `400 Bad Request`: Client made a mistake.
+    - `401 Unauthorized`: Who are you? (Need login).
+    - `403 Forbidden`: I know you, but you're not allowed here.
+    - `404 Not Found`: Doesn't exist.
+    - `500 Internal Server Error`: Server crashed.
+4. **Idempotency:** Making the same request multiple times should have the same result (e.g., `PUT` or `DELETE`).
+
+---
+
+## 5. Comparison Table
+
+| Feature | REST | GraphQL | gRPC |
 |---|---|---|---|
-| **Architecture** | Stateless, resource-based | Query-based, flexible | Contract-based, service-to-service |
-| **Data Format** | JSON (typically) | JSON | Protocol Buffers (binary) |
-| **HTTP Methods** | GET, POST, PUT, PATCH, DELETE | Single POST endpoint | HTTP/2 POST |
-| **Over-fetching** | Yes (fixed response shape) | No (client specifies fields) | No |
-| **Under-fetching** | Yes (may need multiple requests) | No (single query) | No |
-| **Caching** | Standard HTTP caching | Custom (more complex) | HTTP/2 multiplexing |
-| **Human-readable** | Yes | Yes | No (binary) |
-| **Performance** | Good | Good | Excellent |
-| **Use Case** | Web APIs, public APIs | Mobile, complex frontends | Internal microservices |
-
-### REST API Design
-
-#### REST Constraints
-
-1. **Client-Server:** Separation of concerns
-2. **Stateless:** Each request contains all necessary context
-3. **Cacheable:** Responses can be cached
-4. **Uniform Interface:** Resources identified by URIs
-5. **Layered System:** Client does not know if connected directly
-
-#### REST URL Naming Conventions
-
-```
-Good patterns:
-  GET    /users              → List users
-  GET    /users/{id}         → Get single user
-  POST   /users              → Create user
-  PUT    /users/{id}         → Replace user
-  PATCH  /users/{id}         → Partial update
-  DELETE /users/{id}         → Delete user
-
-  GET    /users/{id}/orders  → Get user's orders
-  POST   /orders/{id}/cancel → Action on resource
-
-Bad patterns:
-  GET    /getUsers           → Verb in URL
-  POST   /user/create        → Action in URL
-  GET    /api/v1/getUserData → Inconsistent with resources
-```
-
-#### REST Response Codes
-
-| Code | Meaning | When to Use |
-|---|---|---|
-| **200** | OK | Successful GET, PATCH |
-| **201** | Created | Successful POST that creates resource |
-| **204** | No Content | Successful DELETE, PUT |
-| **400** | Bad Request | Invalid request body/parameters |
-| **401** | Unauthorized | Missing or invalid authentication |
-| **403** | Forbidden | Authenticated but no permission |
-| **404** | Not Found | Resource does not exist |
-| **409** | Conflict | Duplicate resource, version conflict |
-| **422** | Unprocessable Entity | Validation errors |
-| **429** | Too Many Requests | Rate limit exceeded |
-| **500** | Internal Server Error | Unexpected server error |
-
-### GraphQL
-
-#### Key Concepts
-
-- **Query:** Read data (like GET)
-- **Mutation:** Write data (like POST/PUT/DELETE)
-- **Subscription:** Real-time updates via WebSocket
-
-#### GraphQL Example
-
-```graphql
-# Schema definition
-type User {
-  id: ID!
-  name: String!
-  email: String!
-  orders: [Order!]!
-}
-
-type Order {
-  id: ID!
-  total: Float!
-  status: OrderStatus!
-}
-
-enum OrderStatus {
-  PENDING
-  SHIPPED
-  DELIVERED
-}
-
-# Query with selection set
-query GetUserWithOrders($userId: ID!) {
-  user(id: $userId) {
-    name
-    email
-    orders(status: DELIVERED) {
-      id
-      total
-    }
-  }
-}
-
-# Variables
-{
-  "userId": "123"
-}
-```
-
-```json
-// Response — exactly what the client requested
-{
-  "data": {
-    "user": {
-      "name": "Alice",
-      "email": "alice@example.com",
-      "orders": [
-        { "id": "ord-1", "total": 99.99 }
-      ]
-    }
-  }
-}
-```
-
-### gRPC
-
-#### Protocol Buffers Schema
-
-```protobuf
-// user.proto
-syntax = "proto3";
-
-package user;
-
-service UserService {
-  rpc GetUser(GetUserRequest) returns (User);
-  rpc ListUsers(ListUsersRequest) returns (ListUsersResponse);
-  rpc CreateUser(CreateUserRequest) returns (User);
-  rpc DeleteUser(DeleteUserRequest) returns (Empty);
-}
-
-message User {
-  string id = 1;
-  string name = 2;
-  string email = 3;
-  int64 created_at = 4;
-}
-
-message GetUserRequest {
-  string id = 1;
-}
-
-message ListUsersRequest {
-  int32 page_size = 1;
-  string page_token = 2;
-}
-
-message ListUsersResponse {
-  repeated User users = 1;
-  string next_page_token = 2;
-}
-
-message CreateUserRequest {
-  string name = 1;
-  string email = 2;
-}
-
-message DeleteUserRequest {
-  string id = 1;
-}
-
-message Empty {}
-```
-
-### API Best Practices
-
-#### Versioning
-
-```bash
-# URL path versioning (most common)
-GET /api/v1/users
-GET /api/v2/users
-
-# Query parameter versioning
-GET /api/users?version=2
-
-# Header versioning
-GET /api/users
-Accept: application/vnd.api.v2+json
-```
-
-#### Pagination
-
-```bash
-# Offset-based pagination
-GET /api/v1/users?page=2&limit=20
-
-# Cursor-based pagination (better for large datasets)
-GET /api/v1/users?cursor=eyJpZCI6MTB9&limit=20
-
-# Response envelope
-{
-  "data": [...],
-  "pagination": {
-    "total": 1000,
-    "page": 2,
-    "limit": 20,
-    "has_next": true
-  }
-}
-```
-
-#### Error Handling
-
-```json
-{
-  "error": {
-    "code": "VALIDATION_ERROR",
-    "message": "Invalid request parameters",
-    "details": [
-      {
-        "field": "email",
-        "issue": "Invalid email format"
-      },
-      {
-        "field": "age",
-        "issue": "Must be a positive integer"
-      }
-    ],
-    "request_id": "req_abc123"
-  }
-}
-```
-
-#### Security Best Practices
-
-| Practice | Description |
-|---|---|
-| **HTTPS only** | Encrypt all traffic in transit |
-| **Authentication** | JWT tokens, OAuth 2.0, API keys |
-| **Rate Limiting** | Limit requests per client (e.g., 1000/hour) |
-| **Input Validation** | Validate and sanitize all inputs |
-| **CORS** | Restrict cross-origin requests |
-| **API Documentation** | OpenAPI/Swagger specification |
-
-### When to Use Each Style
-
-| Scenario | Recommended Style |
-|---|---|
-| **Public web APIs** | REST + JSON |
-| **Mobile apps with varying data needs** | GraphQL |
-| **Internal microservice communication** | gRPC |
-| **Real-time streaming** | gRPC Streaming or WebSocket |
-| **Simple CRUD operations** | REST |
-| **Complex, nested data requirements** | GraphQL |
-
-> **Tip:** Do not force all APIs to use the same style. Internal high-throughput services benefit from gRPC. External-facing APIs are best served by REST. Complex querying needs are solved by GraphQL.
+| **Format** | JSON | JSON | Binary (Protobuf) |
+| **Protocol** | HTTP 1.1/2 | HTTP 1.1/2 | HTTP 2 |
+| **Data fetching** | Fixed (Endpoint) | Flexible (Query) | Fixed (RPC) |
+| **Best for** | Public APIs | Mobile/Frontend | Microservices (Internal) |

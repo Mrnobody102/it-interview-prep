@@ -83,7 +83,7 @@ flowchart LR
     DB -->|"response"| Client
 ```
 
-### 5. API Design cho Scale
+### 5. Thiết kế API để scale
 
 ```java
 // Tốt: Pagination, field selection
@@ -110,7 +110,7 @@ flowchart TD
         S_RESP["Response"]
         S_USER --> S_API --> S_REDIS --> S_RESP
     end
-    subgraph ASYNC["Asynchronous (cham, background)"]
+    subgraph ASYNC["Asynchronous (chậm, background)"]
         A_USER["User"]
         A_API["API"]
         A_QUEUE["Message Queue"]
@@ -118,9 +118,9 @@ flowchart TD
         A_DB["Database"]
         A_USER --> A_API --> A_QUEUE --> A_WORKERS --> A_DB
     end
-    subgraph NOTIFY["Thong bao"]
+    subgraph NOTIFY["Thông báo"]
         NOTIFY_CH["Webhook / SSE / Polling"]
-        NOTIFY_USER["User duoc thong bao"]
+        NOTIFY_USER["User được thông báo"]
         A_API --> NOTIFY_CH --> NOTIFY_USER
     end
 ```
@@ -141,7 +141,7 @@ flowchart TD
 | Database query (đã tối ưu) | 1 - 50 ms |
 | Peak concurrent connections/server | ~10,000 (connection pooling critical) |
 
-### 8. Monitoring & Observability
+### 8. Monitoring & observability
 
 ```
 Golden Signals (Google SRE):
@@ -155,7 +155,21 @@ Golden Signals (Google SRE):
 
 **Công cụ thiết yếu:** Prometheus + Grafana, ELK Stack, distributed tracing (Jaeger/Zipkin)
 
-### 9. Capacity Planning
+### 9. Connection Management & Protection
+
+Khi lên hàng triệu user, lỗi thường không chỉ nằm ở CPU mà còn ở số lượng connection.
+
+| Kỹ thuật | Lý do |
+|---|---|
+| **Keep-alive hợp lý** | Tái sử dụng kết nối, giảm TLS/TCP handshake |
+| **Connection pool** | Giới hạn số kết nối backend -> DB, tránh làm DB nghẹt |
+| **Timeout rõ ràng** | Không để request treo giữ tài nguyên quá lâu |
+| **Rate limiting** | Chặn user/IP/API key gửi quá nhiều request |
+| **Backpressure** | Khi downstream chậm, giảm nhận thêm việc thay vì để queue phình vô hạn |
+
+Ví dụ trả lời phỏng vấn: "Tôi sẽ đặt timeout, connection pool và rate limit ở API Gateway/LB/service. DB không nên nhận connection trực tiếp không giới hạn từ mọi instance."
+
+### 10. Capacity Planning
 
 ```
 Ước tính cho 1 triệu người dùng:
@@ -171,7 +185,7 @@ Peak RPS = 58 × 10 = 580 RPS
 → Scale dựa trên actual metrics
 ```
 
-### 10. Checklist Scale
+### 11. Checklist scale
 
 - [ ] Application servers stateless (scale ngang được)
 - [ ] Database: connection pooling + read replicas + sharding strategy
@@ -179,6 +193,7 @@ Peak RPS = 58 × 10 = 580 RPS
 - [ ] Async processing cho non-critical operations
 - [ ] Load balancer với health checks
 - [ ] Rate limiting + API throttling
+- [ ] Timeout, keep-alive và connection pool có giới hạn rõ ràng
 - [ ] Indexing đúng trên tất cả hot queries
 - [ ] Monitoring: latency, errors, saturation
 - [ ] Graceful degradation khi under load

@@ -1,50 +1,28 @@
-# KISS Principle
+# KISS (Keep It Simple, Stupid)
 
-## Overview
+## Core Concept
+The simplest solution is almost always the best one. Complexity is a sign of poor design.
 
-> Design as simply as possible. Complex code is not always better.
+**Real-world Analogy:** Cutting an apple. 
+- **Simple (KISS):** Use a kitchen knife.
+- **Over-engineered:** Build an industrial laser cutter. 
+Both cut the apple, but one is a waste of time and money.
 
-## Core Principles
+---
 
-- **Prioritize clarity**: Code that's easy to read and understand beats "clever" code.
-- **Avoid over-engineering**: Don't solve a general problem when a specific solution will do.
-- **Break down problems**: Divide large problems into smaller, simpler parts.
+## Why Simplicity Wins?
+1. **Reading > Writing:** Code is read 100x more than it's written. Simple code is easy to read.
+2. **Fewer Bugs:** Complex logic hides bugs. Simple logic is obvious.
+3. **Onboarding:** New team members can understand the system in a day, not a week.
 
-## Examples
+---
 
-### ❌ Over-complicated
+## Interview Tip
+When asked to solve a problem, **start simple**. Don't jump into Microservices or Kubernetes unless the problem explicitly requires it. "We'll start with a simple Monolith to move fast, following the KISS principle."
 
-```java
-public String processPayment(Order order,
-    Map<String, Object> config, boolean isPriority,
-    List<PaymentMethod> methods, String currency) {
-    // 200 lines handling everything
-    // Too many parameters, messy logic
-}
-```
+---
 
-### ✅ Simple & Clear
-
-```java
-public PaymentResult processStandardPayment(Order order) {
-    // Only handles the most common case
-    // Clear, easy to test
-}
-
-public PaymentResult processExpressPayment(Order order) {
-    // Separated for express
-}
-```
-
-## When to Keep It Simple?
-
-| Do | Don't |
-|----|-------|
-| Solve the problem first, optimize later | Premature optimization |
-| Clear variable and function names | Write cryptic, short code |
-| Split into small functions, each doing one thing | Put multiple logics into one long function |
-| Comment when necessary | Too many or no comments |
-
-## Note
-
-> "Simple" doesn't mean "primitive". A simple solution can be very sophisticated architecturally, yet still easy to understand and maintain.
+## Summary for Interviews
+| Principle | Summary | Question |
+|---|---|---|
+| **KISS** | Avoid "Clever" code. | *"Would a junior dev understand this?"* |

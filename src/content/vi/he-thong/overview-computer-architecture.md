@@ -1,8 +1,25 @@
-# Computer Architecture Overview
+# Tổng quan kiến trúc máy tính
 
 ## Memory Hierarchy
 
 Hiểu memory hierarchy là nền tảng để thiết kế các hệ thống high-performance.
+
+### Luồng chạy chương trình dễ nhớ
+
+Khi mở một chương trình, **code và data ban đầu nằm trên storage** (SSD/HDD). Hệ điều hành nạp phần cần thiết lên **RAM**, CPU lấy instruction và data từ RAM, nhưng trước khi xuống RAM CPU luôn kiểm tra **cache**.
+
+```text
+Storage (SSD/HDD) -> RAM -> CPU Cache (L3/L2/L1) -> CPU Register -> Execute
+```
+
+Khi CPU cần dữ liệu:
+
+1. **Cache hit:** dữ liệu có trong cache, CPU lấy rất nhanh.
+2. **Cache miss:** dữ liệu không có trong cache, CPU phải lấy từ RAM.
+3. **Page/disk miss:** dữ liệu chưa có trong RAM, hệ điều hành phải nạp từ storage. Đây là tầng chậm hơn rất nhiều.
+4. **Kết quả xử lý:** thường ghi tạm vào register/cache/RAM, sau đó flush xuống storage nếu cần lưu bền vững.
+
+> Câu trả lời phỏng vấn ngắn: CPU không đọc thẳng từ ổ đĩa cho mỗi phép tính. Chương trình được nạp lên RAM, CPU ưu tiên cache trước, cache miss mới xuống RAM, còn storage chỉ dùng khi cần nạp/ghi dữ liệu bền vững.
 
 | Level | Storage | Access Time | Capacity | Purpose |
 |---|---|---|---|---|
@@ -35,7 +52,7 @@ Data được transfer giữa memory và cache theo các blocks cố định g�
 - **Temporal Locality:** Data được truy cập gần đây có khả năng được truy cập lại. Được cache bằng cách giữ data trong L1/L2/L3.
 - **Spatial Locality:** Các items gần data được truy cập gần đây có khả năng được truy cập tiếp. Khai thác bằng cách load toàn bộ cache lines.
 
-### CPU Architecture
+### Kiến trúc CPU
 
 #### Von Neumann vs. Harvard
 

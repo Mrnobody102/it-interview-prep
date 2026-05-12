@@ -1,192 +1,153 @@
-# API Design
+# Thiết kế API (API Design)
 
 ## Tổng quan
 
-**API (Application Programming Interface)** là cầu nối giữa các thành phần phần mềm. Thiết kế API tốt giúp:
-- **Developer experience** tốt — dễ hiểu, dễ sử dụng
-- **Scalability** — hỗ trợ mở rộng mà không phá vỡ clients
-- **Security** — bảo vệ dữ liệu và ngăn truy cập trái phép
-- **Performance** — nhanh, hiệu quả
+**API (Application Programming Interface)** là "cây cầu" để phần mềm này nói chuyện với phần mềm khác. Một thiết kế API tốt giống như một bản hợp đồng rõ ràng, giúp:
+
+- **Dễ dùng** cho developer (nhìn là biết cách gọi).
+- **Không phá client cũ** khi bạn mở rộng hoặc nâng cấp tính năng.
+- **Bảo mật tốt** hơn.
+- **Phản hồi nhanh** và dễ dàng scale (mở rộng hệ thống).
+
+### Đọc nhanh 3 kiểu API phổ biến
+
+- **REST**: Chuẩn mực phổ biến nhất. Phù hợp cho các thao tác CRUD (Tạo, Đọc, Sửa, Xóa).
+- **GraphQL**: Giống như bạn đi ăn buffet, muốn gắp món nào thì gắp, gắp bao nhiêu thì gắp. Client chỉ lấy đúng dữ liệu mình cần, không thừa không thiếu.
+- **gRPC**: Giống như hai nhân viên mật vụ nói chuyện bằng bộ đàm mật mã nội bộ, cực kỳ nhanh và gọn, nhưng người ngoài (như trình duyệt web) nghe sẽ không hiểu. Chuyên dùng cho các service nội bộ giao tiếp với nhau.
+
+### So sánh các kiểu API
+
+| Khía cạnh | REST | GraphQL | gRPC |
+|---|---|---|---|
+| **Kiến trúc** | Dựa trên tài nguyên (Resource-based). | Dựa trên truy vấn (Query-based). | Dựa trên hợp đồng (Contract-based). |
+| **Định dạng dữ liệu** | Thường là JSON. | JSON | Nhị phân (Protocol Buffers). |
+| **HTTP method** | Dùng chuẩn GET, POST, PUT, PATCH, DELETE | Thường chỉ dùng một endpoint POST duy nhất | HTTP/2 POST |
+| **Over-fetching (Dư thừa)** | Có thể bị (Gọi lấy danh sách nhưng trả về cả nội dung dài ngoằng) | Không (Bạn chỉ định cái gì, nó trả về cái đó) | Không |
+| **Under-fetching (Thiếu)** | Có thể bị (Gọi lấy danh sách bài viết xong phải gọi tiếp 10 lần API để lấy avatar tác giả) | Không (Gộp vào 1 query) | Không |
+| **Đọc bằng mắt** | Rất dễ (JSON) | Rất dễ (JSON) | Khó (Binary) |
+| **Hiệu năng** | Tốt | Tốt | Cực kì nhanh nhẹ |
+| **Phù hợp cho** | Public API, Web thông thường | Mobile App, Frontend phức tạp | Microservices gọi nhau nội bộ |
 
 ---
 
-## Các kiểu API phổ biến
+## REST (Representational State Transfer)
 
-### REST (Representational State Transfer)
+REST là lựa chọn "quốc dân" hiện nay.
 
-| Khía cạnh | Mô tả |
-|-----------|-------|
-| **Nguyên tắc** | Stateless, dùng HTTP methods chuẩn (GET, POST, PUT, DELETE) |
-| **Dữ liệu** | JSON (phổ biến), XML |
-| **Ưu điểm** | Dễ hiểu, widely adopted, caching tốt |
-| **Nhược điểm** | Dễ over-fetching hoặc under-fetching, không có built-in contract |
-| **Phù hợp** | Public APIs, web services, CRUD operations |
+#### Các nguyên tắc (Constraints) của REST:
+1. **Client-server**: Giao diện và dữ liệu hoàn toàn tách biệt.
+2. **Stateless**: Server không nhớ trạng thái của client. Mỗi request gửi lên phải kèm đủ vé (token/context) để server biết bạn là ai. (Giống như mua vé xe bus từng chặng).
+3. **Cacheable**: Dữ liệu trả về có thể được lưu cache.
+4. **Uniform interface**: Cấu trúc URL đồng nhất và theo quy chuẩn.
 
+#### Ví dụ REST:
 ```http
-### REST Examples
 GET    /api/users          -- Lấy danh sách users
 GET    /api/users/123      -- Lấy user có ID 123
 POST   /api/users          -- Tạo user mới
-PUT    /api/users/123      -- Cập nhật user 123
+PUT    /api/users/123      -- Thay thế toàn bộ thông tin user 123
+PATCH  /api/users/123      -- Chỉ cập nhật một phần (ví dụ đổi mật khẩu)
 DELETE /api/users/123      -- Xóa user 123
 ```
 
-### GraphQL
+---
 
-| Khía cạnh | Mô tả |
-|-----------|-------|
-| **Nguyên tắc** | Client chỉ lấy đúng dữ liệu cần, tránh over/under-fetching |
-| **Dữ liệu** | JSON (query language) |
-| **Ưu điểm** | Flexible queries, giảm số roundtrips, strongly typed schema |
-| **Nhược điểm** | Khó caching (HTTP caching không hoạt động), query phức tạp ảnh hưởng server |
-| **Phù hợp** | Mobile apps, complex data requirements, BFF (Backend for Frontend) |
+## GraphQL
+
+Ra đời từ Facebook để giải quyết vấn đề nghẽn mạng trên thiết bị di động do REST trả về quá nhiều dữ liệu dư thừa.
+
+#### Ví dụ dễ hiểu:
+Frontend chỉ cần hiển thị `name` và `email` của User. Nếu gọi REST `/api/users/123`, nó có thể trả về cả tuổi, địa chỉ, lịch sử mua hàng (rất nặng). Với GraphQL, bạn tự viết "đơn đặt hàng":
 
 ```graphql
-# GraphQL Query
+# Gửi cái này lên Server: "Cho tôi xin name và email của user 123"
 query {
   user(id: "123") {
     name
     email
-    orders(last: 5) {
-      items {
-        product { name }
-        quantity
-      }
+  }
+}
+```
+
+```json
+// Server trả về đúng 2 trường đó:
+{
+  "data": {
+    "user": {
+      "name": "Alice",
+      "email": "alice@example.com"
     }
   }
 }
 ```
 
-### gRPC (Google Remote Procedure Call)
+---
 
-| Khía cặnh | Mô tả |
-|-----------|-------|
-| **Nguyên tắc** | Xây dựng trên HTTP/2, dùng Protocol Buffers (binary) |
-| **Dữ liệu** | Binary (Protobuf) |
-| **Ưu điểm** | Hiệu năng cao (smaller payload, multiplexing), strongly typed, bi-directional streaming |
-| **Nhược điểm** | Dữ liệu binary không human-readable, cần .proto definition |
-| **Phù hợp** | Microservices, real-time streaming, high-performance internal APIs |
+## gRPC (Google Remote Procedure Call)
+
+Được Google tạo ra. Nó không dùng JSON dạng văn bản (text) cồng kềnh, mà dùng **Protocol Buffers (Protobuf)** để nén dữ liệu thành chuỗi nhị phân (binary) cực kỳ nhỏ gọn.
+
+- Nó chạy trên **HTTP/2**, cho phép gửi nhiều dữ liệu song song cực nhanh.
+- Bạn phải định nghĩa một "hợp đồng" (file `.proto`) mà cả client và server đều biết để có thể giải mã đoạn nhị phân kia thành dữ liệu.
 
 ```protobuf
-// user.proto
+// Định nghĩa hợp đồng user.proto
 syntax = "proto3";
-package user;
 
 service UserService {
   rpc GetUser(GetUserRequest) returns (User);
-  rpc StreamUsers(StreamUsersRequest) returns (stream User);
-}
-
-message GetUserRequest {
-  string user_id = 1;
 }
 
 message User {
   string id = 1;
   string name = 2;
-  string email = 3;
+}
+
+message GetUserRequest {
+  string id = 1;
 }
 ```
-
-### So sánh REST vs GraphQL vs gRPC
-
-| Tiêu chí | REST | GraphQL | gRPC |
-|----------|------|---------|------|
-| **Payload** | JSON (human-readable) | JSON (custom shape) | Binary Protobuf |
-| **Caching** | HTTP caching ✅ | Khó (cần client-side) | HTTP/2 multiplexing |
-| **Type safety** | Không (hoặc OpenAPI) | Có (schema) | Có (.proto) |
-| **Overfetching** | Có | Không | Không |
-| **Underfetching** | Có | Không | Không |
-| **Streaming** | Không native | Không native | Bidirectional streaming |
-| **Browser support** | ✅ Native | ✅ Native | ⚠️ Cần grpc-web |
-| **Learning curve** | Thấp | Trung bình | Cao |
-| **Tooling** | Nhiều | Growing | Good (but less) |
-| **Use case** | Public APIs | Mobile, BFF | Microservices, real-time |
 
 ---
 
-## REST Best Practices
+## Thực hành tốt (Best Practices) cho REST API
 
-### Naming Conventions
+Khi đi làm hoặc phỏng vấn, tuân thủ các quy tắc này sẽ cho thấy bạn là một kỹ sư "cứng tay".
 
-| Quy tắc | Tốt | Xấu |
-|---------|-----|-----|
-| **Dùng danh từ, không dùng động từ** | `GET /users`, `POST /orders` | `GET /getUsers` |
+### 1. Quy ước đặt tên URL
+
+| Quy tắc | Cứng (Tốt) | Non (Xấu) |
+|---|---|---|
+| **Dùng danh từ, không dùng động từ** | `GET /users`, `POST /orders` | `GET /getUsers`, `POST /createOrder` |
 | **Dùng số nhiều** | `GET /users/123` | `GET /user/123` |
-| **Snake_case hay kebab-case** | `/user-profiles`, `/order_items` | `/userProfiles` |
-| **Nhất quán** | `/users/{id}/orders` | `/getUserOrders?id=` |
+| **Cấu trúc cha con rõ ràng** | `/users/{id}/orders` | `/getUserOrders?id=` |
+| **Dùng chữ thường và gạch ngang** | `/user-profiles` | `/userProfiles` |
 
-### HTTP Status Codes
+### 2. Sử dụng HTTP Status Code chuẩn
 
 | Code | Ý nghĩa | Khi nào dùng |
-|------|---------|-------------|
-| **200 OK** | Thành công | GET thành công, PUT/PATCH update thành công |
-| **201 Created** | Tạo thành công | POST tạo resource mới |
-| **204 No Content** | Thành công, không có body | DELETE thành công |
-| **400 Bad Request** | Request không hợp lệ | Validation error |
-| **401 Unauthorized** | Chưa xác thực | Missing/invalid token |
-| **403 Forbidden** | Không có quyền | Đã xác thực nhưng không có quyền |
-| **404 Not Found** | Resource không tồn tại | Resource ID không tồn tại |
-| **409 Conflict** | Conflict | Duplicate resource, version conflict |
-| **422 Unprocessable Entity** | Validation failed | Dữ liệu hợp lệ về format nhưng không hợp lệ về nghiệp vụ |
-| **429 Too Many Requests** | Rate limited | Vượt quota |
-| **500 Internal Server Error** | Lỗi server | Lỗi không xác định |
-| **503 Service Unavailable** | Service tạm dừng | Maintenance, overload |
+|---|---|---|
+| **200 OK** | Mọi thứ ổn | Lấy dữ liệu thành công. |
+| **201 Created** | Tạo xong | Vừa POST thành công một dữ liệu mới. |
+| **204 No Content** | Thành công nhưng không có gì để trả về | Xóa (DELETE) thành công. |
+| **400 Bad Request** | Lỗi dữ liệu gửi lên | Khách gửi thiếu email, sai định dạng. |
+| **401 Unauthorized** | Lỗi đăng nhập | Chưa gửi token, hoặc token hết hạn. |
+| **403 Forbidden** | Lỗi quyền hạn | Đã đăng nhập nhưng cố vào vùng của Admin. |
+| **404 Not Found** | Không tìm thấy | ID không tồn tại trên hệ thống. |
+| **500 Internal Error**| Lỗi hệ thống | Code bị bug (NullPointerException...). |
 
-### API Versioning
+### 3. Versioning (Đánh phiên bản)
+Hệ thống lớn luôn có lúc phải nâng cấp API mà không làm chết các app cũ chưa kịp update.
+- **Cách tốt nhất:** Gắn version vào thẳng URL (`/api/v1/users` và `/api/v2/users`). Rất dễ nhìn và dễ debug.
 
-| Phương pháp | Ví dụ | Ưu điểm | Nhược điểm |
-|-------------|-------|---------|-----------|
-| **URL Path** | `/v1/users`, `/v2/users` | **Phổ biến nhất**, rõ ràng | Phá vỡ URL consistency |
-| **Query String** | `/users?version=2` | Không phá vỡ URL | Khó cache |
-| **Header** | `Accept: application/vnd.api.v2+json` | URL sạch | Không visible, phức tạp |
-| **Content Negotiation** | `Accept: application/vnd.api.v2+json` | API-driven | Phức tạp |
-
-> **Khuyến nghị**: Dùng **URL Path versioning** — đơn giản, rõ ràng, dễ debug.
-
-### Pagination
-
+### 4. Cấu trúc trả về lỗi (Error Format) chuẩn mực
+Đừng bao giờ chỉ trả về chữ "Lỗi". Hãy trả về cục JSON rõ ràng để frontend biết đường hiển thị cho khách:
 ```json
-// Offset-based pagination
-GET /api/users?page=2&limit=20
-{
-  "data": [...],
-  "pagination": {
-    "page": 2,
-    "limit": 20,
-    "total": 1000,
-    "totalPages": 50
-  }
-}
-
-// Cursor-based pagination (tốt hơn cho large datasets)
-GET /api/users?cursor=eyJpZCI6MTIzfQ&limit=20
-{
-  "data": [...],
-  "nextCursor": "eyJpZCI6MTQzfQ",
-  "hasMore": true
-}
-```
-
-### Error Response Format
-
-```json
-// ✅ Chuẩn error format
 {
   "error": {
-    "code": "VALIDATION_ERROR",
-    "message": "Invalid request parameters",
-    "details": [
-      {
-        "field": "email",
-        "message": "Email format is invalid"
-      },
-      {
-        "field": "age",
-        "message": "Age must be greater than 0"
-      }
-    ],
-    "requestId": "req_abc123xyz",
+    "code": "INVALID_EMAIL",
+    "message": "Email sai định dạng.",
+    "details": "Bạn bị thiếu chữ @ trong email.",
     "timestamp": "2026-03-20T10:30:00Z"
   }
 }
@@ -194,113 +155,16 @@ GET /api/users?cursor=eyJpZCI6MTIzfQ&limit=20
 
 ---
 
-## Authentication & Security
+## Phân trang (Pagination)
 
-### Các phương pháp Authentication
+Nếu hệ thống có hàng triệu User, bạn không thể GET trả về 1 triệu user một lúc. Phải phân trang!
 
-| Phương pháp | Mô tả | Phù hợp |
-|-------------|-------|--------|
-| **API Key** | Key static cho mỗi client | Internal APIs, simple use cases |
-| **Basic Auth** | Username/password encoded | Legacy systems, internal |
-| **JWT** | Token stateless, có expiry | Modern REST APIs, stateless |
-| **OAuth 2.0** | Delegated authorization | Public APIs, third-party access |
-| **mTLS** | Mutual TLS (certificate) | High-security internal APIs |
-
-### JWT Structure
-
-```
-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9
-   .
-eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ
-   .
-SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
-   │
-   │ Header (Algorithm, Type)
-   │ Payload (Claims: sub, name, iat, exp, roles)
-   │ Signature (HMAC-SHA256)
-```
-
-```json
-// JWT Payload example
-{
-  "sub": "user_123",
-  "name": "Nguyen Van A",
-  "email": "a@example.com",
-  "roles": ["USER", "ADMIN"],
-  "iat": 1710914400,
-  "exp": 1710999900,
-  "iss": "https://api.example.com"
-}
-```
-
-### Rate Limiting
-
-```json
-// Response headers
-X-RateLimit-Limit: 1000       // Số request tối đa
-X-RateLimit-Remaining: 999   // Số request còn lại
-X-RateLimit-Reset: 1710918000 // Thời điểm reset (Unix timestamp)
-Retry-After: 30              // Số giây chờ (khi bị limit)
-```
+1. **Offset-based (Truyền thống):** `?page=2&limit=20`. Rất dễ làm, nhưng nhược điểm là khi dữ liệu quá lớn (ví dụ trang 100000), database quét sẽ bị chậm.
+2. **Cursor-based (Tiên tiến):** Trả về `nextCursor`. Lần sau client gửi cái cursor đó lên để lấy tiếp. Tốc độ cực kì nhanh dù dữ liệu lên tới hàng tỷ dòng (Facebook, Twitter đều dùng cách này cho newfeed).
 
 ---
 
-## API Documentation
+## Tài liệu API (API Documentation)
+Làm API xong phải có tài liệu cho Front-end đọc. Đừng dùng Excel/Word. Hãy dùng **Swagger (OpenAPI)** để tự động sinh ra trang giao diện test API cực xịn xò.
 
-### OpenAPI (Swagger)
-
-```yaml
-# openapi.yaml
-openapi: 3.0.3
-info:
-  title: User Management API
-  version: 2.0.0
-  description: API for managing users
-
-paths:
-  /users/{id}:
-    get:
-      summary: Get user by ID
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
-      responses:
-        '200':
-          description: User found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/User'
-        '404':
-          $ref: '#/components/responses/NotFound'
-
-components:
-  schemas:
-    User:
-      type: object
-      properties:
-        id:
-          type: integer
-        name:
-          type: string
-        email:
-          type: string
-          format: email
-```
-
----
-
-## Performance Optimization
-
-| Kỹ thuật | Mô tả |
-|----------|-------|
-| **Caching** | Response caching (Cache-Control, ETag) |
-| **Compression** | Gzip, Brotli |
-| **Pagination** | Tránh trả về quá nhiều data |
-| **Field selection** | GraphQL hoặc query params (`?fields=id,name`) |
-| **Async processing** | Webhook, polling thay vì long-polling |
-| **Batch requests** | Gộp nhiều requests thành một |
-| **CDN** | Cache static/dynamic responses tại edge |
+> **💡 Mẹo phỏng vấn:** Thiết kế API không chỉ là code cho chạy được. Người phỏng vấn sẽ để ý xem bạn có tuân thủ quy tắc đặt tên không, có xài đúng chuẩn mã 200/400/500 không. Hãy luôn nhớ thiết kế sao cho "thằng Frontend" dễ tích hợp nhất!

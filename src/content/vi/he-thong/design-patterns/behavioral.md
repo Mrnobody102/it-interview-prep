@@ -1,176 +1,105 @@
-# Behavioral Design Patterns
+# Behavioral Patterns (Nhóm Hành vi)
 
-Behavioral patterns giải quyết vấn đề **giao tiếp và phân chia trách nhiệm** giữa các đối tượng.
+## Tổng quan
+Nhóm này giải quyết câu hỏi: **"Các Object nói chuyện với nhau như thế nào để hệ thống không bị rối rắm?"**
 
-## Observer Pattern
+---
 
-### Khái niệm
+## 1. Observer Pattern (Kẻ Quan Sát)
 
-Cho phép một đối tượng (**Subject**) thông báo thay đổi đến nhiều **Observer** khi có sự kiện.
+### Giải thích siêu dễ hiểu
+Giống hệt nút **"Theo dõi" (Subscribe)** kênh YouTube.
+- **Subject (YouTube Channel):** Kênh phát sóng.
+- **Observer (Bạn):** Người đăng ký nhận thông báo.
+Mỗi khi có Video mới, YouTube sẽ tự động bắn thông báo cho 1 triệu người đăng ký cùng lúc, thay vì mỗi ngày bạn phải tự vào kênh kiểm tra xem có video mới chưa.
 
-### Ví dụ
+### Dùng khi nào?
+Khi một sự kiện xảy ra cần thông báo cho N nơi khác, nhưng bạn không muốn code "cứng" N nơi đó vào class chính.
 
-Khi bạn đăng ký nhận thông báo trên Facebook: mỗi khi có post mới, tất cả người theo dõi đều nhận được thông báo.
-
-### Trong Spring
+### Trong Spring Boot
+Bạn dùng suốt ngày với `@EventListener` và `ApplicationEventPublisher`.
 
 ```java
-// Subject
+// Subject: Đăng video
 @Service
-public class OrderService {
+public class YoutubeChannel {
     @Autowired private ApplicationEventPublisher publisher;
 
-    public void placeOrder(Order order) {
-        // xử lý đơn hàng
-        publisher.publishEvent(new OrderPlacedEvent(this, order));
+    public void uploadVideo(String title) {
+        publisher.publishEvent(new NewVideoEvent(this, title));
     }
 }
 
-// Observer
+// Observer: Điện thoại nhận thông báo
 @Component
-public class EmailNotificationListener {
+public class PhoneNotification {
     @EventListener
-    public void onOrderPlaced(OrderPlacedEvent event) {
-        // gửi email xác nhận
+    public void onNewVideo(NewVideoEvent event) {
+        System.out.println("Ting ting! Có video mới: " + event.getTitle());
     }
 }
 ```
 
-## Strategy Pattern
+---
 
-### Khái niệm
+## 2. Strategy Pattern (Chiến lược)
 
-Cho phép thay đổi thuật toán/hành vi tại **runtime** mà không cần thay đổi mã nguồn của đối tượng đó.
+### Giải thích siêu dễ hiểu
+Bạn đi từ nhà lên công ty. Tùy thuộc vào thời tiết mà bạn chọn phương tiện:
+- Nắng: Đi xe máy
+- Mưa: Đi Taxi
+- Tắc đường: Đi bộ
+Đích đến không đổi, nhưng **"chiến lược đi"** thay đổi linh hoạt lúc bạn ra khỏi nhà (runtime).
 
-### Ví dụ
-
-Chọn nhiều phương thức thanh toán khác nhau (thẻ, chuyển khoản, ví điện tử) mà không cần thay đổi code đặt hàng.
+### Dùng khi nào?
+Để giết chết đống `if-else` hoặc `switch-case` khổng lồ. Rất hay dùng cho việc chọn Phương thức thanh toán (Visa, Momo, ZaloPay).
 
 ```java
-interface PaymentStrategy {
-    void pay(double amount);
-}
+interface PaymentStrategy { void pay(int amount); }
 
-class CreditCardPayment implements PaymentStrategy { /* ... */ }
-class PayPalPayment implements PaymentStrategy { /* ... */ }
+class MomoPayment implements PaymentStrategy { ... }
+class VisaPayment implements PaymentStrategy { ... }
 
 class ShoppingCart {
-    private PaymentStrategy strategy;
-    void checkout() { strategy.pay(total); }
+    private PaymentStrategy strategy; // Lắp chiến lược vào đây
+    
+    // Giao việc cho chiến lược xử lý
+    void checkout(int amount) { strategy.pay(amount); }
 }
 ```
 
-## Template Method Pattern
+---
 
-### Khái niệm
+## 3. Chain of Responsibility Pattern (Chuỗi Trách Nhiệm)
 
-Định nghĩa **skeleton** của một thuật toán, cho phép subclass override các bước cụ thể mà không thay đổi cấu trúc tổng thể.
+### Giải thích siêu dễ hiểu
+Giống hệt **Quy trình xin nghỉ phép**.
+- Nghỉ 1 ngày: Xin sếp trực tiếp duyệt.
+- Nghỉ 3 ngày: Sếp trực tiếp ký nháy -> Chuyển lên Trưởng phòng duyệt.
+- Nghỉ 1 tháng: Chuyển tờ đơn từ Sếp trực tiếp -> Trưởng phòng -> Giám đốc.
+Tờ đơn (Request) sẽ đi qua một dây chuyền, ai đủ thẩm quyền thì duyệt, không đủ thì đẩy lên tay người tiếp theo.
 
-### Ví dụ
+### Dùng khi nào?
+Khi bạn code `Filter` chặn request trong Spring Security. 
+Request đi qua Filter 1 (Chống Spam) -> Filter 2 (Kiểm tra Token) -> Filter 3 (Kiểm tra Quyền hạn) -> Controller.
 
-Quy trình chuẩn bị đồ uống: đun nước → pha → rót → thêm topping. Các loại đồ uống thay đổi ở bước "pha".
+---
 
-```java
-abstract class BeverageTemplate {
-    final void prepare() {
-        boilWater();
-        brew();        // subclass override
-        pourInCup();
-        addCondiments(); // subclass override
-    }
-    abstract void brew();
-    abstract void addCondiments();
-}
-```
+## 4. State Pattern (Trạng thái)
 
-## Chain of Responsibility Pattern
+### Giải thích siêu dễ hiểu
+Con người khi vui thì hiền lành, khi đói thì cáu gắt. Rõ ràng là cùng một con người, nhưng **hành vi** thay đổi hoàn toàn tùy theo **trạng thái (state)** hiện tại.
 
-### Khái niệm
+### Dùng khi nào?
+Dùng để quản lý vòng đời của Đơn Hàng (Chờ xử lý -> Đang giao -> Hoàn thành). Thay vì viết một cái `if(state == "DANG_GIAO")` khổng lồ, ta tạo ra các class `StateDangGiao`, `StateHoanThanh` riêng biệt.
 
-Gửi yêu cầu dọc theo **chuỗi handler**. Mỗi handler quyết định xử lý hoặc chuyển tiếp.
+---
 
-### Ví dụ
+## Tóm tắt nhanh đi Phỏng vấn
 
-- Duyệt đơn từ: nhân viên → trưởng phòng → giám đốc.
-- Servlet Filters trong Java Web.
-- **Spring Security Filter Chain**.
-
-```java
-interface Handler {
-    Handler setNext(Handler next);
-    void handle(Request request);
-}
-
-class AuthHandler implements Handler {
-    public void handle(Request request) {
-        if (!authenticate(request)) return; // pass to next
-        next.handle(request);
-    }
-}
-```
-
-## Command Pattern
-
-### Khái niệm
-
-Đóng gói request thành **object**. Cho phép queue, log, undo/redo.
-
-### Ví dụ
-
-- Undo/Redo operations trong editor.
-- Scheduling tasks.
-
-```java
-interface Command {
-    void execute();
-    void undo();
-}
-
-class AddCommand implements Command {
-    public void execute() { list.add(item); }
-    public void undo() { list.remove(item); }
-}
-```
-
-## State Pattern
-
-### Khái niệm
-
-Object thay đổi behavior khi **internal state** thay đổi.
-
-### Ví dụ
-
-Trạng thái đơn hàng: New → Processing → Shipped → Delivered.
-
-```java
-interface OrderState {
-    void next(OrderContext context);
-    String getStatus();
-}
-
-class NewOrderState implements OrderState { /* ... */ }
-class ShippedOrderState implements OrderState { /* ... */ }
-```
-
-## Mediator Pattern
-
-### Khái niệm
-
-Định nghĩa object đóng gói cách nhiều objects giao tiếp, **giảm coupling** giữa các đối tượng.
-
-### Ví dụ
-
-- Controller trong MVC là mediator giữa Model và View.
-- UI Dialog là mediator giữa các Button, TextField.
-
-## So sánh nhanh
-
-| Pattern | Mục đích | Use case |
+| Pattern | Tóm tắt 1 câu | Ứng dụng thực tế |
 |---------|---------|----------|
-| Observer | Thông báo thay đổi | Event listener, subscribe |
-| Strategy | Thay đổi thuật toán | Payment, sorting |
-| Template Method | Khung algorithm | Data processing pipeline |
-| Chain of Responsibility | Pass request along chain | Filters, handlers |
-| Command | Đóng gói request | Undo, queue, scheduler |
-| State | Thay đổi theo state | State machine |
-| Mediator | Trung gian giao tiếp | UI dialog, Controller |
+| **Observer** | 1 người nói, vạn người nghe | Nút Subscribe, Event Listener |
+| **Strategy** | Rút thẻ đổi chiêu linh hoạt | Chọn cổng thanh toán (MoMo/VNPay) |
+| **Chain of Resp.** | Tờ đơn chạy qua nhiều cửa | Spring Security Filter |
+| **State** | Thái độ đổi theo tâm trạng | Vòng đời đơn hàng (Chờ/Giao/Xong) |

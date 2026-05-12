@@ -2,15 +2,19 @@
 
 ## 1. Tổng quan
 
-**Modular Monolith** là kiến trúc **monolithic** nhưng được **chia thành các module độc lập** về mặt logic. Mỗi module có **boundary rõ ràng**, có thể phát triển độc lập bởi các team khác nhau. Đây được coi là "điểm khởi đầu tốt nhất" — đủ đơn giản để bắt đầu, đủ cấu trúc để mở rộng.
+**Modular Monolith** là một ứng dụng deploy chung như monolith, nhưng code được chia thành các module rõ ràng như `Order`, `User`, `Payment`. Mỗi module có trách nhiệm riêng, hạn chế đụng vào phần nội bộ của module khác.
+
+Điểm mạnh của kiểu này: vẫn dễ chạy, dễ debug như monolith, nhưng code có ranh giới đủ tốt để sau này tách service nếu thật sự cần.
 
 ### Định nghĩa đơn giản
 
 ```
-Monolith thuần     →  Tất cả code trong một "nồi" (highly coupled)
-Modular Monolith   →  Code vẫn trong một "nồi" nhưng được chia ngăn rõ ràng
-Microservices      →  Tách thành nhiều "nồi" nhỏ riêng biệt
+Monolith thuần     ->  Một ứng dụng, code dễ dính chặt vào nhau
+Modular Monolith   ->  Một ứng dụng, code chia module có ranh giới
+Microservices      ->  Nhiều service deploy riêng
 ```
+
+**Module boundary** nghĩa là: module khác chỉ gọi qua interface/public API, không truy cập thẳng class/table nội bộ tùy tiện.
 
 ---
 
@@ -22,7 +26,7 @@ Microservices      →  Tách thành nhiều "nồi" nhỏ riêng biệt
 |---------|-------|
 | **Một artifact duy nhất** | Build, deploy như một đơn vị |
 | **Chung database** | Tất cả module dùng chung một database (thường là schema chia theo module) |
-| **Giao tiếp synchronous** | Các module gọi nhau trực tiếp (in-process call) |
+| **Giao tiếp synchronous** | Các module gọi nhau trực tiếp trong cùng process |
 | **Deployment đơn giản** | Chỉ cần deploy một artifact |
 | **Debug đơn giản** | Một process, không cần distributed tracing phức tạp |
 
@@ -31,7 +35,7 @@ Microservices      →  Tách thành nhiều "nồi" nhỏ riêng biệt
 | Đặc điểm | Mô tả |
 |---------|-------|
 | **Module boundary rõ ràng** | Mỗi module có namespace, package riêng |
-| **Low coupling** | Module chỉ giao tiếp qua interface/API internal |
+| **Low coupling** | Module chỉ giao tiếp qua interface hoặc API nội bộ |
 | **Independent deployability** | Trong một số cách triển khai, có thể deploy module độc lập |
 | **Team ownership** | Mỗi team sở hữu một hoặc nhiều module |
 | **Tách biệt data** | Dùng chung DB nhưng schema/table được phân chia theo module |
@@ -83,7 +87,7 @@ flowchart TB
 
 ## 4. Ví dụ cấu trúc project
 
-### Package Structure
+### Cấu trúc package
 
 ```
 src/main/java/com/example/app/
@@ -185,7 +189,7 @@ public class OrderService {
 // GOOD: orderRepository.findItemsByOrderId(orderId)
 ```
 
-### Database schema per module
+### Schema database theo module
 
 ```sql
 -- Schema chia theo module (prefix table names)
@@ -208,7 +212,7 @@ CREATE TABLE payment_methods (...);
 
 ## 5. Giao tiếp giữa các module
 
-### Synchronous (Direct Call)
+### Gọi đồng bộ (direct call)
 
 ```java
 // Giao tiếp synchronous qua interface
@@ -234,7 +238,7 @@ public class OrderService {
 }
 ```
 
-### Asynchronous (Event-Driven)
+### Giao tiếp bất đồng bộ (event-driven)
 
 ```java
 // Giao tiếp asynchronous qua events
@@ -319,14 +323,14 @@ public class PaymentEventHandler {
 |---------|--------|
 | Không thực sự tách module | Module vẫn coupled, không khác gì monolith |
 | Shared database quá nhiều | Module truy cập chéo, khó tách sau |
-| Violate module boundary | Truy cập internal class của module khác |
+| Vi phạm module boundary | Truy cập internal class của module khác |
 | Over-engineering quá sớm | Tạo abstraction cho module có 1 class |
 
-### Best Practices
+### Thực hành tốt
 
 1. **Mỗi module một package gốc** — đặt tên rõ ràng, không dùng chung package
 2. **Chỉ giao tiếp qua interface** — giống như giao tiếp service trong microservices
 3. **Schema chia theo module** — mỗi module quản lý bảng riêng
 4. **Enforce boundary** — dùng ArchUnit hoặc module system để kiểm tra
 5. **Bắt đầu đơn giản** — đừng tạo abstraction phức tạp khi chưa cần
-6. **Review module boundary** — như review code, nhưng tập trung vào coupling
+6. **Review module boundary** — review như code, nhưng tập trung vào coupling

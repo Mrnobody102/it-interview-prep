@@ -1,4 +1,4 @@
-# Production Application Architecture
+# Kiến trúc ứng dụng production
 
 ## Tổng quan kiến trúc
 
@@ -11,7 +11,9 @@ flowchart TD
     subgraph CDN["TẦNG CDN / EDGE"]
         CDN_EDGE["Cloudflare /<br>CloudFront /<br>Fastly"]
     end
-    CDN_EDGE --> LB
+    CDN_EDGE --> WAF
+    WAF["WAF<br>(OWASP, DDoS,<br>Rate Limit)"]
+    WAF --> LB
     subgraph LB_LAYER["TẦNG LOAD BALANCER"]
         LB["Nginx / HAProxy /<br>AWS ALB"]
     end
@@ -45,7 +47,24 @@ flowchart TD
 
 ---
 
-### Frontend Layer
+### Luồng request dễ nhớ
+
+Một request production thường đi theo chuỗi:
+
+```text
+Browser/Mobile -> DNS -> CDN/Edge -> WAF -> Load Balancer -> API Gateway
+-> Service -> Cache/Database/Message Queue/Object Storage -> Response
+```
+
+- **CDN/Edge** trả static files gần user nhất và có thể làm reverse proxy cho API.
+- **WAF** chặn traffic xấu như SQL injection, XSS, bot, DDoS và rate limit thô.
+- **Load balancer** phân phối request đến backend khỏe bằng health check.
+- **API Gateway** xử lý routing, authentication, authorization, rate limiting ở tầng API.
+- **Service** chạy business logic; dữ liệu nóng đi qua Redis/Memcached, dữ liệu bền vững vào database/object storage.
+
+---
+
+### Layer frontend
 
 | Concern | Technology |
 |---|---|
@@ -56,7 +75,7 @@ flowchart TD
 
 ---
 
-### Backend Layer
+### Layer backend
 
 | Component | Description |
 |---|---|
@@ -66,7 +85,7 @@ flowchart TD
 
 ---
 
-### Database Layer
+### Layer database
 
 | Type | Examples | Use Case |
 |---|---|---|
@@ -77,7 +96,7 @@ flowchart TD
 | **Graph** | Neo4j | Relationships, social networks |
 | **Search** | Elasticsearch | Full-text search, log analysis |
 
-#### Database Best Practices
+#### Thực hành tốt cho database
 
 - **Replication:** Primary-replica setup cho read scaling và failover
 - **Sharding:** Horizontal partitioning cho very large datasets
@@ -86,7 +105,7 @@ flowchart TD
 
 ---
 
-### Caching Layer
+### Layer caching
 
 | Technology | Use Case |
 |---|---|
@@ -96,7 +115,7 @@ flowchart TD
 
 ---
 
-### Message Queue Layer
+### Layer message queue
 
 | Technology | Characteristics |
 |---|---|
@@ -130,7 +149,7 @@ flowchart TD
 
 ---
 
-### Monitoring & Logging
+### Monitoring & logging
 
 | Category | Tools |
 |---|---|
@@ -142,7 +161,7 @@ flowchart TD
 
 ---
 
-### Security Layer
+### Layer security
 
 | Concern | Solution |
 |---|---|
@@ -151,6 +170,7 @@ flowchart TD
 | **Authorization** | RBAC, ABAC |
 | **Secrets Management** | HashiCorp Vault, AWS Secrets Manager |
 | **API Security** | API keys, rate limiting, input validation |
+| **Web Protection** | WAF rules cho OWASP Top 10, bot filtering |
 | **DDoS Protection** | Cloudflare, AWS Shield, Akamai |
 
 ---

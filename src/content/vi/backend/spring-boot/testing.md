@@ -408,7 +408,7 @@ class StepLevelTest {
 
     @Test
     void shouldProcessUsers_StepExecution() throws Exception {
-        // Mock reader tra ve danh sach users co dinh
+        // Mock reader trả về danh sách users cố định
         List<User> users = List.of(
             new User(1L, "alice", "alice@example.com"),
             new User(2L, "bob", "bob@example.com")
@@ -422,7 +422,7 @@ class StepLevelTest {
             .addLong("run.id", 1L)
             .toJobParameters();
 
-        // Chi chay step thay vi ca job
+        // Chỉ chạy step thay vì cả job
         StepExecution stepExecution = jobLauncherTestUtils.launchStep(
             "processUsersStep", params);
 
@@ -434,7 +434,7 @@ class StepLevelTest {
 
     @Test
     void shouldSkipInvalidRecords() throws Exception {
-        // Mock reader voi mot ban ghi khong hop le
+        // Mock reader với một bản ghi không hợp lệ
         when(mockReader.read())
             .thenReturn(new User(1L, "", "invalid")) // invalid
             .thenReturn(new User(2L, "bob", "bob@example.com")) // valid
@@ -455,7 +455,7 @@ class StepLevelTest {
 }
 ```
 
-### 8.4. Testing voi @SpringBatchTest va TestJob
+### 8.4. Testing với @SpringBatchTest và TestJob
 
 ```java
 @SpringBatchTest
@@ -488,7 +488,7 @@ class JobExecutionTest {
 
 ## 9. Lifecycle & Auditing
 
-JPA auditing tu dong dien created/updated timestamps va user tao/sua entity.
+JPA auditing tự động điền created/updated timestamps và user tạo/sửa entity.
 
 ### 9.1. Enable JPA Auditing
 
@@ -528,10 +528,10 @@ public class User {
 }
 ```
 
-### 9.3. @CreatedBy va @LastModifiedBy voi AuditorAware
+### 9.3. @CreatedBy và @LastModifiedBy với AuditorAware
 
 ```java
-// Cung cap auditor hien tai (vd tu Spring Security)
+// Cung cấp auditor hiện tại (vd từ Spring Security)
 @Component
 public class JpaAuditorConfig {
 
@@ -582,15 +582,15 @@ public class User {
 
 ### 9.4. Entity Lifecycle Callbacks
 
-| Annotation | Thoi diem chay |
+| Annotation | Thời điểm chạy |
 |-----------|---------------|
-| `@PrePersist` | Truoc khi entity duoc persist lan dau (INSERT) |
-| `@PostPersist` | Sau khi entity duoc persist lan dau |
-| `@PreUpdate` | Truoc khi trang thai entity duoc dong bo xuong DB (UPDATE) |
-| `@PostUpdate` | Sau khi trang thai entity duoc dong bo xuong DB |
-| `@PreRemove` | Truoc khi entity bi xoa (DELETE) |
-| `@PostRemove` | Sau khi entity bi xoa |
-| `@PostLoad` | Sau khi entity duoc load tu DB |
+| `@PrePersist` | Trước khi entity được persist lần đầu (INSERT) |
+| `@PostPersist` | Sau khi entity được persist lần đầu |
+| `@PreUpdate` | Trước khi trạng thái entity được đồng bộ xuống DB (UPDATE) |
+| `@PostUpdate` | Sau khi trạng thái entity được đồng bộ xuống DB |
+| `@PreRemove` | Trước khi entity bị xóa (DELETE) |
+| `@PostRemove` | Sau khi entity bị xóa |
+| `@PostLoad` | Sau khi entity được load từ DB |
 
 ```java
 @Entity
@@ -632,7 +632,7 @@ public class Product {
 
     @PreRemove
     public void onPreRemove() {
-        // vd: validate business rule truoc khi xoa
+        // vd: validate business rule trước khi xóa
         if ("DISCONTINUED".equals(this.name)) {
             throw new IllegalStateException("Cannot remove discontinued product");
         }
@@ -640,7 +640,7 @@ public class Product {
 
     @PostLoad
     public void onPostLoad() {
-        // vd: decrypt truong nhay cam, khoi tao truong transient
+        // vd: decrypt trường nhạy cảm, khởi tạo trường transient
     }
 
     // getters and setters
@@ -673,7 +673,7 @@ class UserAuditingTest {
 
         assertThat(found.getCreatedAt()).isNotNull();
         assertThat(found.getUpdatedAt()).isNotNull();
-        // createdBy/updatedBy can @WithMockUser hoac test SecurityContext
+        // createdBy/updatedBy cần @WithMockUser hoặc test SecurityContext
     }
 
     @Test
@@ -686,7 +686,7 @@ class UserAuditingTest {
 
         LocalDateTime originalUpdatedAt = user.getUpdatedAt();
 
-        // Delay nho de dam bao timestamp khac nhau
+        // Delay nhỏ để đảm bảo timestamp khác nhau
         user.setName("Modified");
         userRepository.save(user);
         entityManager.flush();

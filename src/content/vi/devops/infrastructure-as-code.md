@@ -1,43 +1,47 @@
 # DevOps - Infrastructure as Code (Terraform & Ansible)
 
-## 1. Infrastructure as Code la gi?
+## 1. Infrastructure as Code là gì?
 
-**Infrastructure as Code (IaC)** la phuong phap quan ly va cung cap ha tang thong qua cac file cau hinh co the doc duoc bang may (machine-readable), thay vi cac quy trinh thu cong. Đieu nay dam bao tinh nhat quan, co the lap lai va co kha nang quan ly phien ban cho ha tang.
+**Infrastructure as Code (IaC)** là cách mô tả hạ tầng bằng file cấu hình/code thay vì bấm tay trên cloud console. Hạ tầng ở đây gồm server, network, database, load balancer, Kubernetes resources, IAM, DNS...
+
+Ý chính: thay vì "nhớ đã cấu hình gì", team giữ cấu hình trong Git. Khi cần tạo môi trường mới, chạy tool để dựng lại hạ tầng giống nhau.
 
 ### 1.1. Declarative vs Imperative
 
-| Phuong phap | Declarative (Khai bao) | Imperative (Lenh) |
+| Phương pháp | Declarative (Khai báo) | Imperative (Mệnh lệnh) |
 |-------------|------------------------|-------------------|
-| **Dinh nghia** | Dinh nghia trang thai cuoi cung mong muon | Dinh nghia cac buoc lenh tuyen tinh |
-| **Vi du** | "Toi muon 3 server dang chay" | "Tao server 1, roi server 2, roi server 3" |
-| **Cong cu** | Terraform, CloudFormation | Ansible (lam duoc ca 2), Bash scripts |
-| **Hanh vi** | Tinh ra cach dat duoc trang thai mong muon | Thuc thi cac lenh duoc dinh san |
-| **Idempotency** | Tich hop san | Phai thiet ke tuong minh |
+| **Định nghĩa** | Mô tả trạng thái cuối cùng mong muốn | Mô tả từng bước phải chạy |
+| **Ví dụ** | "Tôi muốn 3 server đang chạy" | "Tạo server 1, rồi server 2, rồi server 3" |
+| **Công cụ** | Terraform, CloudFormation | Ansible, Bash scripts |
+| **Hành vi** | Tool tự tính cần tạo/sửa/xóa gì | Chạy theo thứ tự lệnh đã viết |
+| **Idempotency** | Thường có sẵn | Phải thiết kế cẩn thận |
 
-### 1.2. Loi ich cua IaC
+**Idempotency** nghĩa là chạy cùng cấu hình nhiều lần vẫn ra cùng kết quả, không tạo trùng lung tung.
 
-- **Version control** — Thay doi ha tang duoc theo doi trong Git
-- **Tinh nhat quan** — Cung cau hinh tao ra moi truong giong nhau
-- **Tu dong hoa** — Khong co buoc cung cap thu cong
-- **Kha nang tai su dung** — Modules va templates cho cac mau co the lap lai
-- **Kha nang kiem toan** — Moi thay doi duoc ghi nhan va xem lai
-- **Toc do** — Cung cap ha tang trong vong phut thay vi ngay
+### 1.2. Lợi ích của IaC
+
+- **Version control:** thay đổi hạ tầng được review và lưu trong Git.
+- **Nhất quán:** cùng cấu hình tạo ra môi trường giống nhau.
+- **Tự động hóa:** giảm thao tác thủ công dễ sai.
+- **Tái sử dụng:** module/template dùng lại cho nhiều môi trường.
+- **Audit:** biết ai đổi gì, đổi lúc nào.
+- **Tốc độ:** dựng hạ tầng trong vài phút thay vì làm tay nhiều giờ.
 
 ---
 
 ## 2. Terraform
 
-**Terraform** cua HashiCorp la mot cong cu IaC khai bao su dung ngon ngu rieng (HCL — HashiCorp Configuration Language) de dinh nghia va cung cap ha tang tren nhieu cloud providers khac nhau.
+**Terraform** là công cụ IaC dạng khai báo. Bạn viết file HCL để mô tả cloud resources cần có, Terraform so sánh với state hiện tại rồi tạo/sửa/xóa phần cần thiết.
 
-### 2.1. Cac khai niem co ban
+### 2.1. Các khái niệm cơ bản
 
 ```hcl
-# provider dinh nghia cloud/platform nao de su dung
+# provider định nghĩa cloud/platform nào sẽ dùng
 provider "aws" {
   region = "us-east-1"
 }
 
-# resource la mot doi tuong ha tang
+# resource là một đối tượng hạ tầng
 resource "aws_instance" "web_server" {
   ami           = "ami-0c55b159cbfafe1f0"
   instance_type = "t3.medium"
@@ -49,28 +53,28 @@ resource "aws_instance" "web_server" {
 }
 ```
 
-### 2.2. Cac file Terraform
+### 2.2. Các file Terraform
 
-| File | Muc dich |
+| File | Mục đích |
 |------|---------|
-| `main.tf` | Cau hinh chinh (resources, data sources) |
-| `variables.tf` | Dinh nghia cac bien dau vao |
-| `outputs.tf` | Dinh nghia cac gia tri dau ra |
-| `terraform.tfvars` | Gia tri bien (khong nen version-control secrets) |
-| `*.tf` files | Bat ky file `.tf` nao deu duoc parse |
+| `main.tf` | Cấu hình chính: resources, data sources |
+| `variables.tf` | Định nghĩa biến đầu vào |
+| `outputs.tf` | Định nghĩa giá trị đầu ra |
+| `terraform.tfvars` | Giá trị biến, không nên lưu secrets |
+| `*.tf` files | Terraform sẽ đọc mọi file `.tf` trong thư mục |
 
 ### 2.3. Variables & Outputs
 
 ```hcl
 # variables.tf
 variable "environment" {
-  description = "Moi truong trien khai"
+  description = "Môi trường triển khai"
   type        = string
   default     = "dev"
 }
 
 variable "instance_config" {
-  description = "Cau hinh EC2 instance"
+  description = "Cấu hình EC2 instance"
   type = object({
     ami           = string
     instance_type = string
@@ -93,31 +97,31 @@ variable "tags" {
 ```hcl
 # outputs.tf
 output "instance_public_ip" {
-  description = "Public IP cua web server"
+  description = "Public IP của web server"
   value       = aws_instance.web_server.public_ip
 }
 
 output "instance_private_ip" {
-  description = "Private IP cua web server"
+  description = "Private IP của web server"
   value       = aws_instance.web_server.private_ip
 }
 
 output "instance_id" {
-  description = "ID cua EC2 instance"
+  description = "ID của EC2 instance"
   value       = aws_instance.web_server.id
-  sensitive   = true  # An khoi CLI output
+  sensitive   = true  # Ẩn khỏi CLI output
 }
 ```
 
 ### 2.4. Data Sources
 
 ```hcl
-# Lay thong tin VPC hien co
+# Lấy thông tin VPC hiện có
 data "aws_vpc" "main" {
   id = "vpc-0123456789abcdef0"
 }
 
-# Lay Ubuntu AMI moi nhat
+# Lấy Ubuntu AMI mới nhất
 data "aws_ami" "ubuntu" {
   most_recent = true
   owners      = ["099720109477"]  # Canonical
@@ -128,7 +132,7 @@ data "aws_ami" "ubuntu" {
   }
 }
 
-# Tham chieu gia tri tu data source
+# Tham chiếu giá trị từ data source
 resource "aws_instance" "server" {
   ami           = data.aws_ami.ubuntu.id
   instance_type = "t3.medium"
@@ -137,19 +141,19 @@ resource "aws_instance" "server" {
 }
 ```
 
-### 2.5. Quan ly State
+### 2.5. Quản lý State
 
-Terraform luu trang thai cua ha tang duoc quan ly trong mot **state file**. Day la dieu rat quan trong de hieu da co gi va lap ke hoach thay doi.
+Terraform lưu trạng thái của hạ tầng được quản lý trong một **state file**. Đây là phần rất quan trọng để biết hiện có gì và lập kế hoạch thay đổi.
 
 ```hcl
-# Local state (mac dinh, KHONG cho teams)
+# Local state (mặc định, KHÔNG phù hợp cho team)
 terraform {
   backend "local" {
     path = "terraform.tfstate"
   }
 }
 
-# Remote state voi S3 + DynamoDB (khuyen nghi cho teams)
+# Remote state với S3 + DynamoDB (khuyến nghị cho team)
 terraform {
   backend "s3" {
     bucket         = "my-terraform-state"
@@ -161,20 +165,20 @@ terraform {
 }
 ```
 
-> **Quan trong:** Tuyet doi khong commit `terraform.tfstate` vao version control, dac biet neu no chua du lieu nhay cam. Su dung remote backends voi state encryption.
+> **Quan trọng:** Tuyệt đối không commit `terraform.tfstate` vào version control, đặc biệt nếu nó chứa dữ liệu nhạy cảm. Dùng remote backend với mã hóa state.
 
 ### 2.6. Workspaces
 
 ```bash
-# Tao va chuyen doi workspaces
+# Tạo và chuyển đổi workspaces
 terraform workspace new prod
 terraform workspace new staging
 terraform workspace select prod
 
-# Danh sach workspaces
+# Danh sách workspaces
 terraform workspace list
 
-# Su dung workspace trong cau hinh
+# Dùng workspace trong cấu hình
 output "env_name" {
   value = terraform.workspace
 }
@@ -212,7 +216,7 @@ output "vpc_id" {
 ```
 
 ```hcl
-# main.tf — su dung module
+# main.tf — sử dụng module
 module "vpc" {
   source = "./modules/networking/vpc"
 
@@ -221,85 +225,85 @@ module "vpc" {
 }
 ```
 
-### 2.8. Cac lenh Terraform
+### 2.8. Các lệnh Terraform
 
 ```bash
-# Khoi tao (tai providers, thiet lap backend)
+# Khởi tạo (tải providers, thiết lập backend)
 terraform init
 
-# Validate cau hinh
+# Validate cấu hình
 terraform validate
 
-# Format cau hinh
+# Format cấu hình
 terraform fmt
 
-# Hien thi se duoc tao ra gi
+# Hiển thị sẽ được tạo ra gì
 terraform plan
 terraform plan -var-file="prod.tfvars"
-terraform plan -out=plan.tfplan     # Luu plan vao file
+terraform plan -out=plan.tfplan     # Lưu plan vào file
 
-# Ap dung thay doi
+# Áp dụng thay đổi
 terraform apply
-terraform apply plan.tfplan        # Ap dung plan da luu
-terraform apply -auto-approve       # Bo qua xac nhan
+terraform apply plan.tfplan        # Áp dụng plan đã lưu
+terraform apply -auto-approve       # Bỏ qua xác nhận
 terraform apply -var="environment=prod"
 
-# Xoa toan bo resources
+# Xóa toàn bộ resources
 terraform destroy
-terraform destroy -target=aws_instance.web_server  # Xoa resource cu the
+terraform destroy -target=aws_instance.web_server  # Xóa resource cụ thể
 
-# Import ha tang hien co
+# Import hạ tầng hiện có
 terraform import aws_instance.existing i-0123456789abcdef0
 
-# Quan ly state
-terraform state list                    # Danh sach resources trong state
-terraform state show aws_instance.web  # Hien thi chi tiet resource
-terraform state mv aws_instance.old aws_instance.new  # Doi ten
-terraform state rm aws_instance.old   # Xoa khoi state
-terraform state pull                  # Pull remote state ve local
-terraform state push                  # Push local state len remote
+# Quản lý state
+terraform state list                    # Danh sách resources trong state
+terraform state show aws_instance.web  # Hiển thị chi tiết resource
+terraform state mv aws_instance.old aws_instance.new  # Đổi tên
+terraform state rm aws_instance.old   # Xóa khỏi state
+terraform state pull                  # Pull remote state về local
+terraform state push                  # Push local state lên remote
 
-# Refresh state (dong bo voi ha tang thuc)
+# Refresh state (đồng bộ với hạ tầng thực)
 terraform refresh
 ```
 
 ### 2.9. Terraform vs Pulumi vs CloudFormation
 
-| Tinh nang | Terraform | Pulumi | CloudFormation |
+| Tính năng | Terraform | Pulumi | CloudFormation |
 |-----------|-----------|--------|----------------|
-| **Ngon ngu** | HCL (tu dinh nghia) | Dong (TypeScript, Python, Go...) | YAML/JSON |
-| **State management** | External state file | External state file | Quan ly boi AWS |
-| **Multi-cloud** | Native (providers cho tat ca clouds) | Native (tat ca cloud SDKs) | Chi AWS (co cross-stack references) |
-| **Learning curve** | HCL de hoc nhung han che logic | Can kien thuc lap trinh | Khai bao nhung dai |
-| **Testing** | Terratest, Checkov | Standard testing frameworks | CloudFormation guards |
-| **Drift detection** | Tich hop san | Tich hop san | Tich hop san |
-| **Plan/Apply** | Hai buoc | Hai buoc | Truc tiep (khong co plan phase) |
-| **Approval workflow** | Co | Co | Co (Change Sets) |
+| **Ngôn ngữ** | HCL (tự định nghĩa) | Động (TypeScript, Python, Go...) | YAML/JSON |
+| **State management** | External state file | External state file | Quản lý bởi AWS |
+| **Multi-cloud** | Native (providers cho tất cả cloud) | Native (tất cả cloud SDKs) | Chỉ AWS (có cross-stack references) |
+| **Learning curve** | HCL dễ học nhưng hạn chế logic | Cần kiến thức lập trình | Khai báo nhưng dài |
+| **Testing** | Terratest, Checkov | Standard testing frameworks | CloudFormation Guards |
+| **Drift detection** | Tích hợp sẵn | Tích hợp sẵn | Tích hợp sẵn |
+| **Plan/Apply** | Hai bước | Hai bước | Trực tiếp (không có plan phase) |
+| **Approval workflow** | Có | Có | Có (Change Sets) |
 
 ---
 
 ## 3. Ansible
 
-**Ansible** la mot cong cu automation agentless su dung SSH (hoac WinRM cho Windows) de thuc thi cac tasks tren cac host từ xa. No ho tro ca **imperative** (task-based) va **declarative** (playbook-based).
+**Ansible** là công cụ automation agentless dùng SSH (hoặc WinRM cho Windows) để thực thi task trên host từ xa. Nó hỗ trợ cả **imperative** (task-based) và **declarative** (playbook-based).
 
-### 3.1. Cac khai niem chinh
+### 3.1. Các khái niệm chính
 
-| Khoi niem | Mo ta |
+| Khái niệm | Mô tả |
 |-----------|-------|
-| **Inventory** | Danh sach cac hosts va groups de quan ly |
-| **Playbook** | File YAML dinh nghia mot tap hop cac plays (cau hinh) |
-| **Play** | Mot tap hop tasks chay tren mot nhom hosts |
-| **Task** | Mot hanh dong don le de thuc hien (apt, copy, service...) |
-| **Handler** | Task chi chay khi duoc thong bao boi cac tasks khac |
-| **Role** | Tap hop co the tai su dung gom tasks, handlers, templates, variables |
-| **Module** | Don vi cong viec tich hop san hoac tu dinh nghia (apt, yum, copy...) |
-| **Fact** | Thong tin he thong duoc Ansible thu thap truoc khi thuc thi |
+| **Inventory** | Danh sách hosts và groups để quản lý |
+| **Playbook** | File YAML định nghĩa một tập hợp plays (cấu hình) |
+| **Play** | Một tập hợp task chạy trên một nhóm hosts |
+| **Task** | Một hành động đơn lẻ để thực hiện (apt, copy, service...) |
+| **Handler** | Task chỉ chạy khi được thông báo bởi task khác |
+| **Role** | Tập hợp có thể tái sử dụng gồm tasks, handlers, templates, variables |
+| **Module** | Đơn vị công việc tích hợp sẵn hoặc tự định nghĩa (apt, yum, copy...) |
+| **Fact** | Thông tin hệ thống được Ansible thu thập trước khi thực thi |
 
 ### 3.2. Inventory
 
 ```ini
 # inventory/hosts.ini
-# Inventory don gian
+# Inventory đơn giản
 [webservers]
 web1.example.com
 web2.example.com
@@ -321,7 +325,7 @@ environment=production
 ```
 
 ```yaml
-# inventory/inventory.yml (dinh dang YAML)
+# inventory/inventory.yml (định dạng YAML)
 all:
   children:
     webservers:
@@ -348,13 +352,13 @@ all:
 ---
 - name: Deploy web application
   hosts: webservers
-  become: yes                    # Chay voi sudo
+  become: yes                    # Chạy với sudo
   vars:
     app_version: "1.2.3"
     app_directory: /opt/myapp
 
   tasks:
-    - name: Cai dat cac goi yeu cau
+    - name: Cài đặt các gói yêu cầu
       apt:
         name:
           - nginx
@@ -363,7 +367,7 @@ all:
         state: present
         update_cache: yes
 
-    - name: Tao thu muc ung dung
+    - name: Tạo thư mục ứng dụng
       file:
         path: "{{ app_directory }}"
         state: directory
@@ -371,7 +375,7 @@ all:
         group: deploy
         mode: '0755'
 
-    - name: Clone repository cua ung dung
+    - name: Clone repository của ứng dụng
       git:
         repo: "https://github.com/myorg/myapp.git"
         dest: "{{ app_directory }}"
@@ -379,20 +383,20 @@ all:
         force: yes
       notify: Restart nginx
 
-    - name: Tao cau hinh nginx
+    - name: Tạo cấu hình nginx
       template:
         src: nginx.conf.j2
         dest: /etc/nginx/sites-available/myapp.conf
         mode: '0644'
       notify: Enable nginx site
 
-    - name: Dam bao nginx dang chay
+    - name: Đảm bảo nginx đang chạy
       service:
         name: nginx
         state: started
         enabled: yes
 
-    - name: Chay database migrations
+    - name: Chạy database migrations
       command: npm run migrate
       args:
         chdir: "{{ app_directory }}"
@@ -412,30 +416,30 @@ all:
       notify: Restart nginx
 ```
 
-### 3.4. Cac Ansible Modules
+### 3.4. Các Ansible module
 
 ```yaml
-# Quan ly goi
-- name: Cai dat nginx (Debian/Ubuntu)
+# Quản lý gói
+- name: Cài đặt nginx (Debian/Ubuntu)
   apt:
     name: nginx
     state: present
     update_cache: yes
 
-- name: Cai dat httpd (RHEL/CentOS)
+- name: Cài đặt httpd (RHEL/CentOS)
   yum:
     name: httpd
     state: present
 
-# Quan ly service
-- name: Bat dau va enable nginx
+# Quản lý service
+- name: Bắt đầu và enable nginx
   service:
     name: nginx
     state: started
     enabled: yes
 
-# Thao tac file
-- name: Tao mot thu muc
+# Thao tác file
+- name: Tạo một thư mục
   file:
     path: /opt/myapp
     state: directory
@@ -443,16 +447,16 @@ all:
     owner: deploy
     group: deploy
 
-- name: Copy file len server
+- name: Copy file lên server
   copy:
     src: ./config/app.conf
     dest: /etc/myapp/app.conf
     owner: root
     group: root
     mode: '0644'
-    backup: yes                    # Backup file hien co
+    backup: yes                    # Backup file hiện có
 
-# Thao tac Template (dung Jinja2)
+# Thao tác template (dùng Jinja2)
 - name: Render template
   template:
     src: config.j2
@@ -461,19 +465,19 @@ all:
   vars:
     db_host: "{{ hostvars['db1.example.com']['ansible_host'] | default('localhost') }}"
 
-# Thuc thi lenh
-- name: Chay mot shell command
+# Thực thi lệnh
+- name: Chạy một shell command
   command: /opt/scripts/deploy.sh
   args:
-    creates: /opt/myapp/.deployed   # Bo qua neu file nay ton tai (idempotent)
+    creates: /opt/myapp/.deployed   # Bỏ qua nếu file này tồn tại (idempotent)
   register: deploy_output
 
-- name: Hien thi dau ra command
+- name: Hiển thị đầu ra command
   debug:
     msg: "{{ deploy_output.stdout }}"
 
-# Cai dat package voi pip
-- name: Cai dat Python packages
+# Cài đặt package với pip
+- name: Cài đặt Python packages
   pip:
     name:
       - flask
@@ -482,8 +486,8 @@ all:
     virtualenv: /opt/venv
     virtualenv_command: python3 -m venv
 
-# Thao tac Docker
-- name: Build va chay Docker container
+# Thao tác Docker
+- name: Build và chạy Docker container
   docker_container:
     name: myapp
     image: "myorg/myapp:latest"
@@ -495,8 +499,8 @@ all:
     restart_policy: always
     pull: yes
 
-# Quan ly user
-- name: Tao deploy user
+# Quản lý user
+- name: Tạo deploy user
   user:
     name: deploy
     groups: docker
@@ -510,19 +514,19 @@ all:
 roles/
 └── myapp/
     ├── defaults/
-    │   └── main.yml         # Bien mac dinh (uu tien thap nhat)
-    ├── files/               # File tinh (copy truc tiep)
+    │   └── main.yml         # Biến mặc định (ưu tiên thấp nhất)
+    ├── files/               # File tĩnh (copy trực tiếp)
     │   └── app.conf
     ├── handlers/
     │   └── main.yml         # Handlers
     ├── meta/
-    │   └── main.yml         # Metadata va dependencies cua role
+    │   └── main.yml         # Metadata và dependencies của role
     ├── tasks/
-    │   └── main.yml         # Danh sach task chinh
+    │   └── main.yml         # Danh sách task chính
     ├── templates/
-    │   └── nginx.conf.j2   # Jinja2 templates
+    │   └── nginx.conf.j2   # Jinja2 template
     └── vars/
-        └── main.yml         # Variables (uu tien cao hon)
+        └── main.yml         # Variables (ưu tiên cao hơn)
 ```
 
 ```yaml
@@ -530,16 +534,16 @@ roles/
 - name: Include OS-specific variables
   include_vars: "{{ ansible_facts['os_family'] | lower }}.yml"
 
-- name: Cai dat packages
+- name: Cài đặt packages
   package:
     name: "{{ packages }}"
     state: present
 
-- name: Deploy ung dung
+- name: Deploy ứng dụng
   include_role:
     name: myapp.deploy
 
-- name: Cau hinh ung dung
+- name: Cấu hình ứng dụng
   template:
     src: app.conf.j2
     dest: /etc/myapp/app.conf
@@ -548,59 +552,59 @@ roles/
 
 ### 3.6. Idempotency trong Ansible
 
-Ansible duoc thiet ke de **idempotent** — chay cung playbook nhieu lan tao ra ket qua giong nhau. Cac nguyen tac chinh:
+Ansible được thiết kế để **idempotent** — chạy cùng playbook nhiều lần vẫn cho kết quả giống nhau. Các nguyên tắc chính:
 
-> **Idempotent** nghia la: ap dung cau hinh N lan tao ra ket qua giong nhu chi ap dung mot lan.
+> **Idempotent** nghĩa là: áp dụng cấu hình N lần cho ra kết quả giống như chỉ áp dụng một lần.
 
-- Dung `state: present` thay vi kiem tra va cai dat thu cong
-- Dung `creates` tren `command` de bo qua neu da lam roi
-- Dung `notify` / `handlers` thay vi chay hanh dong moi lan chay
-- Dung `changed_when` de kiem soat khi nao Ansible cho ra ket qua "changed"
-- Dung `check_mode` de kiem tra ma khong thay doi
+- Dùng `state: present` thay vì kiểm tra và cài đặt thủ công
+- Dùng `creates` trên `command` để bỏ qua nếu đã làm rồi
+- Dùng `notify` / `handlers` thay vì chạy hành động mỗi lần
+- Dùng `changed_when` để kiểm soát khi nào Ansible báo kết quả "changed"
+- Dùng `check_mode` để kiểm tra mà không thay đổi
 
 ```yaml
-# Vi du Idempotent
-- name: Dam bao nginx da cai dat
+# Ví dụ idempotent
+- name: Đảm bảo nginx đã cài đặt
   apt:
     name: nginx
-    state: present           # Idempotent — chi cai dat neu chua co
+    state: present           # Idempotent — chỉ cài đặt nếu chưa có
 
-- name: Tao file
+- name: Tạo file
   file:
     path: /tmp/test.txt
     state: touch
     mode: '0644'
-  # Idempotent — touching file da ton tai khong thay doi gi
+  # Idempotent — touch file đã tồn tại không thay đổi gì
 
-- name: Chay migration script
+- name: Chạy migration script
   command: npm run migrate
   args:
-    creates: /opt/myapp/.migrated  # Bo qua neu file nay ton tai
-  changed_when: false               # Luon coi la "ok", khong phai "changed"
+    creates: /opt/myapp/.migrated  # Bỏ qua nếu file này tồn tại
+  changed_when: false               # Luôn coi là "ok", không phải "changed"
 ```
 
-### 3.7. Cac lenh Ansible
+### 3.7. Các lệnh Ansible
 
 ```bash
-# Inventory va kiem tra ket noi
+# Inventory và kiểm tra kết nối
 ansible all -i inventory/hosts.ini -m ping
 ansible all -i inventory/hosts.ini -m command -a "uptime"
-ansible all -i inventory/hosts.ini -m setup          # Thu thap facts
+ansible all -i inventory/hosts.ini -m setup          # Thu thập facts
 
-# Chay mot playbook
+# Chạy một playbook
 ansible-playbook -i inventory/hosts.ini playbook.yml
 ansible-playbook -i inventory/hosts.ini playbook.yml --tags deploy
 ansible-playbook -i inventory/hosts.ini playbook.yml --skip-tags database
 ansible-playbook -i inventory/hosts.ini playbook.yml --check       # Dry-run
 ansible-playbook -i inventory/hosts.ini playbook.yml --syntax-check
 
-# Gioi han chi chay tren hosts cu the
+# Giới hạn chỉ chạy trên hosts cụ thể
 ansible-playbook -i inventory/hosts.ini playbook.yml --limit webservers
 
-# Chay tung buoc
+# Chạy từng bước
 ansible-playbook -i inventory/hosts.ini playbook.yml --step
 
-# Truyen bien them
+# Truyền biến thêm
 ansible-playbook -i inventory/hosts.ini playbook.yml -e "app_version=1.2.3"
 
 # Vault cho secrets
@@ -611,45 +615,45 @@ ansible-playbook playbook.yml --ask-vault-pass
 ansible-playbook playbook.yml --vault-password-file ~/.vault_pass.txt
 ```
 
-### 3.8. So sanh Ansible vs Terraform
+### 3.8. So sánh Ansible vs Terraform
 
-| Tieu chi | Terraform | Ansible |
+| Tiêu chí | Terraform | Ansible |
 |----------|-----------|---------|
-| **Phuong phap** | Declarative (trang thai mong muon) | Imperative + Declarative |
-| **Model thuc thi** | Lap ke hoach roi ap dung | Push lenh qua SSH |
-| **State** | Theo doi state trong state file | Stateless (khong co state file) |
-| **Provisioners** | Tich hop san (local-exec, remote-exec) | Lenh SSH nguyen thuy |
-| **Tot nhat cho** | Cung cap ha tang | Quan ly cau hinh, trien khai ung dung |
-| **Idempotency** | Tich hop san (declarative) | Co thiet ke (nhung can chu y) |
-| **Agentless** | Co | Co |
-| **Learning curve** | HCL don gian | YAML don gian nhung playbook co the phuc tap |
+| **Phương pháp** | Declarative (trạng thái mong muốn) | Imperative + Declarative |
+| **Model thực thi** | Lập kế hoạch rồi áp dụng | Push lệnh qua SSH |
+| **State** | Theo dõi state trong state file | Stateless (không có state file) |
+| **Provisioners** | Tích hợp sẵn (local-exec, remote-exec) | Lệnh SSH nguyên thủy |
+| **Tốt nhất cho** | Cung cấp hạ tầng | Quản lý cấu hình, triển khai ứng dụng |
+| **Idempotency** | Tích hợp sẵn (declarative) | Có thiết kế (nhưng cần chú ý) |
+| **Agentless** | Có | Có |
+| **Learning curve** | HCL đơn giản | YAML đơn giản nhưng playbook có thể phức tạp |
 | **Testing** | Terratest | Ansible Molecule |
-| **Xu ly secrets** | Tich hop Vault | Ansible Vault |
-| **Orchestration** | Han che (cross-cloud) | Manh (orchestrates bat cu gi qua SSH) |
+| **Xử lý secrets** | Tích hợp Vault | Ansible Vault |
+| **Orchestration** | Hạn chế (cross-cloud) | Mạnh (orchestrates bất cứ gì qua SSH) |
 
 ---
 
-## 4. Cau hoi phong van
+## 4. Câu hỏi phỏng vấn
 
-**Q: Khac biet chinh giua Terraform va Ansible?**
+**Q: Khác biệt chính giữa Terraform và Ansible?**
 
-> Terraform chu yeu la **declarative** va tập trung vào **cung cap ha tang** — no quan ly vong doi cua cac cloud resources. Ansible thi **imperative** hon va xuat sac trong **quan ly cau hinh** va **trien khai ung dung** — no chay cac tasks tren cac server da ton tai. Nhieu team su dung ca hai: Terraform de cung cap ha tang, Ansible de cau hinh no.
+> Terraform chủ yếu là **declarative** và tập trung vào **cung cấp hạ tầng** — nó quản lý vòng đời của cloud resources. Ansible thiên về **imperative** hơn và rất mạnh ở **quản lý cấu hình** và **triển khai ứng dụng** — nó chạy task trên server đã tồn tại. Nhiều team dùng cả hai: Terraform để cung cấp hạ tầng, Ansible để cấu hình nó.
 
-**Q: Terraform quan ly state nhu the nao, tai sao no quan trong?**
+**Q: Terraform quản lý state như thế nào, tại sao nó quan trọng?**
 
-> Terraform luu trang thai cua cac resources duoc quan ly trong mot state file. No su dung state nay de map cac resources thuc te voi cau hinh, theo doi dependencies, va lap ke hoach thay doi. State nen duoc luu tru tu xa (S3 voi DynamoDB locking) trong moi truong lam viec nhom de dam bao tinh nhat quan va ngan chan cac thay doi dong thoi.
+> Terraform lưu trạng thái của các resource được quản lý trong một state file. Nó dùng state này để map resource thực tế với cấu hình, theo dõi dependencies, và lập kế hoạch thay đổi. State nên được lưu trữ từ xa (S3 với DynamoDB locking) trong môi trường làm việc nhóm để đảm bảo nhất quán và ngăn thay đổi đồng thời.
 
-**Q: Idempotency la gi, va Ansible dat duoc no nhu the nao?**
+**Q: Idempotency là gì, và Ansible đạt được nó như thế nào?**
 
-> Idempotency nghia la chay cau hinh nhieu lan tao ra ket qua giong nhu chi chay mot lan. Ansible dat duoc dieu nay thong qua cac modules kiem tra trang thai hien tai va chi thay doi neu can (vi du: `apt` voi `state: present`). Ban nen tranh cac modules `command` hoac `shell` thuan tuy ma khong co cac bien phap idempotency nhu `creates`, `when`, hoac `changed_when`.
+> Idempotency nghĩa là chạy cấu hình nhiều lần vẫn cho kết quả giống như chỉ chạy một lần. Ansible đạt được điều này qua các module kiểm tra trạng thái hiện tại và chỉ thay đổi khi cần (ví dụ: `apt` với `state: present`). Nên tránh module `command` hoặc `shell` thuần túy nếu không có biện pháp idempotency như `creates`, `when`, hoặc `changed_when`.
 
-**Q: Terraform "plan" phase la gi?**
+**Q: Terraform "plan" phase là gì?**
 
-> Thao tac hai buoc (plan va apply) cua Terraform cho phep ban xem lai thay doi truoc khi ap dung. Plan phase so sanh trang thai mong muon (cau hinh) voi trang thai hien tai (state file + ha tang thuc) va tao ra mot ke hoach thuc thi cho thay duoc tao, sua doi, hoac xoa gi. Đieu nay tao ra mot mang lưới an toàn truoc khi thay doi ha tang.
+> Thao tác hai bước (plan và apply) của Terraform cho phép xem lại thay đổi trước khi áp dụng. Plan phase so sánh trạng thái mong muốn (cấu hình) với trạng thái hiện tại (state file + hạ tầng thật) và tạo kế hoạch thực thi cho biết sẽ tạo, sửa, hoặc xóa gì. Điều này tạo ra một lớp an toàn trước khi đổi hạ tầng.
 
-**Q: Lam the nao de quan ly secrets trong IaC?**
+**Q: Làm thế nào để quản lý secrets trong IaC?**
 
-> Tuyet doi khong commit secrets vao version control. Su dung:
-> - **Terraform:** `sensitive = true` cho output, encrypted remote state, va secrets trong Vault hoac AWS Secrets Manager qua providers.
-> - **Ansible:** Ansible Vault de ma hoa files, hoac external secrets managers.
-> - **Ca hai:** Environment variables, `.gitignore` cac file nhay cam, va CI/CD secret injection.
+> Tuyệt đối không commit secrets vào version control. Dùng:
+> - **Terraform:** `sensitive = true` cho output, remote state mã hóa, và secrets trong Vault hoặc AWS Secrets Manager qua provider.
+> - **Ansible:** Ansible Vault để mã hóa file, hoặc external secrets manager.
+> - **Cả hai:** Environment variables, `.gitignore` cho file nhạy cảm, và CI/CD secret injection.

@@ -1,166 +1,110 @@
-# Networking
+# Networking (Mạng Máy Tính)
 
 ### Các khái niệm Networking quan trọng
 
-| Khái niệm | Mô tả |
+Đây là những khái niệm nền tảng mà bạn rất hay gặp khi làm việc thực tế cũng như đi phỏng vấn.
+
+| Khái niệm | Mô tả & Ví dụ thực tế |
 |---|---|
-| **Firewall** | Kiểm soát lưu lượng mạng vào và ra dựa trên security rules |
-| **NAT (Network Address Translation)** | Chuyển đổi địa chỉ IP private sang public (và ngược lại) |
-| **CORS (Cross-Origin Resource Sharing)** | Cơ chế bảo mật browser; backend phải cho phép rõ ràng cross-origin requests |
-| **DNS (Domain Name System)** | Dịch domain names (google.com) sang IP addresses |
-| **CDN (Content Delivery Network)** | Mạng lưới server phân bố để phân phối nội dung tĩnh (static content) |
+| **Firewall (Tường lửa)** | **Mô tả:** Hệ thống kiểm soát lưu lượng mạng vào/ra dựa trên các luật (rules) bảo mật.<br>**Ví dụ:** Giống như bác bảo vệ ở cổng công ty, chỉ cho nhân viên có thẻ (port/IP hợp lệ) đi vào, người lạ bị chặn lại ngay ngoài cổng. |
+| **NAT (Network Address Translation)** | **Mô tả:** Cơ chế chuyển đổi địa chỉ IP private sang public (và ngược lại).<br>**Ví dụ:** Nhà bạn có 5 cái điện thoại, 2 cái laptop (mỗi thiết bị 1 IP private kiểu 192.168.1.x), nhưng khi truy cập Internet, tất cả đều "mượn" 1 IP public duy nhất từ cục router mạng. Quá trình đó là NAT. Giúp tiết kiệm IP public. |
+| **CORS (Cross-Origin Resource Sharing)** | **Mô tả:** Cơ chế bảo mật của trình duyệt, ngăn chặn trang web hiện tại gọi API sang một domain khác nếu domain kia không cho phép.<br>**Ví dụ:** Frontend chạy ở `localhost:3000` muốn gọi dữ liệu từ API `api.viblo.asia`. Trình duyệt sẽ tự động chặn request này trừ khi server API trả về header `Access-Control-Allow-Origin: *` hoặc `http://localhost:3000`. |
+| **DNS (Domain Name System)** | **Mô tả:** Hệ thống phân giải tên miền (như google.com) sang địa chỉ IP để máy tính hiểu.<br>**Ví dụ:** Giống như danh bạ điện thoại, thay vì phải nhớ dãy số IP khô khan (142.250.191.46), bạn chỉ cần nhớ tên (google.com), DNS sẽ tự tra số điện thoại (IP) để kết nối. |
+| **CDN (Content Delivery Network)** | **Mô tả:** Mạng lưới các máy chủ đặt khắp nơi trên thế giới để chứa dữ liệu tĩnh (ảnh, video, html).<br>**Ví dụ:** Máy chủ chính ở Mỹ, người dùng ở VN vào web sẽ rất chậm. CDN đặt một máy chủ bản sao ở VN, người dùng VN sẽ lấy ảnh từ server VN luôn nên tốc độ rất nhanh. |
+
+> [!WARNING] **Lưu ý quan trọng về CORS:**
+> CORS là cơ chế chặn ở phía **trình duyệt (browser)** chứ không phải của backend. Dù trình duyệt báo lỗi CORS, request thực chất vẫn có thể đã đến server và server đã xử lý xong. CORS không phải là công cụ xác thực (authentication). Backend vẫn luôn phải tự kiểm tra token và phân quyền bảo mật!
 
 ---
 
-### OSI Model
+### Mô hình OSI
 
-| Layer | Số | Protocols | Chức năng |
-|---|---|---|---|
-| **Application** | 7 | HTTP, HTTPS, WebSocket, FTP, DNS, SMTP | Giao diện end-user |
-| **Presentation** | 6 | TLS/SSL, JPEG, PNG, JSON | Định dạng data, mã hóa |
-| **Session** | 5 | NetBIOS, RPC, PPTP | Quản lý session |
-| **Transport** | 4 | TCP, UDP | Truyền data đáng tin cậy |
-| **Network** | 3 | IP, ICMP, OSPF, BGP | Routing, định địa chỉ logic |
-| **Data Link** | 2 | Ethernet, Wi-Fi, ARP | Địa chỉ vật lý (MAC) |
-| **Physical** | 1 | Cables, hubs, signals | Truyền vật lý |
+Mô hình mạng OSI có 7 tầng, nhưng trong công việc hàng ngày và khi phỏng vấn lập trình viên (đặc biệt là Backend / System Design), bạn chỉ cần nắm thật chắc **3 tầng** sau:
+
+1. **Application (Tầng 7):** Nơi các phần mềm và ứng dụng giao tiếp. Ví dụ: HTTP/HTTPS (web), WebSocket (chat realtime), DNS, FTP (truyền file).
+2. **Transport (Tầng 4):** Đảm bảo truyền dữ liệu giữa 2 thiết bị. Giao thức chính: TCP và UDP.
+3. **Network (Tầng 3):** Định tuyến và tìm đường đi (Routing) cho dữ liệu. Giao thức chính: IP (IPv4, IPv6), ICMP (dùng để ping).
 
 ---
 
-### Application Layer Protocols
+### Giao thức Tầng Application (Ứng dụng)
 
 #### HTTP / HTTPS
+Là giao thức nền tảng của mọi trang web và API hiện nay. Nó hoạt động theo cơ chế **Request-Response** (Client hỏi, Server trả lời).
 
-```
-HTTP Methods:
-  GET     - Lấy resource
-  POST    - Tạo resource
-  PUT     - Thay thế resource
-  PATCH   - Cập nhật một phần
-  DELETE  - Xóa resource
+```text
+Các HTTP Methods (Hành động):
+  GET     - "Cho tôi lấy dữ liệu này" (VD: Lấy danh sách user)
+  POST    - "Tôi muốn tạo mới một dữ liệu" (VD: Đăng kí tài khoản)
+  PUT     - "Thay thế toàn bộ dữ liệu này bằng cái mới của tôi"
+  PATCH   - "Cập nhật một phần dữ liệu" (VD: Chỉ sửa lại email)
+  DELETE  - "Xóa dữ liệu này đi"
 ```
 
-| Status Code | Ý nghĩa | Ví dụ |
-|---|---|---|
-| **2xx** | Thành công | 200 OK, 201 Created, 204 No Content |
-| **3xx** | Redirection | 301 Moved Permanently, 304 Not Modified |
-| **4xx** | Client Error | 400 Bad Request, 401 Unauthorized, 403 Forbidden, 404 Not Found, 429 Too Many Requests |
-| **5xx** | Server Error | 500 Internal Server Error, 502 Bad Gateway, 503 Service Unavailable, 504 Gateway Timeout |
+**Các nhóm Mã trạng thái (Status Codes) thường gặp:**
+- **2xx (Thành công):** 200 OK (Mọi thứ ổn thỏa), 201 Created (Đã tạo mới thành công).
+- **3xx (Chuyển hướng):** 301 Moved Permanently (Link này đã chuyển sang chỗ khác rồi).
+- **4xx (Lỗi từ phía người dùng - Client):**
+  - `400 Bad Request`: Dữ liệu bạn gửi lên sai định dạng.
+  - `401 Unauthorized`: Bạn chưa đăng nhập (Thiếu Token).
+  - `403 Forbidden`: Bạn đã đăng nhập, nhưng không có quyền admin để vào đây.
+  - `404 Not Found`: Không tìm thấy link hoặc dữ liệu này.
+- **5xx (Lỗi từ phía Server):**
+  - `500 Internal Server Error`: Code server bị bug.
+  - `502 Bad Gateway` / `504 Gateway Timeout`: Lỗi từ proxy (Nginx) không kết nối được tới server chạy code (ví dụ Nodejs bị chết).
 
 #### WebSocket
-
-- **Full-duplex:** Giao tiếp hai chiều realtime qua một TCP connection duy nhất
-- **Persistent:** Connection giữ open cho đến khi client hoặc server đóng
-- **Use cases:** Ứng dụng chat, dashboard realtime, gaming, công cụ cộng tác
-
-```javascript
-const ws = new WebSocket('wss://api.example.com/live');
-
-ws.onopen = () => {
-  console.log('Connected to WebSocket server');
-  ws.send(JSON.stringify({ type: 'subscribe', channel: 'price_updates' }));
-};
-
-ws.onmessage = (event) => {
-  const data = JSON.parse(event.data);
-  console.log('Received:', data);
-};
-
-ws.onclose = () => {
-  console.log('Connection closed');
-};
-```
+Nếu HTTP là kiểu "hỏi-đáp" một lần rồi ngắt, thì **WebSocket** giống như một đường ống kết nối liên tục, cho phép gửi dữ liệu hai chiều (Full-duplex) mà không cần phải thiết lập lại kết nối.
+- **Ứng dụng:** Làm ứng dụng chat, bảng giá chứng khoán realtime, game nhiều người chơi.
 
 #### RPC (Remote Procedure Call)
-
-- **Mục đích:** Giao tiếp service-to-service với latency thấp
-- **Khái niệm:** Gọi một function trên remote server như thể nó là local
-- **Formats:** gRPC (binary, dùng Protocol Buffers), Thrift, JSON-RPC
+- **Mục đích:** Giao tiếp nội bộ giữa các microservices siêu nhanh.
+- **Ý tưởng:** Giúp một service gọi hàm (function) nằm ở một service khác trên một server khác, hệt như gọi hàm cục bộ.
+- **Công nghệ phổ biến:** gRPC (của Google, dùng dữ liệu dạng nhị phân Protocol Buffers nên rất nhẹ và nhanh).
 
 ---
 
-### Transport Layer Protocols
+### Giao thức Tầng Transport (Giao vận): TCP vs. UDP
 
-| Protocol | Đặc điểm | Trường hợp sử dụng |
+Đây là một câu hỏi cực kỳ phổ biến khi phỏng vấn: *"Sự khác nhau giữa TCP và UDP là gì?"*
+
+| Tiêu chí | TCP (Transmission Control Protocol) | UDP (User Datagram Protocol) |
 |---|---|---|
-| **TCP** | Connection-oriented, đáng tin cậy, ordered delivery, flow control | Web, APIs, email, file transfer, databases |
-| **UDP** | Connectionless, nhanh, không đảm bảo delivery, không ordering | Streaming, gaming, VoIP, DNS queries, video calls |
-
-#### TCP vs. UDP
-
-| Khía cạnh | TCP | UDP |
-|---|---|---|
-| **Kết nối** | Hướng kết nối (3-way handshake) | Không kết nối |
-| **Độ tin cậy** | Đảm bảo delivery | Best-effort, không đảm bảo |
-| **Thứ tự** | Gói tin đến đúng thứ tự | Không đảm bảo thứ tự |
-| **Tốc độ** | Chậm hơn (overhead) | Nhanh hơn (minimal overhead) |
-| **Flow Control** | Có | Không |
-| **Congestion Control** | Có | Không |
-| **Header Size** | 20+ bytes | 8 bytes |
+| **Cơ chế** | **Giống như gọi điện thoại:** Phải có người nhấc máy (kết nối) thì mới nói chuyện được. Có cơ chế bắt tay 3 bước (3-way handshake). | **Giống như phát loa phường:** Cứ thế phát âm thanh đi, không cần biết bên dưới có ai nghe hay không. |
+| **Độ tin cậy** | **Tuyệt đối an toàn:** Gửi gói nào nhận đủ gói đó, không sai lệch, không mất mát. Nếu rớt mạng sẽ gửi lại. | **Có rủi ro:** Gói tin có thể bị rơi rớt giữa đường mà không có cơ chế gửi lại. |
+| **Thứ tự** | Dữ liệu được lắp ráp theo đúng thứ tự lúc gửi đi. | Các gói tin đến lộn xộn, tự phía nhận phải phân loại. |
+| **Tốc độ** | Chậm hơn một chút do phải kiểm tra kỹ lưỡng (có overhead). | Cực kì nhanh, độ trễ thấp. |
+| **Ứng dụng thực tế** | Lướt web (HTTP), nhắn tin Zalo/Messenger, chuyển tiền ngân hàng, tải file. (Cần tính chính xác cao). | Xem video trực tiếp (Livestream), gọi video call, game online (Bắn súng). Rớt 1 frame hình cũng không sao, cần nhanh. |
 
 ---
 
-### Network Layer Protocols
+### DNS (Hệ thống phân giải tên miền)
 
-| Protocol | Mục đích |
-|---|---|
-| **IP (IPv4/IPv6)** | Định địa chỉ thiết bị và routing packet |
-| **ICMP** | Diagnostic và error reporting (ping, traceroute) |
-| **ARP** | Ánh xạ IP addresses sang MAC addresses trong mạng local |
-| **OSPF** | Interior gateway protocol cho routing trong autonomous system |
-| **BGP** | Border Gateway Protocol — routing giữa các autonomous systems |
+#### Flow hoạt động khi bạn gõ "google.com" vào trình duyệt:
+1. Máy tính tìm trong cache của trình duyệt và file hosts nội bộ xem có IP chưa.
+2. Nếu chưa, hỏi **Resolver** (thường do nhà mạng cung cấp, hoặc của Google là `8.8.8.8`).
+3. Resolver đi hỏi máy chủ gốc (Root Server), rồi đến TLD Server (quản lý đuôi `.com`), cuối cùng là hỏi Authoritative Server của Google để lấy đúng địa chỉ IP.
+4. Trả IP về cho máy tính để bắt đầu tạo kết nối TCP.
 
----
-
-### DNS (Domain Name System)
-
-#### DNS Record Types
-
-| Record Type | Mục đích | Ví dụ |
-|---|---|---|
-| **A** | IPv4 address mapping | `example.com -> 93.184.216.34` |
-| **AAAA** | IPv6 address mapping | `example.com -> 2606:2800:220:1::` |
-| **CNAME** | Alias đến domain khác | `www.example.com -> example.com` |
-| **MX** | Mail server | `example.com -> mail.example.com` |
-| **TXT** | SPF, DKIM, verification | `v=spf1 include:_spf.example.com ~all` |
-| **NS** | Name server delegation | `example.com -> ns1.example.com` |
-
-#### DNS Resolution Flow
-
-```
-Client → Resolver (ISP/8.8.8.8)
-       → Root DNS Server (.)
-       → TLD Server (.com)
-       → Authoritative NS (example.com)
-       → A Record returned
-```
-
-> **Lưu ý:** DNS records có **TTL (Time To Live)** kiểm soát thời gian resolvers cache kết quả. TTL thấp = lookups thường xuyên hơn nhưng propagation thay đổi nhanh hơn.
+> **Mẹo phỏng vấn:** DNS có cơ chế cache (lưu nháp) nhờ vào **TTL (Time To Live)**. Nếu bạn chỉnh sửa DNS của domain, nó có thể mất vài giờ để cập nhật trên toàn thế giới vì các máy chủ trung gian vẫn còn lưu cache cũ (do TTL chưa hết hạn).
 
 ---
 
-### HTTP/1.1 vs. HTTP/2 vs. HTTP/3
+### Sự khác nhau giữa HTTP/1.1, HTTP/2 và HTTP/3
 
 | Tính năng | HTTP/1.1 | HTTP/2 | HTTP/3 |
 |---|---|---|---|
-| **Transport** | TCP | TCP | UDP (QUIC) |
-| **Multiplexing** | Không (head-of-line blocking) | Có | Có |
-| **Nén Header** | Không | HPACK | QPACK |
-| **Server Push** | Không | Có | Có |
-| **Mã hóa** | Tùy chọn | TLS bắt buộc | TLS bắt buộc |
-| **Tái sử dụng kết nối** | Một request mỗi kết nối | Multiplexed streams | Stream-based |
+| **Nền tảng bên dưới** | Dùng **TCP** | Dùng **TCP** | Dùng **UDP** (giao thức QUIC) |
+| **Gửi nhiều file cùng lúc** | Không tốt (Gây tắc nghẽn ở đầu hàng đợi - Head-of-line blocking). | Rất tốt (Multiplexing - gửi song song nhiều file trên 1 kết nối duy nhất). | Cực kỳ xuất sắc (Khắc phục hoàn toàn các điểm nghẽn của TCP). |
+| **Bảo mật mã hóa** | Dùng HTTP hoặc HTTPS (Tùy chọn) | Bắt buộc phải có HTTPS (TLS) | Bắt buộc có HTTPS |
 
 ---
 
-### CIDR (Classless Inter-Domain Routing)
+### CIDR (Cách chia dải IP)
+Trong các câu hỏi về Cloud (AWS/GCP), bạn hay thấy ký hiệu như `10.0.0.0/24`. Ký hiệu `/xx` biểu thị độ lớn của mạng lưới.
+- `/32`: Chỉ đích danh **1** IP duy nhất (VD: IP của database).
+- `/24`: Mạng nhỏ, cung cấp khoảng **256** IP.
+- `/16`: Mạng trung bình, cung cấp hơn **65 ngàn** IP.
+- Dải IP Private (chỉ dùng nội bộ, không ra internet trực tiếp được): `10.x.x.x`, `172.16.x.x`, `192.168.x.x`.
 
-| Ký hiệu | Dải địa chỉ | Số lượng IP |
-|---|---|---|
-| `/32` | Một IP duy nhất | 1 |
-| `/24` | Mạng nhỏ | 256 |
-| `/16` | Mạng trung bình | 65,536 |
-| `/8` | Mạng lớn | 16,777,216 |
-| `10.0.0.0/8` | Private (RFC 1918) | 16,777,216 |
-| `172.16.0.0/12` | Private (RFC 1918) | 1,048,576 |
-| `192.168.0.0/16` | Private (RFC 1918) | 65,536 |
-
-> **Tip:** Trong phỏng vấn system design, hiểu HTTP status codes, sự khác nhau giữa TCP và UDP, và cách DNS hoạt động là những chủ đề thường được hỏi.
+> **💡 Lời khuyên phỏng vấn:** Với các vị trí Backend, hãy chắc chắn bạn nắm vững ý nghĩa của các mã lỗi HTTP (status codes), cách hoạt động của CORS và phân biệt rõ khi nào nên dùng TCP, khi nào dùng UDP.

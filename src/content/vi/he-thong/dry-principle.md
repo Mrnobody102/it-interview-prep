@@ -1,123 +1,79 @@
-# Nguyên lý DRY — Don't Repeat Yourself
+# Nguyên lý DRY (Don't Repeat Yourself)
 
-## Khái niệm cốt lõi
+## 1. Khái niệm cốt lõi
 
-> Mỗi phần logic chỉ nên tồn tại ở **một, duy nhất một** vị trí có thẩm quyền trong hệ thống.
+**DRY - "Đừng lặp lại chính mình"**. 
+Nguyên lý này phát biểu rằng: **Mọi mảng kiến thức, logic nghiệp vụ chỉ nên có ĐÚNG MỘT nguồn chân lý duy nhất trong toàn bộ hệ thống.**
 
-Nguyên lý DRY phát biểu rằng việc trùng lặp logic — dù là trong code, data, hay tài liệu — tạo ra cơn ác mộng bảo trì và tăng khả năng có bug.
+**Ví dụ thực tế:** 
+Giống như số điện thoại Hotline của công ty bạn. Đừng in số Hotline lên 100 trang web khác nhau bằng tay. Hãy lưu số đó vào 1 biến tên là `COMPANY_HOTLINE`. 
+Tại sao? Vì lỡ ngày mai công ty đổi số điện thoại, bạn chỉ cần sửa ở 1 chỗ duy nhất, thay vì phải đi tìm 100 trang web kia để sửa từng cái (và chắc chắn bạn sẽ bỏ sót).
 
-### Mục đích
+---
 
-- **Giảm bug:** Sửa logic ở một chỗ, không phải N chỗ
-- **Cải thiện khả năng bảo trì:** Thay đổi lan truyền nhất quán trong codebase
-- **Tăng rõ ràng:** Một nguồn sự thật duy nhất giúp code dễ hiểu
-- **Khả năng tái sử dụng tốt hơn:** Logic dùng chung có thể test một lần và dùng ở mọi nơi
+## 2. Các "Tội ác" vi phạm DRY phổ biến
 
-### Cách áp dụng DRY
+### 2.1. Copy-Paste Code (Tội ác tày trời)
 
-#### Trích xuất hàm/phương thức dùng chung
-
-Thay vì trùng lặp logic:
+Khi bạn thấy 2 đoạn code giống hệt nhau ở 2 file khác nhau, 99% là bạn đã vi phạm DRY.
 
 ```typescript
-// Bad: Tính toán trùng lặp
-const area1 = width1 * height1;
-const area2 = width2 * height2;
-
-// Good: Một hàm dùng chung
-function calculateArea(width: number, height: number): number {
-  return width * height;
+// ❌ Vi phạm DRY: Copy-paste công thức tính thuế VAT
+function calculateLaptopPrice(price: number) {
+    return price + (price * 0.1); // VAT 10%
 }
 
-const area1 = calculateArea(width1, height1);
-const area2 = calculateArea(width2, height2);
+function calculateMousePrice(price: number) {
+    return price + (price * 0.1); // VAT 10%
+}
+```
+👉 **Hậu quả:** Nhà nước tăng thuế VAT lên 12%. Bạn sửa hàm Laptop nhưng quên sửa hàm Mouse. Gây thiệt hại tài chính!
+
+**✅ Cách sửa:**
+```typescript
+const VAT_RATE = 0.1;
+
+function applyTax(price: number) {
+    return price + (price * VAT_RATE);
+}
+
+function calculateLaptopPrice(price: number) { return applyTax(price); }
 ```
 
-#### Sử dụng Inheritance hoặc Composition
+### 2.2. Viết cứng "Magic Number / Magic String"
 
 ```typescript
-// Composition over inheritance
-class UserService {
-  constructor(private logger: Logger) {}
+// ❌ Vi phạm DRY: Hardcode chuỗi
+if (user.role === 'SUPER_ADMIN') { ... }
+if (role === 'SUPER_ADMIN') { ... } // Viết rải rác khắp nơi
 
-  createUser(user: User) {
-    this.logger.info(`Creating user: ${user.email}`);
-    // ...
-  }
-}
-
-// Inheritance cho shared behavior
-class Animal {
-  eat() { /* shared */ }
-}
-
-class Dog extends Animal {
-  bark() { /* specific */ }
-}
+// ✅ Sửa lại: Dùng Hằng số (Constant) hoặc Enum
+export const ROLES = { SUPER_ADMIN: 'SUPER_ADMIN' };
+if (user.role === ROLES.SUPER_ADMIN) { ... }
 ```
 
-#### Tập trung hóa Constants và Configuration
+---
 
-```typescript
-// Bad: Số ma thuật trải rộng trong code
-if (user.age > 18) { ... }
+## 3. Lời nguyền WET (Write Everything Twice / We Enjoy Typing)
 
-// Good: Constant có tên
-const MINIMUM_AGE = 18;
-if (user.age > MINIMUM_AGE) { ... }
-```
+Trái ngược với DRY là **WET** (Tự chép lại mọi thứ). Code WET làm tăng gấp đôi chi phí bảo trì và dễ sinh ra Bug ẩn.
 
-```typescript
-// Tập trung API endpoints
-export const API_ENDPOINTS = {
-  USERS: '/api/v1/users',
-  PRODUCTS: '/api/v1/products',
-  ORDERS: '/api/v1/orders',
-} as const;
-```
-
-#### Trích xuất Utilities dùng chung
-
-```typescript
-// utils/validation.ts
-export function isValidEmail(email: string): boolean {
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return emailRegex.test(email);
-}
-
-export function isValidPhone(phone: string): boolean {
-  const phoneRegex = /^\+?[0-9]{10,15}$/;
-  return phoneRegex.test(phone);
-}
-```
-
-### DRY vs. WET
-
-| Khía cạnh | DRY | WET (Write Every Time) |
+| Tiêu chí | DRY | WET |
 |---|---|---|
-| **Trùng lặp code** | Tối thiểu hóa | Cho phép |
-| **Khả năng bảo trì** | Cao | Thấp |
-| **Độ dễ đọc** | Có thể trừu tượng | Rõ ràng hơn |
-| **Rủi ro over-abstraction** | Có | Không |
+| **Sửa Bug** | Sửa 1 nơi, fix toàn hệ thống | Sửa 1 nơi, lòi ra lỗi ở 3 nơi khác |
+| **Bảo trì** | Nhẹ nhàng | Ác mộng |
+| **Dung lượng code** | Ngắn gọn | Dài thòng lòng |
 
-### Khi nào KHÔNG nên áp dụng DRY
+---
 
-> **Quan trọng:** DRY là nguyên tắc chỉ đạo, không phải quy luật tuyệt đối. Áp dụng DRY quá đà dẫn đến over-engineering.
+## 4. Chống chỉ định (Khi nào KHÔNG nên DRY?)
 
-- **Khi abstraction sai:** Tạo base class chung cho hai thứ tương tự nhưng sẽ phân kỳ trong tương lai thì tệ hơn trùng lặp
-- **Khi ưu tiên sự đơn giản:** Trùng lặp một câu SQL đơn giản ở hai chỗ có thể rõ ràng hơn tạo abstraction layer phức tạp
-- **Khi lo ngại về coupling:** Cưỡng ép shared logic giữa các module không liên quan có thể tạo unwanted coupling
+Đi phỏng vấn mà nói "Lúc nào em cũng xài DRY" là rớt đài! **Lạm dụng DRY (Over-DRYing) là một thảm họa.**
 
-> **Tip:** Code trùng lặp mà tiến hóa cùng nhau là một smell. Code trùng lặp mà thay đổi vì lý do khác nhau thì đôi khi acceptable. Hỏi: "Hai phần code này sẽ thay đổi vì cùng lý do không?"
+> **Quy tắc Vàng:** Nếu 2 đoạn code TRÔNG CÓ VẺ giống nhau, nhưng tương lai chúng sẽ THAY ĐỔI VÌ 2 LÝ DO KHÁC NHAU, thì KHÔNG ĐƯỢC GỘP CHÚNG LẠI!
 
-### Mối quan hệ DRY và YAGNI
+**Ví dụ:**
+Hàm tính `Lương cho Giám đốc` và hàm tính `Lương cho Bảo vệ` hiện tại vô tình giống y chang nhau là `Lương Cơ Bản * 1.5`. 
+Đừng vì thấy giống nhau mà gộp thành 1 hàm `TinhLuongChung()`. Vì tháng sau sếp buồn buồn đổi cách tính lương Giám đốc, bạn vào sửa hàm chung đó sẽ làm lương Bảo vệ bị sai theo. Hãy để nguyên 2 hàm WET trong trường hợp này!
 
-DRY và YAGNI bổ sung cho nhau nhưng đôi khi xung đột:
-
-| Câu hỏi | DRY | YAGNI |
-|---|---|---|
-| Nên trích xuất function dùng chung? | Có — tránh trùng lặp | Có — nhưng chỉ khi thực sự cần |
-| Nên tạo abstraction "phòng xa"? | Có — DRY | Không — chưa cần |
-| Nên giữ code dùng 2 lần? | Có — trích xuất | Có — nhưng đợi cho rõ ràng |
-
-> **Tóm tắt:** DRY ngăn việc lặp lại những gì sẽ được sử dụng. YAGNI ngăn việc xây dựng những thứ sẽ không bao giờ được dùng. Cùng nhau, chúng giúp codebase gọn gàng và phù hợp.
+> **💡 Mẹo:** Chấp nhận WET ở lần đầu tiên. Lần thứ 2 vẫn có thể châm chước. Nhưng đến lần thứ 3 copy-paste, hãy nghiêm túc suy nghĩ đến việc Refactor thành hàm dùng chung. (Quy tắc Rule of Three).

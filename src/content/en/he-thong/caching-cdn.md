@@ -1,150 +1,57 @@
 # Caching & CDN
 
-## 
+## Overview
+**Caching** is the art of storing frequently used data in a fast-access location (RAM) so we don't have to fetch it from the slow location (Database/Disk) every time.
 
-### Caching
+---
 
-#### Overview
+## 1. Caching Analogy
+Imagine you are a **Bubble Tea Cashier**.
+- **Without Cache:** Every time a customer asks for a "Signature Milk Tea," you have to walk back to the kitchen, find the recipe book, read it, and come back.
+- **With Cache:** You write the "Signature Milk Tea" recipe on a **sticky note** and stick it right on the cash register. Much faster!
 
-Caching temporarily stores data in layers closer to the user to serve frequent requests quickly. The goal is to reduce database load, minimize latency, and improve overall system throughput.
+---
 
-#### Caching in the System Stack
+## 2. CDN (Content Delivery Network)
+A CDN is a "Cache" for your static files (Images, CSS, JS) distributed all over the world.
 
-```mermaid
-flowchart TD
-    B["Browser Cache"]
-    CDN["CDN Edge Cache"]
-    RP["Reverse Proxy Cache (Nginx, Varnish)"]
-    AC["Application Cache (Redis, Memcached)"]
-    DB_C["Database Cache (Query cache, buffer pool)"]
-    DB["Database"]
-    B --> CDN --> RP --> AC --> DB_C --> DB
-    B -->|"← Fastest"| B
-    DB -->|"← Slowest"| DB
-```
+**Analogy:** You are selling a famous book in Vietnam, but a customer in New York wants to buy it.
+- **Without CDN:** You ship the book from Vietnam (High latency).
+- **With CDN:** You place a copy of the book in a **warehouse in New York**. The customer gets it in an hour!
 
-#### Cache Strategies
+---
 
-| Strategy | Description | Use Case |
+## 3. Cache Eviction & Invalidation
+The sticky note (Cache) has limited space. When it's full, what do you do?
+- **LRU (Least Recently Used):** Throw away the sticky note you haven't looked at in a long time.
+- **Cache Invalidation:** If the kitchen changes the recipe (Database update), you must **tear up the old sticky note** and write a new one. Otherwise, you'll serve the wrong tea!
+
+---
+
+## 4. Common Caching Strategies
+
+| Strategy | How it works | Analogy |
 |---|---|---|
-| **Cache-Aside (Lazy Loading)** | App checks cache first; if miss, fetch from DB and populate cache | Read-heavy workloads |
-| **Read-Through** | Cache automatically loads data from DB on miss | Simplified app code |
-| **Write-Through** | Write to cache and DB simultaneously | When data must not be lost |
-| **Write-Behind (Write-Back)** | Write to cache; async write to DB | High write throughput |
-| **Refresh-Ahead** | Proactively refresh expiring cache entries | Predictable access patterns |
+| **Cache Aside** | Check cache first. If missing, get from DB and update cache. | Checking your sticky note first. |
+| **Write Through** | Write to cache and DB at the same time. | Updating your note and the recipe book simultaneously. |
+| **Write Back** | Write to cache only. Update DB later. | Updating your note now, and fixing the book at the end of the day. |
 
-```typescript
-// Cache-Aside pattern example
-async function getUser(userId: string): Promise<User> {
-  // Step 1: Check cache
-  const cached = await redis.get(`user:${userId}`);
-  if (cached) {
-    return JSON.parse(cached);
-  }
+---
 
-  // Step 2: Cache miss — fetch from database
-  const user = await db.users.findById(userId);
-  if (!user) {
-    throw new Error('User not found');
-  }
+## 5. Interview Questions (The Tricky Parts)
 
-  // Step 3: Populate cache with TTL
-  await redis.setex(`user:${userId}`, 3600, JSON.stringify(user));
+> **Q: What is "Cache Stampede"?**
+> **A:** When a very popular cache key expires, and **thousands of requests** hit the Database at the same time to refresh it, potentially crashing the DB.
+> **Solution:** Use locking or extend the TTL randomly.
 
-  return user;
-}
-```
+> **Q: What is "Cache Penetration"?**
+> **A:** When a user requests data that exists neither in the Cache nor in the DB (like a random ID). The request keeps hitting the DB.
+> **Solution:** Cache the "null" result or use a **Bloom Filter**.
 
-### Cache Invalidation
+---
 
-> **The two hard problems in computer science:** cache invalidation, naming things, and off-by-one errors.
+## 6. Summary
 
-| Strategy | Description | Pros | Cons |
-|---|---|---|---|
-| **TTL (Time-to-Live)** | Auto-expire after fixed time | Simple, predictable | Stale data until expiry |
-| **Event-driven** | Invalidate on write to DB | Immediate consistency | Complex, requires pub/sub |
-| **Versioned keys** | Include version in cache key | Precise invalidation | More memory usage |
-| **Manual** | Explicitly invalidate | Full control | Error-prone, forget to invalidate |
-
-### Eviction Policies
-
-| Policy | Description | Best For |
-|---|---|---|
-| **LRU (Least Recently Used)** | Evict least recently accessed | General purpose |
-| **LFU (Least Frequently Used)** | Evict least frequently accessed | Popular items stay |
-| **FIFO (First In, First Out)** | Evict oldest entry | Simple scenarios |
-| **TTL-based** | Evict by expiration time | Time-sensitive data |
-| **Random** | Evict randomly | Testing, extreme scale |
-
-### CDN (Content Delivery Network)
-
-#### Overview
-
-A CDN is a globally distributed network of servers that caches and serves static content (HTML, CSS, JS, images, videos) from edge locations closest to the user.
-
-#### How CDN Works
-
-```
-User Request → CDN Edge Server (closest to user)
-             → Cache HIT? → Return cached content (fast)
-             → Cache MISS → Fetch from Origin Server
-                          → Cache at Edge Server
-                          → Return to User
-```
-
-#### CDN Benefits
-
-| Benefit | Description |
-|---|---|
-| **Reduced Latency** | Users download from nearest edge server |
-| **Lower Origin Load** | Static content served from CDN, not origin |
-| **Improved Availability** | Redundancy; origin can be temporarily down |
-| **DDoS Protection** | CDN absorbs traffic spikes and attacks |
-| **Better Security** | HTTPS, WAF, bot protection at edge |
-| **Bandwidth Savings** | Compression, deduplication at CDN level |
-
-#### CDN Providers
-
-| Provider | Notable Features |
-|---|---|
-| **Cloudflare** | Free tier, DDoS protection, global network |
-| **AWS CloudFront** | Deep AWS integration (S3, EC2, Lambda@Edge) |
-| **Fastly** | Real-time cache purging, VCL customization |
-| **Akamai** | Largest network, enterprise-grade |
-| **Google Cloud CDN** | GCP integration, global load balancing |
-
-#### Cache-Control Headers
-
-```bash
-# Common cache-control directives
-Cache-Control: max-age=3600          # Cache for 1 hour
-Cache-Control: no-cache               # Revalidate with server every time
-Cache-Control: no-store               # Never cache (sensitive data)
-Cache-Control: public                 # Can be cached by proxies
-Cache-Control: private                # Only cached by browser
-Cache-Control: immutable              # Content never changes (for versioning)
-```
-
-### Redis as a Cache
-
-| Command | Description | Time Complexity |
-|---|---|---|
-| `SET key value EX ttl` | Set with TTL | O(1) |
-| `GET key` | Get value | O(1) |
-| `EXISTS key` | Check if key exists | O(1) |
-| `DEL key` | Delete key | O(1) |
-| `EXPIRE key ttl` | Set TTL on existing key | O(1) |
-| `HGETALL key` | Get all fields in hash | O(N) |
-| `LRANGE key 0 -1` | Get list range | O(N) |
-
-### Caching Anti-Patterns
-
-| Anti-pattern | Problem | Solution |
-|---|---|---|
-| **Caching everything** | Memory bloat, stale data | Cache only hot data |
-| **No TTL** | Memory grows indefinitely | Set appropriate TTL |
-| **Single point of failure** | Redis down = system down | Redis Sentinel or Cluster |
-| **Cache stampede** | Many requests hit DB when cache expires | Use mutex, jitter TTL, proactive refresh |
-| **Stale reads** | Read-after-write inconsistency | Write-through or read-your-writes guarantee |
-
-> **Tip:** Cache works best with **read-heavy, infrequently changing data**. It is not a silver bullet for write-heavy workloads.
+- **Why Cache?** Speed up reads, save the Database.
+- **Why CDN?** Reduce latency for global users.
+- **Rule of thumb:** "There are only two hard things in Computer Science: cache invalidation and naming things." — Phil Karlton.

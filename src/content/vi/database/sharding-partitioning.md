@@ -12,6 +12,8 @@ Nói ngắn gọn:
 - partitioning là kỹ thuật ở mức database engine
 - sharding là quyết định ở mức kiến trúc hệ thống
 
+Nếu cần nhớ nhanh: partitioning giúp một DB lớn đỡ nặng hơn, còn sharding giúp nhiều DB cùng gánh dữ liệu.
+
 ---
 
 ## Partitioning
@@ -160,7 +162,7 @@ Shard key là yếu tố quan trọng nhất trong thiết kế sharding.
 
 Shard key tốt cần:
 
-- có **cardinality cao**
+- có **cardinality cao** nghĩa là có nhiều giá trị khác nhau
 - phân phối read/write tương đối đều
 - xuất hiện trong phần lớn query filter
 

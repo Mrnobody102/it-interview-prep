@@ -1,72 +1,68 @@
-# Monolithic Architecture
+# Kiến trúc Monolithic (Kiến trúc đơn khối)
 
 ## Tổng quan
 
-Kiến trúc đơn khối — toàn bộ ứng dụng được xây dựng như một khối duy nhất. Tất cả thành phần (UI, business logic, truy cập DB) nằm trong một codebase và deploy cùng nhau.
+**Kiến trúc đơn khối (Monolithic)** là kiểu kiến trúc truyền thống nhất, nơi toàn bộ ứng dụng (từ giao diện UI, xử lý logic, đến kết nối Database) được nhét chung vào một khối mã nguồn duy nhất và được triển khai (deploy) cục bộ cùng một lúc.
 
-### Đặc điểm
+**Ví dụ thực tế:** 
+Giống như **Một nhà hàng truyền thống có duy nhất 1 cái bếp khổng lồ**. Trong bếp đó, đầu bếp vừa nấu phở, vừa nướng thịt, vừa pha trà sữa. Mọi nguyên liệu (Dữ liệu) đều lấy chung từ một cái tủ lạnh khổng lồ (Database).
+
+---
+
+### Đặc điểm nhận dạng
 
 | Khía cạnh | Mô tả |
 |---|---|
-| **Cấu trúc** | Toàn bộ code trong một codebase |
-| **Deployment** | Một artifact duy nhất |
-| **Giao tiếp** | Gọi hàm in-memory |
-| **Công nghệ** | Một tech stack |
+| **Cấu trúc** | Toàn bộ code nằm chung trong 1 kho (Repository). |
+| **Triển khai (Deploy)** | Build ra 1 file duy nhất (VD: 1 file `.jar` của Java, hoặc 1 cục build NodeJS) và chạy. |
+| **Giao tiếp** | Các hàm (function) gọi nhau trực tiếp trong RAM (In-memory), cực kỳ nhanh. |
+| **Công nghệ** | Thường bị trói buộc vào 1 ngôn ngữ lập trình duy nhất (VD: Toàn bộ viết bằng Java). |
 
-### Ưu điểm
+---
 
-- **Đơn giản khi bắt đầu:** Phù hợp cho dự án mới, chu kỳ phát triển nhanh
-- **Dễ test và debug:** Toàn bộ code ở một nơi, quy trình debug đơn giản
-- **Deployment đơn giản:** Deploy một artifact duy nhất
-- **Overhead thấp:** Không có latency giữa các thành phần
+### Điểm mạnh (Tại sao 80% công ty khởi nghiệp dùng?)
 
-### Nhược điểm
+- **Phát triển siêu tốc:** Rất dễ bắt đầu. Đội ngũ nhỏ ngồi code chung 1 chỗ, gọi hàm qua lại rất tiện.
+- **Dễ Debug và Test:** Bị lỗi ở đâu, bật Debugger lên là dò được tận rễ, vì mọi code đều nằm chung 1 chỗ.
+- **Deploy dễ dàng:** Chạy đúng 1 lệnh copy file lên server là xong.
+- **Tốc độ gọi hàm:** Cực nhanh vì không phải gọi qua mạng (Network Latency = 0). (Ông làm phở gọi ông pha trà sữa chỉ cần nói vọng qua).
 
-- **Giới hạn về scale:** Khó scale từng thành phần độc lập
-- **Điểm lỗi duy nhất (SPOF):** Một lỗi nhỏ có thể làm sập toàn bộ hệ thống
-- **Khóa công nghệ:** Khó áp dụng công nghệ mới cho từng phần riêng lẻ
-- **Build/deploy chậm:** Codebase lớn dần thì CI/CD pipeline trở nên chậm
+---
 
-### Khi nào nên dùng
+### Điểm yếu (Tại sao các ông lớn phải đập đi xây lại?)
 
-- Dự án nhỏ, đội ngũ nhỏ
-- Yêu cầu đơn giản, phạm vi hạn chế
-- Cần phát triển và ra mắt nhanh
-- Prototype và MVP giai đoạn đầu
+- **Rất khó mở rộng (Scaling cục bộ):** 
+  - Khách hàng đột nhiên thèm trà sữa, quầy trà sữa quá tải. Thay vì chỉ mở rộng quầy trà sữa, bạn bắt buộc phải **nhân bản toàn bộ cái bếp khổng lồ** (bao gồm cả lò nướng thịt và nồi phở) sang một chi nhánh mới. Rất lãng phí tài nguyên!
+- **Điểm chết chí mạng (Single Point of Failure):** 
+  - Lỡ tay viết 1 dòng code bị Infinite Loop (vòng lặp vô tận) ở chức năng "Gửi email", nó ngốn hết CPU và kéo sập luôn cả hệ thống Đặt hàng, Thanh toán... (Ông nướng thịt làm cháy bếp là cả nhà hàng nghỉ bán).
+- **Ác mộng khi team quá lớn:** 
+  - Khi code phình to tới hàng triệu dòng, mỗi lần sửa 1 dòng code phải chờ Build lại cả ứng dụng mất cả tiếng đồng hồ. 200 lập trình viên giẫm chân lên code của nhau.
+- **Khóa công nghệ:** 
+  - Hệ thống lỡ viết bằng Java 8 từ 10 năm trước. Giờ AI lên ngôi, muốn viết chức năng AI bằng Python? Chịu chết!
 
-### So sánh Monolith vs. Microservices
+---
 
-| Tiêu chí | Monolith | Microservices |
-|---|---|---|
-| **Độ phức tạp** | Thấp | Cao |
-| **Deployment** | Một artifact | Độc lập theo service |
-| **Scaling** | Toàn bộ ứng dụng | Theo từng service |
-| **Công nghệ** | Một stack | Polyglot |
-| **Cô lập lỗi** | Kém | Tốt |
-| **Quy mô team** | Nhỏ | Lớn |
-| **Time to Market** | Nhanh | Cài đặt chậm hơn |
+### Lời khuyên khi đi phỏng vấn
 
-### Kiến trúc Monolith có Module
+> **💡 Có nên dùng Microservices ngay từ đầu?**
+> Đừng bao giờ trả lời "Có". Hầu hết các kiến trúc sư phần mềm đều khuyên: **Hãy bắt đầu bằng Monolithic.** 
+> Khi hệ thống đủ lớn, team đủ đông, và bạn thực sự thấy được những rào cản của Monolith, thì mới bắt đầu bóc tách nó ra. Bắt đầu bằng Microservices ngay từ ngày 1 là tự rước lấy một đống rắc rối về vận hành (DevOps) mà công ty chưa chắc đã cần.
 
-Ngay cả trong kiến trúc monolith, nên tổ chức code theo module rõ ràng:
+---
 
-```
+### Kiến trúc Modular Monolith (Xu hướng hiện nay)
+
+Đây là điểm ăn tiền trong phỏng vấn. Nếu bạn không muốn dùng Microservices vì quá rườm rà, nhưng lại sợ Monolithic lộn xộn, hãy dùng **Modular Monolith**.
+
+Vẫn là 1 cục code, nhưng phân chia thư mục (module) cực kì nghiêm ngặt. Module Nào làm việc của Module đó, cấm gọi chéo Database của nhau.
+
+```text
 src/
 ├── modules/
-│   ├── users/          # Module người dùng
-│   │   ├── controllers/
-│   │   ├── services/
-│   │   ├── repositories/
-│   │   └── models/
-│   ├── orders/         # Module đơn hàng
-│   │   ├── controllers/
-│   │   ├── services/
-│   │   └── repositories/
-│   └── products/       # Module sản phẩm
-└── shared/             # Code dùng chung
-    ├── utils/
-    ├── constants/
-    └── config/
+│   ├── users/          # Quầy thu ngân (Chỉ xử lý User)
+│   ├── orders/         # Quầy nhận đơn (Chỉ xử lý Order)
+│   └── products/       # Quầy sản phẩm (Chỉ xử lý Product)
+└── shared/             # Khu vực dùng chung
 ```
 
-> **Tip:** Bắt đầu với monolith. Tách service ra khi có lý do rõ ràng (team mở rộng, nhu cầu deploy độc lập, yêu cầu scale khác nhau cho từng thành phần).
+Cách này giúp sau này nếu muốn chuyển sang Microservices thì chỉ cần "bế" nguyên cái thư mục `users` sang một server khác là xong!

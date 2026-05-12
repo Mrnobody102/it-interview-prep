@@ -1,8 +1,12 @@
-# SOA - Service-Oriented Architecture
+# SOA - Kiến trúc hướng dịch vụ (Service-Oriented Architecture)
 
 ## Tổng quan
 
 **SOA (Service-Oriented Architecture)** là kiến trúc tổ chức hệ thống thành các **service có khả năng tái sử dụng**, giao tiếp với nhau qua **ESB (Enterprise Service Bus)**. SOA ra đời từ những năm 2000 và được sử dụng rộng rãi trong các doanh nghiệp lớn để tích hợp các hệ thống legacy với nhau.
+
+Nói đơn giản: SOA dùng một lớp trung gian lớn để nối nhiều hệ thống doanh nghiệp lại với nhau. Lớp trung gian đó thường chịu trách nhiệm định tuyến, đổi định dạng dữ liệu và nối các giao thức khác nhau.
+
+Ví dụ: hệ thống đơn hàng cũ nói SOAP/XML, hệ thống thanh toán mới nói REST/JSON, hệ thống kế toán dùng JMS. ESB đứng giữa để chuyển đổi và điều phối.
 
 ---
 
@@ -12,8 +16,8 @@
 
 | Khía cạnh | Mô tả |
 |-----------|-------|
-| **Định nghĩa** | Trung tâm giao tiếp trung tâm giữa các service |
-| **Vai trò** | Routing, transformation, protocol mediation |
+| **Định nghĩa** | Bus trung gian để các service giao tiếp qua một điểm chung |
+| **Vai trò** | Định tuyến, chuyển đổi dữ liệu, nối các giao thức khác nhau |
 | **Ví dụ công cụ** | MuleSoft, IBM Integration Bus (IIB), WSO2, Apache ServiceMix |
 
 ```
@@ -66,6 +70,8 @@
 | **Interoperability** | Hỗ trợ nhiều protocol: SOAP, REST, JMS, WS-* |
 | **Governance** | Governance tập trung ở enterprise level |
 
+Nếu trả lời phỏng vấn: SOA phù hợp khi mục tiêu chính là **tích hợp hệ thống lớn và cũ**, còn microservices phù hợp hơn khi mục tiêu là **deploy độc lập, scale độc lập và cloud-native**.
+
 ### Service Classification
 
 | Loại | Mô tả | Ví dụ |
@@ -93,7 +99,7 @@
 | **Message format** | XML (thường) | JSON, Protobuf |
 | **Transaction** | ACID, XA distributed transaction | BASE, eventual consistency |
 | **Scalability** | Vertical và một phần horizontal | Full horizontal scaling |
-| **Use case phổ biến** | Doanh nghiệp lớn, legacy integration | Cloud-native, rapid development |
+| **Trường hợp sử dụng phổ biến** | Doanh nghiệp lớn, legacy integration | Cloud-native, rapid development |
 
 ### Sơ đồ so sánh
 

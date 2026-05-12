@@ -1,526 +1,153 @@
-# Clean & Hexagonal Architecture
+# Clean Architecture & Hexagonal Architecture
 
-### 1. Tổng quan
+## Tổng quan
 
-**Clean Architecture** và **Hexagonal Architecture** (còn gọi là Ports & Adapters) là các architectural patterns chia sẻ một mục tiêu chung: tạo ra các systems **independent of frameworks, databases, và external agencies**, với business logic ở trung tâm.
+**Clean Architecture** (Kiến trúc sạch) và **Hexagonal Architecture** (Kiến trúc lục giác / Ports & Adapters) tuy tên gọi khác nhau nhưng đều hướng tới một mục đích duy nhất: **Bảo vệ phần cốt lõi của ứng dụng (Business Logic) khỏi những thứ râu ria bên ngoài (Database, Framework, UI).**
 
-```mermaid
-flowchart TD
-    CA["Clean Architecture"]
-    HA["Hexagonal Architecture"]
-    OA["Onion Architecture"]
-
-    CA --> DEP["Dependency Rule:<br>Point Inward"]
-    HA --> PORTS["Ports & Adapters"]
-    OA --> LAYER["Layered by Dependency"]
-```
-
-Các architectures này có liên quan — tất cả nhấn mạnh:
-- **Separation of concerns** qua các layers
-- **Dependencies chỉ point inward** (inner layers không phụ thuộc outer)
-- **Business logic isolation** khỏi infrastructure
-- **Testability** ở mọi layer
+**Ví dụ thực tế:** 
+Bạn mở một quán Phở gia truyền. Công thức nấu phở (Business Logic) là thứ quý giá nhất, không bao giờ thay đổi. Còn việc bạn bán phở ngoài vỉa hè hay trong trung tâm thương mại (UI), hay việc bạn mua thịt bò từ chợ hay siêu thị (Database) thì có thể thay đổi linh hoạt. Công thức nấu phở không được phép phụ thuộc vào việc bạn mua thịt bò ở đâu!
 
 ---
 
-### 2. Clean Architecture (Robert C. Martin)
+## 1. Clean Architecture (Kiến trúc củ hành)
 
-Clean Architecture, được giới thiệu bởi Robert C. Martin (Uncle Bob), tổ chức code thành các layers trong đó dependencies luôn hướng vào trong.
-
-```mermaid
-flowchart TD
-    subgraph FR["Frameworks & Drivers"]
-        UI["UI / Controllers"]
-        DB["Database / ORM"]
-        EXT["External Services"]
-    end
-
-    subgraph IA["Interface Adapters"]
-        PRES["Presenters"]
-        CONV["DTO Converters"]
-        GATE["Gateway<br>Interfaces"]
-    end
-
-    subgraph AL["Application Layer"]
-        US["Use Cases<br>(Application Services)"]
-        INTP["Interfaces (Ports)"]
-    end
-
-    subgraph DL["Domain Layer"]
-        ENT["Entities"]
-        DS["Domain Services"]
-        VO["Value Objects"]
-        EVT["Domain Events"]
-    end
-
-    FR -->|"depends on"| IA
-    IA -->|"depends on"| AL
-    AL -->|"depends on"| DL
-
-    DL -.->|"no dependencies"| VO
-    AL -.->|"depends on interfaces only"| INTP
-```
-
-#### Chi tiết các Layers
-
-| Layer | Trách nhiệm | Dependencies | Ví dụ |
-|-------|-------------|--------------|---------|
-| **Entities** | Core business logic, enterprise-wide rules | None (pure) | `Order`, `User`, `Money` |
-| **Use Cases** | Application-specific business rules | Entities, Port interfaces | `PlaceOrderUseCase`, `TransferFundsUseCase` |
-| **Interface Adapters** | Convert data between formats | Use Cases, External | `OrderController`, `OrderPresenter` |
-| **Frameworks & Drivers** | External tools, DB, UI, web | Everything | `Spring MVC`, `JPA`, `REST API` |
-
-#### Dependency Rule
-
-> **The Dependency Rule**: Source code dependencies chỉ có thể point inward. Outer layers có thể phụ thuộc vào inner layers, nhưng inner layers không bao giờ phụ thuộc vào outer layers.
-
-```
-    Frameworks & Drivers
-           ↓
-    Interface Adapters
-           ↓
-      Use Cases
-           ↓
-       Entities
-```
-
-Điều này có nghĩa:
-- Entities không biết gì về databases, web frameworks, hoặc controllers
-- Use Cases chỉ biết về Entities và interfaces (không phải implementations)
-- Infrastructure implements interfaces được định nghĩa bởi inner layers
-
-#### Code Example
-
-```java
-// ========== DOMAIN LAYER (Core) ==========
-// Entities: Pure business logic, no framework dependencies
-public class Order {
-    private final OrderId id;
-    private CustomerId customerId;
-    private OrderStatus status;
-    private List<OrderItem> items;
-
-    // Domain logic enforced here
-    public void addItem(Product product, int quantity) {
-        if (status != OrderStatus.DRAFT) {
-            throw new OrderException("Cannot modify confirmed order");
-        }
-        if (quantity <= 0) {
-            throw new OrderException("Quantity must be positive");
-        }
-        this.items.add(new OrderItem(product.getId(), product.getPrice(), quantity));
-    }
-
-    public void confirm() {
-        if (items.isEmpty()) {
-            throw new OrderException("Cannot confirm empty order");
-        }
-        this.status = OrderStatus.CONFIRMED;
-    }
-}
-
-// Value Objects
-public record Money(BigDecimal amount, Currency currency) {
-    public Money add(Money other) {
-        if (!this.currency.equals(other.currency)) {
-            throw new IllegalArgumentException("Currency mismatch");
-        }
-        return new Money(this.amount.add(other.amount), this.currency);
-    }
-}
-
-// Port interfaces (defined in inner layer)
-public interface OrderRepository {
-    Order findById(OrderId id);
-    void save(Order order);
-    void delete(OrderId id);
-}
-
-public interface ProductRepository {
-    Product findById(ProductId id);
-    List<Product> findByCategory(CategoryId categoryId);
-}
-
-public interface NotificationService {
-    void sendOrderConfirmation(Order order);
-}
-```
-
-```java
-// ========== APPLICATION LAYER (Use Cases) ==========
-// Use Case: Orchestrates domain objects, implements business rules
-public class PlaceOrderUseCase {
-    private final OrderRepository orderRepository;
-    private final ProductRepository productRepository;
-    private final NotificationService notificationService;
-
-    public PlaceOrderUseCase(
-            OrderRepository orderRepository,
-            ProductRepository productRepository,
-            NotificationService notificationService) {
-        this.orderRepository = orderRepository;
-        this.productRepository = productRepository;
-        this.notificationService = notificationService;
-    }
-
-    public OrderResult execute(PlaceOrderCommand command) {
-        // 1. Validate and find products
-        List<OrderItemData> itemData = new ArrayList<>();
-        for (ItemRequest item : command.items()) {
-            Product product = productRepository.findById(item.productId());
-            if (product == null) {
-                throw new ProductNotFoundException(item.productId());
-            }
-            itemData.add(new OrderItemData(product, item.quantity()));
-        }
-
-        // 2. Create and populate order
-        Order order = Order.create(command.customerId());
-        for (OrderItemData item : itemData) {
-            order.addItem(item.product(), item.quantity());
-        }
-
-        // 3. Persist
-        orderRepository.save(order);
-
-        // 4. Notify
-        notificationService.sendOrderConfirmation(order);
-
-        return new OrderResult(order.getId(), order.getTotal());
-    }
-}
-
-// ========== INTERFACE ADAPTERS LAYER ==========
-// Controller: Adapts HTTP request to Use Case input
-@RestController
-@RequestMapping("/api/orders")
-public class OrderController {
-    private final PlaceOrderUseCase placeOrderUseCase;
-
-    @PostMapping
-    public ResponseEntity<OrderResponse> createOrder(
-            @RequestBody CreateOrderRequest request) {
-        PlaceOrderCommand command = new PlaceOrderCommand(
-            new CustomerId(request.customerId()),
-            request.items().stream()
-                .map(i -> new ItemRequest(new ProductId(i.productId()), i.quantity()))
-                .toList()
-        );
-
-        OrderResult result = placeOrderUseCase.execute(command);
-
-        return ResponseEntity.created(
-            URI.create("/api/orders/" + result.orderId()))
-            .body(new OrderResponse(result.orderId().toString(),
-                                   result.total().toString()));
-    }
-}
-```
-
-```java
-// ========== FRAMEWORKS & DRIVERS LAYER (Infrastructure) ==========
-// Repository Implementation: Adapts JPA to the port interface
-@Repository
-public class JpaOrderRepository implements OrderRepository {
-    private final SpringDataOrderRepository jpaRepo;
-
-    @Override
-    public Order findById(OrderId id) {
-        return jpaRepo.findById(id.getValue())
-            .map(entity -> OrderMapper.toDomain(entity))
-            .orElse(null);
-    }
-
-    @Override
-    public void save(Order order) {
-        OrderEntity entity = OrderMapper.toEntity(order);
-        jpaRepo.save(entity);
-    }
-}
-
-// Notification Implementation
-@Service
-public class EmailNotificationService implements NotificationService {
-    private final JavaMailSender mailSender;
-
-    @Override
-    public void sendOrderConfirmation(Order order) {
-        SimpleMailMessage email = new SimpleMailMessage();
-        email.setTo(order.getCustomerId().toString());
-        email.setSubject("Order Confirmed: " + order.getId());
-        email.setText("Your order has been confirmed...");
-        mailSender.send(email);
-    }
-}
-```
-
----
-
-### 3. Hexagonal Architecture (Ports & Adapters)
-
-Hexagonal Architecture, được giới thiệu bởi Alistair Cockburn, sử dụng metaphor của một **hexagon** trong đó trung tâm là application core và các cạnh là ports được kết nối bởi adapters.
+Do "Uncle Bob" (Robert C. Martin) tạo ra. Nó chia mã nguồn thành các lớp (layers) giống như một củ hành tây.
 
 ```mermaid
 flowchart TD
-    subgraph HEX["Hexagonal Architecture"]
-        subgraph CORE["Application Core (Business Logic)"]
-            US["Use Cases"]
-            ENT["Entities"]
+    subgraph FR["Vỏ ngoài cùng (Frameworks, Web, DB)"]
+        IA["Lớp 3: Controller, Presenter, Gateway"]
+        subgraph AL["Lớp 2: Use Cases (Nghiệp vụ ứng dụng)"]
+            subgraph DL["Lõi (Lớp 1): Entities (Nghiệp vụ cốt lõi)"]
+            end
         end
-
-        subgraph PORTS["Ports"]
-            DRIV["Driving Ports<br>(Primary/Input)"]
-            DRIVN["Driven Ports<br>(Secondary/Output)"]
-        end
-
-        subgraph ADAPTERS["Adapters"]
-            PRIM["Primary Adapters<br>(REST, CLI, UI)"]
-            SEC["Secondary Adapters<br>(DB, Email, External APIs)"]
-        end
-
-        PRIM -->|"Uses"| DRIV
-        DRIV -->|"Calls"| US
-        US -->|"Uses"| DRIVN
-        DRIVN -->|"Implemented by"| SEC
     end
 ```
 
-#### Ports
+### Luật tối thượng (The Dependency Rule)
+> **Mũi tên chỉ được phép hướng vào trong!** Lớp ngoài được phép biết và gọi lớp trong. Nhưng lớp trong **tuyệt đối không được biết** sự tồn tại của lớp ngoài.
 
-**Ports** là interfaces được định nghĩa bởi application core. Chúng có hai loại:
+Nghĩa là: Lõi (Entities) không được chứa bất kỳ dòng code nào liên quan đến SQL, MongoDB, hay React. Nó chỉ chứa logic thuần túy (VD: `if (tuoi < 18) throw new Error()`).
 
-| Loại Port | Direction | Purpose | Ví dụ |
-|-----------|-----------|---------|---------|
-| **Driving (Primary)** | Inward | How external actors interact with the core | `OrderService` interface |
-| **Driven (Secondary)** | Outward | What the core needs from external systems | `OrderRepository`, `EmailService` |
+### Giải phẫu các lớp:
 
-```java
-// Driving Port (Primary) — how external world drives the application
-public interface OrderServicePort {
-    OrderId placeOrder(CustomerId customerId, List<OrderItemRequest> items);
-    OrderDTO getOrder(OrderId orderId);
-    void cancelOrder(OrderId orderId);
-}
-
-// Driven Port (Secondary) — what the application needs from outside
-public interface OrderRepositoryPort {
-    Order findById(OrderId id);
-    void save(Order order);
-}
-
-public interface ProductCatalogPort {
-    Product findById(ProductId id);
-}
-
-public interface NotificationPort {
-    void sendOrderConfirmation(Order order);
-}
-```
-
-#### Adapters
-
-**Adapters** là implementations kết nối ports với outside world.
-
-```java
-// Primary Adapter: REST API
-@RestController
-public class OrderRestAdapter implements OrderServicePort {
-    private final OrderServicePort orderService;
-
-    @PostMapping("/orders")
-    public ResponseEntity<OrderId> placeOrder(@RequestBody CreateOrderRequest req) {
-        OrderId orderId = orderService.placeOrder(req.customerId(), req.items());
-        return ResponseEntity.created(URI.create("/orders/" + orderId)).build();
-    }
-}
-
-// Secondary Adapter: JPA Repository
-@Repository
-public class JpaOrderAdapter implements OrderRepositoryPort {
-    private final OrderJpaRepository jpaRepo;
-
-    @Override
-    public Order findById(OrderId id) {
-        return jpaRepo.findById(id.getValue()).map(OrderMapper::toDomain).orElse(null);
-    }
-}
-
-// Secondary Adapter: Email Service
-@Service
-public class SmtpNotificationAdapter implements NotificationPort {
-    private final JavaMailSender mailSender;
-
-    @Override
-    public void sendOrderConfirmation(Order order) {
-        // Send email
-    }
-}
-```
+| Lớp | Trách nhiệm | Ví dụ |
+|-------|-------------|---------|
+| **1. Entities (Lõi)** | Luật lệ bất di bất dịch của doanh nghiệp. | Tính lãi suất ngân hàng. Không phụ thuộc bất kỳ Framework nào. |
+| **2. Use Cases** | Quy trình nghiệp vụ cụ thể. | Quy trình "Rút tiền": Kiểm tra số dư -> Trừ tiền -> Ghi lịch sử. |
+| **3. Interface Adapters** | Người phiên dịch. Chuyển đổi dữ liệu từ dạng Web (JSON) sang dạng Use Case hiểu được. | Controller (nhận HTTP request), Presenter. |
+| **4. Frameworks & Drivers** | Những thứ bên ngoài (Database, Web Framework, Tool). | MySQL, Spring Boot, Express.js. |
 
 ---
 
-### 4. Onion Architecture
+## 2. Hexagonal Architecture (Ports & Adapters)
 
-Onion Architecture, được giới thiệu bởi Jeffrey Palermo, tổ chức các layers thành các vòng tròn đồng tâm xung quanh core domain.
+Do Alistair Cockburn tạo ra. Cách tiếp cận này dùng hình ảnh thực tế hơn: **Cổng cắm (Ports)** và **Cục sạc chuyển đổi (Adapters)**.
+
+**Ví dụ thực tế:**
+Cái Laptop của bạn (Business Logic) có một cái lỗ cắm sạc (Port). Nó đưa ra quy định: *"Tôi cần dòng điện 20V cắm vào lỗ tròn này"*. 
+Nó không thèm quan tâm bạn lấy điện từ ổ cắm điện lưới (220V), từ cục sạc dự phòng, hay từ bình ắc quy. Nhiệm vụ biến điện 220V thành 20V là của **Cục sạc (Adapter)**.
 
 ```mermaid
-flowchart TD
-    subgraph ONION["Onion Architecture"]
-        CORE["Core Domain<br>(Entities, Value Objects)"]
-        APP["Application Services<br>(Use Cases)"]
-        PORTS["Ports<br>(Interfaces)"]
-        INFRA["Infrastructure<br>(Adapters, Repositories, Services)"]
+flowchart LR
+    A1["App Mobile (Adapter)"] --> P1["Port Nhận (Input)"]
+    A2["Web (Adapter)"] --> P1
+    
+    subgraph Lõi["Lõi Ứng Dụng (Laptop)"]
+        P1 --> Core["Business Logic"]
+        Core --> P2["Port Xuất (Output)"]
     end
-
-    INFRA -->|"depends on"| PORTS
-    PORTS -->|"depends on"| APP
-    APP -->|"depends on"| CORE
+    
+    P2 --> A3["MySQL (Adapter)"]
+    P2 --> A4["MongoDB (Adapter)"]
 ```
 
-Rất giống với Clean Architecture — main difference là naming:
-- **Domain Core** = Entities layer
-- **Application Services** = Use Cases layer
-- **Ports** = Interface Adapters
-- **Infrastructure** = Frameworks & Drivers
+### Phân tích:
+- **Port:** Là các Interface (Bản hợp đồng). Lõi ứng dụng định nghĩa Interface `IUserRepository` (Tôi cần 1 cái kho để lấy User).
+- **Adapter:** Là các class thực thi Interface đó. Class `MySQLUserRepository` hoặc `MongoUserRepository` sẽ cắm vào Port đó để làm việc.
 
 ---
 
-### 5. Layered Architecture (So sánh)
+## 3. Mã nguồn minh họa (Code Example)
 
-**Traditional Layered Architecture** là ancestor của các patterns này:
+Đây là cách bạn viết code thể hiện Clean Architecture trong thực tế:
 
+### Lõi (Core / Domain) - Hoàn toàn trong sạch, không Framework
+```typescript
+// 1. Entity (Lõi)
+class Account {
+    constructor(public balance: number) {}
+    
+    // Luật kinh doanh thuần túy
+    withdraw(amount: number) {
+        if (amount > this.balance) throw new Error("Không đủ tiền!");
+        this.balance -= amount;
+    }
+}
+
+// 2. Cổng cắm ra ngoài (Port / Interface) - Do Lõi định nghĩa!
+interface IAccountRepository {
+    save(acc: Account): void;
+    findById(id: string): Account;
+}
 ```
-┌─────────────────────────┐
-│   Presentation Layer    │  (Controllers, Views)
-├─────────────────────────┤
-│    Service Layer        │  (Business Logic)
-├─────────────────────────┤
-│     Data Access         │  (Repositories, DAOs)
-├─────────────────────────┤
-│    Database Layer       │  (SQL, NoSQL)
-└─────────────────────────┘
+
+### Lớp ứng dụng (Use Cases)
+```typescript
+// 3. Use Case
+class WithdrawMoneyUseCase {
+    // Chỉ phụ thuộc vào Interface (Port), không phụ thuộc DB thật
+    constructor(private repo: IAccountRepository) {}
+
+    execute(accountId: string, amount: number) {
+        const acc = this.repo.findById(accountId);
+        acc.withdraw(amount); // Gọi logic lõi
+        this.repo.save(acc);  // Lưu lại
+    }
+}
 ```
 
-| Khía cạnh | Layered | Clean/Hexagonal |
-|-----------|---------|-----------------|
-| **Dependency Direction** | All layers depend downward | Only inward dependencies |
-| **Framework Coupling** | Service layer often coupled to framework | Domain isolated from frameworks |
-| **Testability** | Harder to unit test business logic | Easy to test domain in isolation |
-| **Flexibility** | Changes to DB affect service layer | DB changes isolated to outer layer |
-| **Complexity** | Simpler for small projects | More structure, better for large projects |
-
----
-
-### 6. Dependency Injection in Practice
-
-Tất cả các architectures này được hưởng lợi từ **Dependency Injection (DI)** để đạt được loose coupling:
-
-```java
-// Spring Boot auto-configuration wires adapters to ports
-@Configuration
-public class AppConfig {
-
-    @Bean
-    public OrderRepositoryPort orderRepository(JpaOrderRepository jpaRepo) {
-        return new JpaOrderAdapter(jpaRepo);
+### Lớp vỏ ngoài cùng (Adapters / Frameworks)
+```typescript
+// 4a. Adapter cho Database (Cục sạc)
+// Class này implement Port mà Lõi đã định nghĩa
+class MySQLAccountRepository implements IAccountRepository {
+    save(acc: Account) { 
+        // Viết code SQL UPDATE ở đây
     }
-
-    @Bean
-    public NotificationPort notificationService(JavaMailSender mailSender) {
-        return new SmtpNotificationAdapter(mailSender);
+    findById(id: string): Account { 
+        // Viết code SQL SELECT ở đây
+        return new Account(1000); 
     }
+}
 
-    @Bean
-    public PlaceOrderUseCase placeOrderUseCase(
-            OrderRepositoryPort orderRepository,
-            ProductCatalogPort productCatalog,
-            NotificationPort notification) {
-        return new PlaceOrderUseCase(orderRepository, productCatalog, notification);
-    }
-
-    @Bean
-    public OrderController orderController(PlaceOrderUseCase useCase) {
-        return new OrderController(useCase);
+// 4b. Adapter cho Web (Controller)
+class AccountController {
+    constructor(private useCase: WithdrawMoneyUseCase) {}
+    
+    // Nhận Request từ React/Vue
+    postWithdraw(req: Request) {
+        this.useCase.execute(req.body.id, req.body.amount);
     }
 }
 ```
 
 ---
 
-### 7. Testing at Each Layer
+## 4. Tại sao phải làm khổ mình như vậy? (Câu hỏi phỏng vấn)
 
-Một major benefit của các architectures này là **testability at every layer**.
+Viết code kiểu này rất dài dòng (thêm nhiều file, nhiều Interface), vậy lợi ích là gì?
 
-```java
-// 1. Domain Layer: Pure unit tests (no dependencies)
-class OrderTest {
-    @Test
-    void cannotConfirmEmptyOrder() {
-        Order order = Order.create(customerId);
-        assertThrows(OrderException.class, order::confirm);
-    }
-}
-
-// 2. Use Case Layer: Mock ports
-class PlaceOrderUseCaseTest {
-    @Mock OrderRepositoryPort orderRepository;
-    @Mock ProductCatalogPort productCatalog;
-    @Mock NotificationPort notification;
-
-    @Test
-    void placeOrderSavesAndNotifies() {
-        when(productCatalog.findById(any())).thenReturn(testProduct);
-        PlaceOrderUseCase useCase = new PlaceOrderUseCase(
-            orderRepository, productCatalog, notification);
-        useCase.execute(command);
-        verify(orderRepository).save(any());
-        verify(notification).sendOrderConfirmation(any());
-    }
-}
-
-// 3. Controller Layer: Mock use case
-class OrderControllerTest {
-    @Mock PlaceOrderUseCase useCase;
-
-    @Test
-    void createOrderReturns201() {
-        when(useCase.execute(any())).thenReturn(new OrderResult(testOrderId, total));
-        OrderController controller = new OrderController(useCase);
-        ResponseEntity<?> response = controller.createOrder(testRequest);
-        assertEquals(201, response.getStatusCode());
-    }
-}
-```
+1. **Test cực kỳ dễ:** Bạn muốn test hàm `withdraw`? Không cần bật MySQL lên! Bạn chỉ cần tạo một `MockRepository` (một cái Adapter giả) cắm vào Port là test được ngay.
+2. **Thay Database/Framework như thay áo:** Sếp bảo chuyển từ MySQL sang MongoDB. Bạn chỉ việc viết thêm class `MongoAccountRepository` (Cục sạc mới) cắm vào Port cũ. Lõi (Use Case, Entity) không phải sửa lấy 1 dòng code!
+3. **Trì hoãn quyết định (Defer decisions):** Bạn có thể bắt đầu code logic nghiệp vụ (Core) ngay ngày đầu tiên mà chưa cần quyết định xem sẽ dùng Database gì hay UI dùng React hay Angular.
 
 ---
 
-### 8. Khi nào nên dùng mỗi Pattern
+## 5. Lời khuyên phỏng vấn (Chốt hạ)
 
-| Pattern | Phù hợp cho | Cân nhắc khi |
-|---------|-------------|--------------|
-| **Clean Architecture** | Large projects, DDD, complex business logic | Cần testable business rules, multiple deployment options |
-| **Hexagonal** | Systems cần multiple delivery mechanisms (REST, CLI, MQ) | Core business phải stable trong khi adapters thay đổi |
-| **Onion** | Tương tự Clean, prefer naming convention | Team quen với "onion" metaphor |
-| **Layered** | Small to medium projects, simple CRUD | Project đơn giản đủ để full isolation là overkill |
-
-> **Start simple**: Với các small projects, một well-structured layered architecture có thể đủ. Khi complexity tăng, migrate toward Clean/Hexagonal. Goal là **sufficient structure** — không phải maximum complexity.
-
----
-
-### 9. Câu hỏi phỏng vấn
-
-**Q: Dependency Rule trong Clean Architecture là gì?**
-
-> **Dependency Rule** nói rằng source code dependencies chỉ có thể point inward. Outer layers (UI, frameworks, databases) có thể phụ thuộc vào inner layers (use cases, entities), nhưng inner layers không được phụ thuộc vào outer layers. Điều này có nghĩa: entities không biết gì về databases hoặc frameworks; use cases chỉ biết về entities và interface abstractions; infrastructure implements interfaces được định nghĩa bởi inner layers. Rule này đảm bảo business logic được isolate và không bị ảnh hưởng bởi changes trong external systems.
-
-**Q: Hexagonal Architecture và Clean Architecture khác nhau thế nào?**
-
-> Chúng rất giống nhau và thường được coi là cùng một pattern với terminology khác nhau. **Hexagonal** nhấn mạnh ports-and-adapters metaphor — application core được bao quanh bởi driving ports (input) và driven ports (output), với adapters kết nối chúng với outside world. **Clean Architecture** nhấn mạnh layered dependency structure và dependency rule. Core principles là identical: isolate business logic, define ports as interfaces, và implement adapters trong outer layer. Hexagonal hơi cũ hơn và sử dụng vocabulary khác nhau; Clean Architecture cung cấp layer definitions chi tiết hơn.
-
-**Q: Làm thế nào để implement các architectures này trong Spring Boot?**
-
-> Các bước chính: Định nghĩa **domain entities** không có Spring annotations hoặc framework dependencies. Định nghĩa **port interfaces** (ví dụ: `OrderRepository`, `NotificationService`) trong domain hoặc application layer. Implement **use cases** phụ thuộc chỉ vào port interfaces. Trong infrastructure layer, implement **adapters** (JPA repositories, email services) implement các port interfaces. Configure **dependency injection** (qua `@Bean` methods hoặc constructor injection) để wire adapters tới ports của chúng. Bằng cách này, core business logic hoàn toàn isolated khỏi Spring — bạn có thể test nó mà không cần Spring, và thay đổi framework mà không cần viết lại business logic.
-
-**Q: Lợi ích chính của các architectures này so với traditional layered architecture là gì?**
-
-> Primary benefit là **framework và infrastructure independence**. Trong traditional layered architecture, service/business logic layer thường phụ thuộc vào specific database frameworks, ORM annotations, hoặc web framework classes. Trong Clean/Hexagonal architecture, domain hoàn toàn isolated — nó không có imports từ Spring, Hibernate, hoặc bất kỳ framework nào khác. Điều này có nghĩa: business logic là **testable in complete isolation**, **framework có thể được replace** mà không cần viết lại business logic, và **same core** có thể được expose qua REST, GraphQL, hoặc CLI mà không cần modification.
+> **Hỏi:** "Em có áp dụng Clean Architecture cho mọi dự án không?"
+>
+> **Trả lời:** "Dạ không. Clean Architecture đem lại sự độc lập nhưng đổi lại là chi phí viết code dài dòng (Boilerplate) và hệ thống file phức tạp. 
+> - Với các dự án nhỏ, yêu cầu chỉ là CRUD (Thêm, Sửa, Xóa) đơn giản, em sẽ dùng kiến trúc MVC truyền thống để chạy nhanh. 
+> - Em chỉ dùng Clean Architecture khi dự án có nghiệp vụ (Business Logic) rất phức tạp, cần viết Unit Test cho logic đó, và có khả năng sống thọ (maintain lâu dài) cần sự tách biệt rõ ràng."

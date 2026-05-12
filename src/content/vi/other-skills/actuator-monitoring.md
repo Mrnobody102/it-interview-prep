@@ -1,8 +1,10 @@
 # Spring Boot Actuator & Monitoring
 
-## 1. Tong quan
+## 1. Tổng quan
 
-Spring Boot Actuator cung cap cac tinh nang quan ly va monitoring san sang cho production thong qua HTTP endpoints va JMX. No the hien cac thong tin suc khoe, metrics, cau hinh moi truong, va nhieu hon nua ngay tu dau.
+**Spring Boot Actuator** cung cấp các endpoint để kiểm tra và quan sát ứng dụng khi chạy production: app còn sống không, có sẵn nhận traffic không, dùng bao nhiêu memory, route nào đang có, log level hiện tại là gì.
+
+Nói đơn giản: Actuator là "bảng điều khiển kỹ thuật" của Spring Boot app. Kubernetes, Prometheus hoặc operator có thể gọi các endpoint này để health check và giám sát.
 
 ### 1.1. Dependency
 
@@ -12,7 +14,7 @@ Spring Boot Actuator cung cap cac tinh nang quan ly va monitoring san sang cho p
     <artifactId>spring-boot-starter-actuator</artifactId>
 </dependency>
 
-<!-- Tich hop Prometheus -->
+<!-- Tích hợp Prometheus -->
 <dependency>
     <groupId>io.micrometer</groupId>
     <artifactId>micrometer-registry-prometheus</artifactId>
@@ -21,28 +23,30 @@ Spring Boot Actuator cung cap cac tinh nang quan ly va monitoring san sang cho p
 
 ---
 
-## 2. Cac Endpoint chinh
+## 2. Các Endpoint chính
 
-### 2.1. Bang tham chieu Endpoint
+**Endpoint** ở đây là URL do Actuator mở ra, ví dụ `/actuator/health`.
 
-| Endpoint | URL | Mo ta |
+### 2.1. Bảng tham chiếu Endpoint
+
+| Endpoint | URL | Mô tả |
 |----------|-----|-------|
-| **health** | `/actuator/health` | Trang thai suc khoe ung dung |
-| **info** | `/actuator/info` | Thong tin ung dung tuy y |
-| **metrics** | `/actuator/metrics/{name}` | Metrics cua ung dung |
-| **env** | `/actuator/env` | Cac thuoc tinh moi truong |
-| **loggers** | `/actuator/loggers` | Cau hinh logger |
-| **beans** | `/actuator/beans` | Tat ca Spring beans |
-| **mappings** | `/actuator/mappings` | Tat ca URL mappings |
+| **health** | `/actuator/health` | Trạng thái sức khỏe ứng dụng |
+| **info** | `/actuator/info` | Thông tin ứng dụng tùy ý |
+| **metrics** | `/actuator/metrics/{name}` | Chỉ số của ứng dụng |
+| **env** | `/actuator/env` | Thuộc tính môi trường |
+| **loggers** | `/actuator/loggers` | Cấu hình logger |
+| **beans** | `/actuator/beans` | Tất cả Spring beans |
+| **mappings** | `/actuator/mappings` | Tất cả URL mappings |
 | **threaddump** | `/actuator/threaddump` | Thread dump |
-| **heapdump** | `/actuator/heapdump` | Heap dump (nhi phan) |
-| **scheduledtasks** | `/actuator/scheduledtasks` | Cac task duoc dinh ky |
-| **caches** | `/actuator/caches` | Thong tin cache |
+| **heapdump** | `/actuator/heapdump` | Heap dump file, có thể rất nhạy cảm |
+| **scheduledtasks** | `/actuator/scheduledtasks` | Các task chạy định kỳ |
+| **caches** | `/actuator/caches` | Thông tin cache |
 
-### 2.2. Chi tiet Health Endpoint
+### 2.2. Chi tiết Health Endpoint
 
 ```bash
-# Kiem tra suc khoe co ban
+# Kiểm tra sức khỏe cơ bản
 GET /actuator/health
 
 # Response
@@ -101,7 +105,7 @@ GET /actuator/metrics/process.cpu.usage
 
 ---
 
-## 3. Cau hinh
+## 3. Cấu hình
 
 ### 3.1. Exposing Endpoints
 
@@ -112,7 +116,7 @@ management:
     web:
       exposure:
         include: health,info,metrics,env,loggers,beans,mappings,threaddump
-        exclude: heapdump,threaddump  # Loai bo nhung cai nhay cam
+        exclude: heapdump,threaddump  # Loại bỏ những endpoint nhạy cảm
       base-path: /actuator            # Mac dinh: /actuator
   endpoint:
     health:
@@ -145,12 +149,12 @@ management:
 ### 3.3. Info Endpoint
 
 ```yaml
-# application.yml - thong tin tinh
+# application.yml - thông tin tĩnh
 info:
   app:
     name: itinterviewprep
     version: 1.0.0
-    description: Ung dung on tap phong van IT
+    description: Ứng dụng ôn tập phỏng vấn IT
   build:
     artifact: @project.artifactId@
     name: @project.name@
@@ -166,7 +170,7 @@ info:
   "app": {
     "name": "itinterviewprep",
     "version": "1.0.0",
-    "description": "Ung dung on tap phong van IT"
+    "description": "Ứng dụng ôn tập phỏng vấn IT"
   },
   "build": {
     "artifact": "itinterviewprep",
@@ -255,11 +259,11 @@ public class ExternalApiHealthIndicator implements ReactiveHealthIndicator {
 
 ---
 
-## 5. Custom Metrics voi Micrometer
+## 5. Custom metrics với Micrometer
 
 ### 5.1. Counter
 
-Theo doi so lan xuat hien cua mot su kien.
+Theo dõi số lần xuất hiện của một sự kiện.
 
 ```java
 @Service
@@ -320,7 +324,7 @@ public class ReportService {
 ```
 
 ```java
-// Gauge - cho gia tri hien tai
+// Gauge - cho giá trị hiện tại
 @Component
 public class QueueMetrics {
 
@@ -343,7 +347,7 @@ public class QueueMetrics {
 }
 ```
 
-### 5.3. Distributed Tracing voi Micrometer
+### 5.3. Distributed tracing với Micrometer
 
 ```java
 @Configuration
@@ -357,13 +361,13 @@ public class TracingConfig {
     }
 }
 
-// Su dung @Observed annotation
+// Dùng @Observed annotation
 @Service
 public class UserService {
 
     @Observed(name = "user.registration", contextualName = "user-registration-process")
     public User registerUser(RegistrationRequest request) {
-        // Method execution duoc trace
+        // Method execution được trace
         return userRepository.save(toEntity(request));
     }
 }
@@ -371,7 +375,7 @@ public class UserService {
 
 ---
 
-## 6. Tich hop Prometheus
+## 6. Tích hợp Prometheus
 
 ### 6.1. Setup
 
@@ -380,7 +384,7 @@ management:
   endpoints:
     web:
       exposure:
-        include: "*"          # Expose tat ca endpoints
+        include: "*"          # Expose tất cả endpoints
   metrics:
     tags:
       application: ${spring.application.name}
@@ -409,26 +413,26 @@ scrape_configs:
 
 ### 6.3. Grafana Dashboard
 
-Tao cac panel cho cac metrics chinh:
+Tạo các panel cho metrics chính:
 
 ```
 # JVM Metrics
 jvm_memory_used{area="heap"} / jvm_memory_max{area="heap"} * 100
-# Muc tieu: < 80%
+# Mục tiêu: < 80%
 
 # HTTP Request Rate
 rate(http_server_requests_seconds_count{uri="/api/..."}[5m])
-# Muc tieu: > 0 cho cac endpoint quan trong
+# Mục tiêu: > 0 cho các endpoint quan trọng
 
 # HTTP Latency P99
 histogram_quantile(0.99, rate(http_server_requests_seconds_sum[5m]) / rate(http_server_requests_seconds_count[5m]))
-# Muc tieu: < 200ms
+# Mục tiêu: < 200ms
 
 # Database Connection Pool
 hikaricp_connections_active{pool="HikariPool-1"}
 hikaricp_connections_idle{pool="HikariPool-1"}
 hikaricp_connections_pending{pool="HikariPool-1"}
-# Muc tieu: pending < 5
+# Mục tiêu: pending < 5
 
 # Custom Business Metrics
 orders_created_total
@@ -437,9 +441,9 @@ orders_failed_total
 
 ---
 
-## 7. Cau hinh Logging
+## 7. Cấu hình logging
 
-### 7.1. Cau hinh Logback
+### 7.1. Cấu hình Logback
 
 ```xml
 <!-- resources/logback-spring.xml -->
@@ -458,7 +462,7 @@ orders_failed_total
         </encoder>
     </appender>
 
-    <!-- File Appender voi rolling -->
+    <!-- File Appender với rolling -->
     <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>${LOG_FILE}</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
@@ -535,7 +539,7 @@ Content-Type: application/json
 
 {"configuredLevel": "DEBUG"}
 
-# Reset ve mac dinh
+# Reset về mặc định
 POST /actuator/loggers/com.example.service
 Content-Type: application/json
 
@@ -544,7 +548,7 @@ Content-Type: application/json
 
 ---
 
-## 8. Thread Dump & Phan tich
+## 8. Thread dump & phân tích
 
 ### 8.1. Thread Dump Endpoint
 
@@ -580,21 +584,21 @@ GET /actuator/threaddump
 }
 ```
 
-### 8.2. Cac mau phan tich Thread thuong gap
+### 8.2. Các mẫu phân tích thread thường gặp
 
-| Mau | Mo ta | Muc do |
+| Mẫu | Mô tả | Mức độ |
 |---------|-------------|---------|
-| **RUNNABLE** | Dang thuc thi tich cuc | Binh thuong |
-| **BLOCKED** | Dang cho monitor lock | Cao - can tim hieu |
-| **WAITING** | Dang cho vo han (Object.wait, LockSupport.park) | Trung binh |
-| **TIMED_WAITING** | Dang cho voi timeout | Thap |
-| **DEADLOCK** | Hai hoac nhieu thread dang cho nhau | Nghiem trong |
+| **RUNNABLE** | Đang thực thi tích cực | Bình thường |
+| **BLOCKED** | Đang chờ monitor lock | Cao - cần tìm hiểu |
+| **WAITING** | Đang chờ vô hạn (Object.wait, LockSupport.park) | Trung bình |
+| **TIMED_WAITING** | Đang chờ với timeout | Thấp |
+| **DEADLOCK** | Hai hoặc nhiều thread đang chờ nhau | Nghiêm trọng |
 
 ---
 
 ## 9. Checklist Monitoring Production
 
-### 9.1. Cac Endpoint can thiet de Expose
+### 9.1. Các endpoint cần expose
 
 ```yaml
 management:
@@ -614,7 +618,7 @@ management:
         enabled: true  # K8s liveness/readiness
 ```
 
-### 9.2. Quy tac Alerting (Prometheus)
+### 9.2. Quy tắc alerting (Prometheus)
 
 ```yaml
 # alerts.yml

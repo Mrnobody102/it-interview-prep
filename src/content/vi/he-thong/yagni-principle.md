@@ -1,99 +1,67 @@
-# Nguyên lý YAGNI
+# Nguyên lý YAGNI (You Aren't Gonna Need It)
 
-## 
+## 1. Khái niệm cốt lõi
 
-### Khái niệm cốt lõi
+**YAGNI - "Bạn sẽ chẳng bao giờ cần tới nó đâu!"**
+Đây là nguyên tắc vàng khuyên bạn: **Tuyệt đối KHÔNG viết code, KHÔNG thiết kế thêm tính năng cho những dự định "phòng hờ tương lai" trừ khi nó thực sự cần thiết NGAY BÂY GIỜ.**
 
-> Không implement các features, abstractions, hoặc flexibility mà bạn không cần ngay bây giờ.
+**Ví dụ thực tế:** 
+Khách hàng thuê bạn làm một trang web nhỏ bán áo thun cho người trong xóm. Bạn tự nhủ: *"Lỡ sau này web nổi tiếng toàn thế giới thì sao?"*. Thế là bạn bỏ ra 2 tháng trời để thiết kế Database chịu tải 1 triệu người/giây, hỗ trợ đa ngôn ngữ Anh, Pháp, Tây Ban Nha, và tích hợp thanh toán bằng Bitcoin "cho tương lai". 
+👉 **Kết quả:** Web ế sưng mỏ, chả ai thèm vào. Tính năng Bitcoin và Đa ngôn ngữ rỉ sét không bao giờ được xài. Bạn vừa lãng phí 2 tháng cuộc đời một cách vô ích!
 
-YAGNI là một nguyên lý của extreme programming (XP) khuyên rằng không nên thiết kế dự phòng. Chỉ xây dựng những gì được yêu cầu bởi requirements hiện tại, không phải những gì bạn dự đoán có thể cần trong tương lai.
+---
 
-### Mục đích
+## 2. Vì sao "Thiết kế phòng hờ" lại là một thảm họa?
 
-- **Tránh nỗ lực lãng phí:** Không dành thời gian code features sẽ không bao giờ được dùng
-- **Codebase nhỏ gọn hơn, sạch hơn:** Ít code hơn có nghĩa ít bug hơn và dễ bảo trì hơn
-- **Giao hàng nhanh hơn:** Ship giá trị cho người dùng sớm hơn
-- **Giảm độ phức tạp:** Không có abstractions không cần thiết làm rối thiết kế
+- **Lãng phí thời gian và tiền bạc:** Xây dựng tính năng không ai dùng là đốt tiền của công ty.
+- **Tăng độ phức tạp:** Thêm code nghĩa là thêm rác. Rác làm hệ thống cồng kềnh, khó đọc và khó bảo trì.
+- **Thử nghiệm không được:** Code viết ra "cho tương lai" thường không được test tử tế ở hiện tại, khi tương lai đến (nếu có), nó chắc chắn sẽ chứa đầy Bug.
+- **Dự đoán thường sai:** Khách hàng đổi ý nhanh như người yêu cũ lật mặt. Thứ bạn nghĩ "sau này sẽ cần" thường khác xa 180 độ so với thực tế phát sinh.
 
-### YAGNI trong thực tế
+---
 
-#### Những gì KHÔNG NÊN làm
+## 3. Các "Dấu hiệu đỏ" vi phạm YAGNI
 
+Hãy giật mình tỉnh ngộ nếu bạn đang viết những dòng code có mùi sau:
+
+### 3.1. Code bị Comment lại "Để dành"
 ```typescript
-// Bad: Thêm "flexibility" cho nhu cầu tưởng tượng trong tương lai
-class UserRepository {
-  // Dùng complex abstraction "just in case" switch databases
-  save(user: User, databaseType: 'postgres' | 'mongodb' | 'redis') {
-    // 500 dòng code database-agnostic
-  }
-}
+// function sendFax() {
+//    Đoạn này tạm khóa lại, lỡ sếp yêu cầu chức năng Fax thì mở ra xài.
+// }
+```
+👉 **Sửa ngay:** Xóa mẹ nó đi! Đã có Git lưu trữ lịch sử rồi, cần thì lục lại Commit cũ. Đừng để rác chướng mắt trong file code.
 
-// Bad: Xây dựng admin panels, roles, permissions "for future use"
-class User {
-  // Comment: "Will add role-based access control later"
-  permissions: string[] = [];
-}
+### 3.2. Cấu trúc quá rườm rà (Over-engineering)
+Chỉ để in ra dòng chữ "Hello", bạn tạo ra 1 Interface, 1 Factory, 1 Dependency Injector... vì nghĩ "Lỡ sau này cần in thêm nhiều chữ khác".
+👉 **Sửa ngay:** Viết đúng lệnh `console.log("Hello")` và đi uống cà phê.
+
+### 3.3. Các tham số ma (Ghost Parameters)
+```typescript
+// Thêm biến useBitcoin dù hiện tại chỉ hỗ trợ Credit Card
+function processPayment(amount: number, useBitcoin: boolean = false) { ... }
 ```
 
-#### Những gì NÊN làm thay thế
+---
 
-```typescript
-// Good: Đơn giản và trực tiếp — giải quyết vấn đề hiện tại
-class UserRepository {
-  private db: PostgresDatabase;
+## 4. Sự Xung Đột Giữa SOLID và YAGNI?
 
-  async save(user: User): Promise<void> {
-    await this.db.query(
-      'INSERT INTO users (id, name, email) VALUES ($1, $2, $3)',
-      [user.id, user.name, user.email]
-    );
-  }
-}
-```
+Nhiều người nói SOLID bắt phải tạo Interface để dễ mở rộng (Open/Closed), còn YAGNI lại bảo đừng làm. Vậy nghe ai?
 
-### YAGNI vs. Nguyên lý SOLID
+> **Bí kíp phỏng vấn:** Bí quyết nằm ở **Thời điểm (Timing)**.
+> - **YAGNI** khuyên bạn: Đừng vội tạo Interface NGAY BÂY GIỜ nếu bạn chỉ có đúng 1 loại thanh toán (Ví dụ: Thẻ Tín Dụng). Cứ viết thẳng class cho nhanh.
+> - **SOLID** xuất hiện khi TƯƠNG LAI ĐÃ ĐẾN: Ngày mai sếp bắt thêm thanh toán MoMo. Lúc này sự kiện mở rộng đã CHẮC CHẮN xảy ra. Bây giờ bạn mới Refactor code, rút Interface ra để tuân thủ SOLID.
+> 
+> **Kết luận:** Hãy code đơn giản (YAGNI) cho đến khi sự thay đổi ập đến mặt bạn, lúc đó hãy dùng kiến trúc (SOLID) để giải quyết!
 
-YAGNI không có nghĩa là viết code lộn xộn, không thể mở rộng. Nó có nghĩa là:
+---
 
-| Nguyên lý | YAGNI nói | SOLID nói |
+## 5. Tóm tắt nhanh bộ ba: DRY - KISS - YAGNI
+
+Để trả lời lưu loát trong phỏng vấn, hãy nhớ 3 câu ngắn này:
+
+| Nguyên lý | Tóm tắt | Câu hỏi để tự kiểm tra bản thân khi code |
 |---|---|---|
-| **Abstraction** | Không thêm abstraction "just in case" | Làm abstraction đúng khi cần |
-| **Open/Closed** | Không over-engineer cho extensibility | Open for extension, closed for modification |
-| **Dependency Inversion** | Không thêm interfaces "for future mocking" | Depend on abstractions |
-
-> **Tip:** Chìa khóa là **timing**. Nguyên lý SOLID giúp khi cần mở rộng code hiện tại. YAGNI nói: đợi cho đến khi thực sự cần mở rộng nó. Premature abstraction cũng có hại như premature optimization.
-
-### Nhận diện vi phạm YAGNI
-
-Cẩn thận với các dấu hiệu đỏ sau:
-
-- **Comments "Just in case":** `// Might need this later`
-- **Tham số không dùng:** `calculateArea(width, height, unusedParam)`
-- **Code đã comment-out:** Code cũ được giữ "just in case"
-- **Feature flags cho features chưa quyết định:** Hệ thống over-configured
-- **Interfaces quá nhiều:** Một interface cho mỗi class, kể cả internal services nhỏ
-
-### Khi nào YAGNI có thể bị áp dụng quá đà
-
-- Khi nó dẫn đến **code trùng lặp** rõ ràng nên được chia sẻ
-- Khi codebase trở nên **khó test** do tight coupling
-- Khi **nhu cầu kiến trúc rõ ràng** (ví dụ: database layer) bị bỏ qua
-
-### Quy tắc thực tế
-
-| Câu hỏi | YAGNI verdict |
-|---|---|
-| Feature này được user hoặc stakeholder yêu cầu? | Xây dựng nó |
-| Feature này cho "potential future" use? | Không xây dựng |
-| Đây là để tránh một code smell rõ ràng? | Sửa smell đó |
-| Đây là vì "we might need it"? | Không thêm |
-
-### Mối quan hệ YAGNI và DRY
-
-> **Tóm tắt:** YAGNI và DRY bổ sung cho nhau. YAGNI ngăn xây dựng những thứ sẽ không được dùng. DRY ngăn lặp lại những thứ sẽ được dùng. Cùng nhau, chúng giúp codebase gọn gàng và phù hợp.
-
-| Tình huống | YAGNI | DRY |
-|---|---|---|
-| Code trùng lặp 2 lần, có thể sẽ thay đổi cùng nhau | Không can thiệp | Trích xuất function |
-| Code trùng lặp "phòng xa" cho future | Bỏ qua | Không trích xuất |
-| Có thể abstract hóa rõ ràng ngay bây giờ | Đợi cho rõ ràng | Trích xuất |
+| **DRY** | Không chép phạt. | *"Đoạn code này mình đã copy paste ở đâu chưa?"* |
+| **KISS** | Đừng làm quá lên. | *"Đứa thực tập sinh đọc hàm này có hiểu không?"* |
+| **YAGNI** | Không lo xa vô ích. | *"Sếp có bắt buộc làm tính năng này NGAY BÂY GIỜ không?"* |

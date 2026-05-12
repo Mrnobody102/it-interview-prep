@@ -1,4 +1,4 @@
-# Serverless Architecture
+# Kiến trúc Serverless
 
 ## Tổng quan
 
@@ -83,7 +83,7 @@ functions:
           method: get
 ```
 
-### Best Practices
+### Thực hành tốt
 
 - **Giữ functions nhỏ và tập trung:** Nguyên lý Single Responsibility áp dụng
 - **Tối thiểu dependencies:** Package nhỏ = cold start nhanh hơn

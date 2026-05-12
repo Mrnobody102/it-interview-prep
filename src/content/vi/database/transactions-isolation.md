@@ -9,6 +9,8 @@
 - **Commit**: Lưu tất cả thay đổi vào database.
 - **Rollback**: Hủy bỏ tất cả thay đổi, quay về trạng thái trước transaction.
 
+Nói dễ hiểu: transaction là "làm hết hoặc không làm gì". Với chuyển tiền, không được phép trừ tiền người A thành công nhưng cộng tiền người B thất bại.
+
 ### 1.2. Ví dụ: Chuyển tiền
 
 ```sql
@@ -44,6 +46,8 @@ COMMIT;
 ## 3. Isolation Levels
 
 ### 3.1. Tổng quan
+
+**Isolation level** quyết định transaction này nhìn thấy thay đổi của transaction khác tới mức nào. Isolation càng cao thì dữ liệu càng an toàn, nhưng hệ thống thường chậm hơn vì phải khóa hoặc kiểm tra xung đột nhiều hơn.
 
 | Level | Dirty Read | Non-repeatable Read | Phantom Read |
 |-------|-----------|---------------------|--------------|
