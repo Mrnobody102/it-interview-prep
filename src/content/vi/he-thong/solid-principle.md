@@ -1,100 +1,116 @@
-# SOLID Principles (5 Nguyên Tắc Vàng)
+# SOLID Principles (5 Nguyên lý Vàng)
 
-## 1. Tổng quan
+## Tổng quan
+**SOLID** không chỉ là mớ lý thuyết suông dùng để "vượt ải" phỏng vấn. Trong thực tế, đây là bộ quy tắc sống còn giúp code của bạn không trở thành một "đống rác" (Spaghetti code) sau vài tháng phát triển. 
 
-**SOLID** là 5 nguyên tắc thiết kế hướng đối tượng được sáng lập bởi **"Uncle Bob"** (Robert C. Martin). Thuộc nằm lòng SOLID không chỉ giúp bạn qua vòng phỏng vấn mà còn giúp bạn viết ra những dòng code **Dễ đọc, dễ bảo trì, dễ mở rộng và ít lỗi**.
-
-Hãy nhớ mẹo này: SOLID giống như **Luật giao thông**. Không tuân thủ thì xe vẫn chạy được, nhưng sớm muộn gì cũng gây tai nạn liên hoàn!
-
-| Chữ cái | Tên Nguyên tắc | Ý nghĩa dân dã |
-|-----|-----------|---------|
-| **S** | Single Responsibility | 🔪 **Con dao Thái**: Chỉ dùng để thái thịt, đừng lấy ra gọt bưởi hay chặt xương. Một class chỉ làm duy nhất 1 việc. |
-| **O** | Open/Closed | 🧩 **Đồ chơi Lego**: Muốn xây thêm cái mái nhà, chỉ việc đắp thêm khối Lego mới (Mở rộng), không cần đập cả móng nhà đi xây lại (Sửa đổi). |
-| **L** | Liskov Substitution | 🐧 **Chim cánh cụt**: Lớp con (Cánh cụt) thay thế Lớp cha (Chim) thì không được gây lỗi (Cánh cụt không biết bay!). |
-| **I** | Interface Segregation | 🖨️ **Máy in**: Máy in thì chỉ có nút IN, đừng bắt khách hàng phải xem cả nút FAX nếu họ không cần. |
-| **D** | Dependency Inversion | 🔌 **Ổ cắm điện**: Cắm sạc điện thoại qua ổ cắm tường (Interface), đừng có dại mà nối dây điện trực tiếp vào lõi đồng của điện thoại (Concrete Class). |
+Người nắm vững SOLID sẽ viết ra những hệ thống mà khi cần thêm tính năng mới, họ chỉ việc "lắp ghép" thêm thay vì phải "đập đi xây lại".
 
 ---
 
-## 2. S - Single Responsibility Principle (SRP)
-**Nguyên tắc Đơn Trách Nhiệm**
+## 1. S - Single Responsibility Principle (Nguyên lý Đơn nhiệm)
+> **Triết lý:** Một Class chỉ nên giữ **một trách nhiệm duy nhất**. Nếu bạn sửa code vì nhiều lý do khác nhau, nghĩa là Class đó đang làm quá nhiều việc.
 
-> Một class chỉ nên có **một lý do duy nhất** để thay đổi.
+**❌ Sai:** Một class `ReportManager` vừa tính lương, vừa tạo file PDF, vừa gửi Email. Nếu sếp muốn đổi định dạng PDF, bạn sửa class này. Nếu sếp muốn đổi nhà cung cấp Email, bạn cũng lại phải vào đây sửa.
+```java
+public class ReportManager {
+    public void calculateSalary() { /* Logic tính toán phức tạp */ }
+    public void generatePdf() { /* Logic render PDF */ }
+    public void sendEmail() { /* Logic kết nối Mail Server */ }
+}
+```
 
-**❌ Ví dụ sai (Thập cẩm):**
-Class `UserManager` vừa làm nhiệm vụ _Lưu User vào DB_, vừa _Validate Email_, vừa _Gửi Email chào mừng_.
-👉 Lỗi: Nếu sếp đổi nhà cung cấp gửi Email, bạn phải vào hàm quản lý User để sửa? Vô lý!
-
-**✅ Ví dụ đúng (Tách bạch):**
-Chia thành 3 class: `UserRepository` (chỉ chuyên lưu DB), `UserValidator` (chỉ chuyên check lỗi), `EmailService` (chỉ chuyên gửi mail). Ai làm việc nấy!
-
----
-
-## 3. O - Open/Closed Principle (OCP)
-**Nguyên tắc Đóng / Mở**
-
-> Code phải **MỞ để mở rộng** (thêm tính năng mới), nhưng **ĐÓNG để sửa đổi** (không sửa code cũ đã chạy ngon).
-
-**❌ Ví dụ sai (Sửa hoài):**
-Hàm `ThanhToan(loại_thẻ)`. Nếu là thẻ VISA thì gọi code Visa. Sếp yêu cầu thêm thanh toán MoMo, bạn phải chui vào hàm này thêm một lệnh `if (loại_thẻ == MoMo)`. Mai mốt thêm ZaloPay, VNPay lại phải chui vào sửa tiếp. Càng sửa càng dễ gây bug cho code cũ!
-
-**✅ Ví dụ đúng (Dùng Interface/Strategy):**
-Tạo một Interface `IPaymentMethod` có hàm `pay()`.
-Viết class `VisaPayment` và `MoMoPayment` implement Interface đó. 
-Hệ thống chính chỉ cần gọi `paymentMethod.pay()`. Lần sau muốn thêm VNPay? Cứ tạo class `VNPayPayment` mới, hệ thống chính **không cần sửa một dấu phẩy nào**!
+**✅ Đúng:** Tách ra thành các class chuyên biệt.
+```java
+class SalaryCalculator { ... }
+class PdfGenerator { ... }
+class EmailSender { ... }
+```
+👉 **Góc nhìn phỏng vấn:** Việc tách nhỏ giúp code dễ Unit Test hơn hẳn. Bạn có thể test riêng logic tính lương mà không cần quan tâm đến PDF hay Email.
 
 ---
 
-## 4. L - Liskov Substitution Principle (LSP)
-**Nguyên tắc Thay thế Liskov**
+## 2. O - Open/Closed Principle (Nguyên lý Đóng/Mở)
+> **Triết lý:** Mở rộng tính năng bằng cách **viết thêm code mới**, đừng sửa code cũ đang chạy ổn định.
 
-> Lớp con phải **thay thế hoàn toàn** được lớp cha mà **không làm chết chương trình**.
+**❌ Sai:** Dùng `if-else` hoặc `switch-case` để kiểm tra loại thanh toán. Cứ mỗi lần công ty ký hợp đồng với một ví điện tử mới (ZaloPay, ViettelPay), bạn lại phải vào hàm `process` để "nhồi" thêm `if-else`.
+```java
+public void processPayment(String type) {
+    if (type.equals("VISA")) { ... }
+    else if (type.equals("MOMO")) { ... }
+}
+```
 
-**❌ Ví dụ kinh điển (Chim Cánh Cụt):**
-Bạn có class cha là `Chim` có hàm `bay()`.
-Bạn tạo class `ChimCanhCut` kế thừa từ `Chim`. Vì cánh cụt không biết bay, nên hàm `bay()` của nó bạn throw ra lỗi `NotSupportedException`.
-Hậu quả: Một hàm khác yêu cầu truyền vào 1 con `Chim` rồi gọi hàm `bay()`. Nếu vô tình truyền `ChimCanhCut` vào, chương trình văng lỗi sập ngay!
+**✅ Đúng:** Dùng Interface.
+```java
+interface PaymentMethod { void pay(int amount); }
 
-**✅ Cách sửa:**
-Tách ra. Class cha là `Chim` (chỉ có hàm ăn, ngủ). Interface `LoaiBayDuoc` (có hàm bay). Chim Đại Bàng thì kế thừa `Chim` + implement `LoaiBayDuoc`. Cánh Cụt thì chỉ kế thừa `Chim`.
+class VisaPayment implements PaymentMethod { public void pay(int amount) { ... } }
+class MomoPayment implements PaymentMethod { public void pay(int amount) { ... } }
 
----
-
-## 5. I - Interface Segregation Principle (ISP)
-**Nguyên tắc Phân tách Interface**
-
-> Đừng ép một class phải implement những hàm mà nó **không bao giờ dùng tới**.
-
-**❌ Ví dụ sai (Bắt ép):**
-Bạn tạo 1 Interface `MayDaNang` có 3 hàm: `in()`, `scan()`, `fax()`.
-Một công ty mua cái máy in rẻ tiền (chỉ biết in) về, class `MayInGiaRe` bị ép implement `MayDaNang`. Vậy 2 hàm `scan()` và `fax()` nó phải bỏ trống hoặc văng lỗi.
-
-**✅ Ví dụ đúng (Chia nhỏ):**
-Tách thành 3 Interface nhỏ xíu: `IPrinter`, `IScanner`, `IFax`. 
-Máy in xịn thì implement cả 3. Máy in rẻ tiền thì chỉ implement `IPrinter`. Gọn gàng sạch sẽ!
+// Khi cần thêm ZaloPay, bạn chỉ việc tạo class mới implements PaymentMethod. 
+// Code cũ vẫn giữ nguyên, không sợ "râu ông nọ chắp cằm bà kia".
+```
 
 ---
 
-## 6. D - Dependency Inversion Principle (DIP)
-**Nguyên tắc Đảo ngược Phụ thuộc**
+## 3. L - Liskov Substitution Principle (Nguyên lý Thay thế)
+> **Triết lý:** Class con phải có thể thay thế class cha mà không làm hỏng chương trình.
 
-> Module cấp cao không được phụ thuộc vào Module cấp thấp. Cả hai phải phụ thuộc vào **Abstraction (Interface)**.
+**Ví dụ kinh điển: Chim cánh cụt và Chim bay.**
+Nếu bạn có class cha `Bird` có hàm `fly()`, rồi cho `Penguin` kế thừa `Bird`. Vì chim cánh cụt không biết bay, bạn buộc phải quăng ra một lỗi `UnsupportedOperationException`.
 
-**❌ Ví dụ sai (Hàn chết dây điện):**
-Class `OrderService` (cấp cao) khai báo thẳng `MySQLDatabase db = new MySQLDatabase()` (cấp thấp) để lưu đơn hàng.
-👉 Lỗi: Nếu ngày mai công ty chuyển sang dùng MongoDB, bạn phải đập bỏ `OrderService` viết lại toàn bộ.
+**Hệ quả:** Nếu một đoạn code khác đang duyệt danh sách các con chim và bảo chúng `fly()`, khi gặp con chim cánh cụt, chương trình của bạn sẽ **sập**. Đó là vi phạm LSP.
 
-**✅ Ví dụ đúng (Dùng Ổ cắm điện):**
-`OrderService` chỉ khai báo 1 cái ổ cắm (Interface) là `IDatabase`. Nó không cần biết đằng sau ổ cắm là điện gió hay điện hạt nhân.
-Lúc khởi chạy, ta "cắm" `MySQLDatabase` (class đã implement `IDatabase`) vào `OrderService`. Mai mốt đổi sang `MongoDB`, chỉ việc "rút phích cắm" đổi sang class khác. Khái niệm này chính là cốt lõi của **Dependency Injection (DI)** trong Spring Boot hay NestJS!
+**✅ Giải pháp:** Đừng bắt con chim cánh cụt làm việc nó không thể. Hãy tách khả năng bay ra một Interface `Flyable`. Chỉ những con chim nào biết bay mới thực hiện Interface đó.
 
 ---
 
-## 7. Lời khuyên phỏng vấn (Bonus)
+## 4. I - Interface Segregation Principle (Nguyên lý Phân tách Interface)
+> **Triết lý:** Đừng ép một Class phải thực hiện những hàm mà nó không cần dùng tới.
 
-> **Hỏi: Việc vi phạm SOLID có làm chết dự án không?**
+**❌ Sai:** Một Interface `SmartWorker` có cả `work()` và `eat()`. Khi bạn tạo một `RobotWorker`, bạn vẫn phải viết code rỗng cho hàm `eat()` vì Robot đâu có biết ăn. Điều này làm "rác" code và gây hiểu lầm.
+
+**✅ Đúng:** Tách thành 2 Interface nhỏ: `Workable` và `Eatable`. Robot chỉ cần quan tâm đến `Workable`.
+
+---
+
+## 5. D - Dependency Inversion Principle (Đảo ngược phụ thuộc)
+> **Triết lý:** Các module cấp cao không nên phụ thuộc vào module cấp thấp. Cả hai nên phụ thuộc vào **Interface (Abstractions)**.
+
+**❌ Sai:** Class `NotificationService` trực tiếp khởi tạo `GmailService`. Nếu sau này muốn đổi sang `SendGrid`, bạn phải sửa lại toàn bộ code bên trong `NotificationService`.
+```java
+public class NotificationService {
+    private GmailService gmail = new GmailService(); // Dính chặt vào Gmail
+}
+```
+
+**✅ Đúng:** Dùng Dependency Injection.
+```java
+public class NotificationService {
+    private MessageService messageService; // Phụ thuộc vào Interface
+
+    public NotificationService(MessageService service) { 
+        this.messageService = service; 
+    }
+}
+```
+👉 **Góc nhìn phỏng vấn:** Đây chính là nền tảng của **Spring IoC/DI**. Nó giúp hệ thống cực kỳ linh hoạt và dễ dàng Mock dữ liệu khi viết Test.
+
+---
+
+## 6. Câu hỏi phỏng vấn "Thực chiến"
+
+> **Q: "Em có áp dụng SOLID cho tất cả mọi dự án không?"**
 >
-> **Đáp:** Dự án nhỏ (vài ngàn dòng code) viết kiểu gì cũng chạy được. Nhưng khi dự án lớn lên (hàng triệu dòng code, chục team cùng làm), nếu không có SOLID: 
-> 1. Fix 1 bug ở module A sẽ làm lòi ra 3 bug ở module B (vì dính lùm xùm vi phạm SRP và DIP).
-> 2. Muốn thêm 1 tính năng mới phải đi sửa 10 file cũ (vì vi phạm OCP).
-> SOLID chính là loại "vắc xin" phòng bệnh ung thư code!
+> **Trả lời:** "Dạ không. SOLID là một công cụ mạnh nhưng không miễn phí. Nó làm tăng số lượng class và interface, khiến cấu trúc project trở nên phức tạp hơn. 
+> - Với các dự án **Startup/Prototype** cần chạy cực nhanh để kiểm chứng thị trường, việc áp dụng cứng nhắc SOLID sẽ là **Over-engineering**.
+> - Em chỉ áp dụng khi dự án xác định sẽ **phát triển lâu dài**, có nhiều người cùng tham gia và cần khả năng bảo trì, mở rộng tốt."
+
+---
+
+## Tóm tắt nhanh
+- **S:** Mỗi ông 1 việc.
+- **O:** Muốn thêm thì viết mới, đừng sửa cũ.
+- **L:** Con không được làm hỏng việc của cha.
+- **I:** Cần gì dùng nấy, đừng ép nhau.
+- **D:** Đừng gọi trực tiếp, hãy gọi qua "trung gian" (Interface).

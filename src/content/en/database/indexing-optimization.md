@@ -1,103 +1,83 @@
-# Database -> Indexing & Query Optimization
+# Database Indexing & Query Optimization
 
-## 1. Index Fundamentals
+## 1. What is an Index? (The Library Catalog)
 
-An index is a secondary structure (often B-Tree) that reduces scan cost for selective lookups.
+Imagine entering a library with 1 million books.
+- **No Index:** You have to check every book one by one to find "Java Programming." It takes days!
+- **With Index:** You go to the catalog, look up "J," and see "Java Programming - Shelf 5, Row 2." You go straight there. It takes 10 seconds!
 
-### Common index types
-
-- Single-column index
-- Composite index
-- Unique index
-- Full-text index
-- Partial/filtered index (engine-specific)
+**Technical Core:** An Index is a data structure (usually a **B-Tree**) separate from the main table, storing column values and pointers to the actual data rows on the disk.
 
 ---
 
-## 2. Composite Index Rule
+## 2. B-Tree Index - The Heart of Databases
 
-Order matters.
+Most databases use **B-Tree** as the default index structure.
 
-For index `(customer_id, status, created_at)`:
-
-- `WHERE customer_id = ?` -> uses index
-- `WHERE customer_id = ? AND status = ?` -> uses index
-- `WHERE status = ?` -> generally cannot use leading key effectively
-
-Design composite indexes by real query patterns, not guesswork.
-
----
-
-## 3. Where to index
-
-Good candidates:
-
-- Frequent `WHERE` predicates
-- `JOIN` keys (especially foreign keys)
-- `ORDER BY` / `GROUP BY` hot queries
-- High-selectivity columns
-
-Avoid over-indexing:
-
-- Low-cardinality columns alone (e.g., boolean)
-- Write-heavy tables with too many indexes
-- Large text columns unless full-text/search-specific
-
----
-
-## 4. Query Plan Analysis
-
-Use `EXPLAIN` / `EXPLAIN ANALYZE` to inspect real execution behavior.
-
-### Warning signs
-
-- Sequential scan on large table
-- Sort/hash spill to disk
-- Wrong join order/cardinality estimates
-- Large rows removed by filter
-
-### Optimization flow
-
-1. Capture slow queries (slow log / APM)
-2. Inspect plan and cardinality estimates
-3. Add/adjust indexes
-4. Rewrite SQL if needed
-5. Re-run `EXPLAIN ANALYZE`
-6. Validate production metrics
-
----
-
-## 5. High-impact SQL practices
-
-- Avoid `SELECT *`
-- Filter early
-- Use keyset pagination for deep pages
-- Replace expensive correlated subqueries with joins/window functions when appropriate
-- Keep statistics updated (`ANALYZE`/autovacuum health)
-
-Keyset pagination example:
-
-```sql
--- Better than OFFSET for deep paging
-SELECT id, created_at, total
-FROM orders
-WHERE (created_at, id) < (:lastCreatedAt, :lastId)
-ORDER BY created_at DESC, id DESC
-LIMIT 50;
+```mermaid
+graph TD
+    Root[Root Node: 50]
+    Root --> Internal1[Node: 20, 35]
+    Root --> Internal2[Node: 65, 80]
+    Internal1 --> Leaf1[10, 15]
+    Internal1 --> Leaf2[22, 25]
+    Internal1 --> Leaf3[38, 45]
+    Internal2 --> Leaf4[55, 60]
+    Internal2 --> Leaf5[70, 75]
+    Internal2 --> Leaf6[85, 90]
 ```
 
+**Why B-Tree?**
+- **Low Depth:** A B-Tree needs only 3-4 levels to store millions of records. 
+- **Range Scans:** Leaf nodes are linked, making it extremely fast to find values between two ranges (e.g., `20` to `50`).
+
 ---
 
-## 6. Interview Q&A
+## 3. Critical Index Types
 
-### Q1: Why can indexes slow down writes?
+### 3.1. Composite Index (Multi-column)
+`CREATE INDEX idx_name_age ON users(name, age);`
 
-Each insert/update/delete must also maintain every related index, increasing CPU/IO and lock pressure.
+> [!IMPORTANT] **Leftmost Prefix Rule:**
+> An index on `(name, age)` supports queries on `name` or `name + age`. It **does not** support queries on `age` alone! Think of a phonebook sorted by Last Name then First Name; you can't find someone quickly if you only know their First Name.
 
-### Q2: How do you know an index helped?
+### 3.2. Covering Index
+A top-tier optimization technique. If your index contains all columns requested by the `SELECT` statement, the DB retrieves data directly from the index **without touching the main table (Heap)**.
 
-Compare before/after via `EXPLAIN ANALYZE`, latency percentiles, and buffer/read metrics under realistic workload.
+---
 
-### Q3: OFFSET pagination problem?
+## 4. Query Optimization - Common Pitfalls
 
-Large OFFSET requires scanning/skipping many rows. Keyset pagination seeks directly from the last seen key, keeping latency stable.
+### 4.1. Avoid Functions on Indexed Columns
+Using a function on an indexed column forces the DB to **ignore the index** and scan the whole table.
+- **❌ Wrong:** `WHERE YEAR(created_at) = 2024`
+- **✅ Right:** `WHERE created_at >= '2024-01-01' AND created_at < '2025-01-01'`
+
+### 4.2. The "N+1 Query" Problem
+Happens when you fetch 100 orders, then for each order, you call another SQL query to get customer info. Total = 1 + 100 = 101 queries!
+👉 **Solution:** Use `JOIN` or `In-clause` to fetch everything in 1 or 2 queries.
+
+### 4.3. Low Selectivity
+Don't index columns with very few unique values (e.g., Gender: Male/Female). The DB will often find it faster to just scan the whole table than to use the index.
+
+---
+
+## 5. EXPLAIN & EXPLAIN ANALYZE
+
+Don't guess; use `EXPLAIN` to see the **Execution Plan**.
+
+| Parameter | Meaning | Evaluation |
+|:---|:---|:---|
+| **Seq Scan** | Scanning the entire table. | ❌ Very slow for large data |
+| **Index Scan** | Using an index. | ✅ Fast |
+| **Index Only Scan** | Reading only from the index. | 🚀 Fastest |
+
+---
+
+## 6. Optimization Checklist
+
+- [ ] Indexed columns in `WHERE`, `JOIN`, and `ORDER BY`?
+- [ ] No `SELECT *`?
+- [ ] No functions wrapping indexed columns in `WHERE`?
+- [ ] Using Keyset Pagination (`ID > N`) instead of `OFFSET` for large datasets?
+- [ ] Are there too many indexes (over 5-7) slowing down Writes?

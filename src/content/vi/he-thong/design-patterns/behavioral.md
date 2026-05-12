@@ -1,42 +1,25 @@
 # Behavioral Patterns (Nhóm Hành vi)
 
-## Tổng quan
-Nhóm này giải quyết câu hỏi: **"Các Object nói chuyện với nhau như thế nào để hệ thống không bị rối rắm?"**
+## 1. Observer Pattern (Người theo dõi)
 
----
+**Giải thích:** Giống như nút **Subscribe** trên Youtube. Khi kênh có video mới, tất cả người đăng ký sẽ nhận được thông báo tự động.
 
-## 1. Observer Pattern (Kẻ Quan Sát)
-
-### Giải thích siêu dễ hiểu
-Giống hệt nút **"Theo dõi" (Subscribe)** kênh YouTube.
-- **Subject (YouTube Channel):** Kênh phát sóng.
-- **Observer (Bạn):** Người đăng ký nhận thông báo.
-Mỗi khi có Video mới, YouTube sẽ tự động bắn thông báo cho 1 triệu người đăng ký cùng lúc, thay vì mỗi ngày bạn phải tự vào kênh kiểm tra xem có video mới chưa.
-
-### Dùng khi nào?
-Khi một sự kiện xảy ra cần thông báo cho N nơi khác, nhưng bạn không muốn code "cứng" N nơi đó vào class chính.
-
-### Trong Spring Boot
-Bạn dùng suốt ngày với `@EventListener` và `ApplicationEventPublisher`.
-
+**Code minh họa:**
 ```java
-// Subject: Đăng video
-@Service
+// Subject (Kênh Youtube)
 public class YoutubeChannel {
-    @Autowired private ApplicationEventPublisher publisher;
-
-    public void uploadVideo(String title) {
-        publisher.publishEvent(new NewVideoEvent(this, title));
+    private List<Subscriber> subs = new ArrayList<>();
+    
+    public void upload(String video) {
+        for (Subscriber s : subs) s.update(video);
     }
 }
 
-// Observer: Điện thoại nhận thông báo
-@Component
-public class PhoneNotification {
-    @EventListener
-    public void onNewVideo(NewVideoEvent event) {
-        System.out.println("Ting ting! Có video mới: " + event.getTitle());
-    }
+// Observer (Người dùng)
+interface Subscriber { void update(String video); }
+
+class User implements Subscriber {
+    public void update(String video) { System.out.println("Xem ngay: " + video); }
 }
 ```
 
@@ -44,62 +27,37 @@ public class PhoneNotification {
 
 ## 2. Strategy Pattern (Chiến lược)
 
-### Giải thích siêu dễ hiểu
-Bạn đi từ nhà lên công ty. Tùy thuộc vào thời tiết mà bạn chọn phương tiện:
-- Nắng: Đi xe máy
-- Mưa: Đi Taxi
-- Tắc đường: Đi bộ
-Đích đến không đổi, nhưng **"chiến lược đi"** thay đổi linh hoạt lúc bạn ra khỏi nhà (runtime).
+**Giải thích:** Thay đổi thuật toán linh hoạt lúc đang chạy (Runtime). Giống như việc bạn chọn phương thức thanh toán (Momo, Visa, Zalopay) khi Checkout.
 
-### Dùng khi nào?
-Để giết chết đống `if-else` hoặc `switch-case` khổng lồ. Rất hay dùng cho việc chọn Phương thức thanh toán (Visa, Momo, ZaloPay).
-
+**Code minh họa:**
 ```java
 interface PaymentStrategy { void pay(int amount); }
 
-class MomoPayment implements PaymentStrategy { ... }
-class VisaPayment implements PaymentStrategy { ... }
+class MomoPayment implements PaymentStrategy { 
+    public void pay(int amount) { System.out.println("Trả qua Momo: " + amount); } 
+}
 
 class ShoppingCart {
-    private PaymentStrategy strategy; // Lắp chiến lược vào đây
-    
-    // Giao việc cho chiến lược xử lý
-    void checkout(int amount) { strategy.pay(amount); }
+    private PaymentStrategy strategy;
+    public void setStrategy(PaymentStrategy s) { this.strategy = s; }
+    public void checkout(int amount) { strategy.pay(amount); }
 }
 ```
 
 ---
 
-## 3. Chain of Responsibility Pattern (Chuỗi Trách Nhiệm)
+## 3. Chain of Responsibility (Chuỗi trách nhiệm)
 
-### Giải thích siêu dễ hiểu
-Giống hệt **Quy trình xin nghỉ phép**.
-- Nghỉ 1 ngày: Xin sếp trực tiếp duyệt.
-- Nghỉ 3 ngày: Sếp trực tiếp ký nháy -> Chuyển lên Trưởng phòng duyệt.
-- Nghỉ 1 tháng: Chuyển tờ đơn từ Sếp trực tiếp -> Trưởng phòng -> Giám đốc.
-Tờ đơn (Request) sẽ đi qua một dây chuyền, ai đủ thẩm quyền thì duyệt, không đủ thì đẩy lên tay người tiếp theo.
+**Giải thích:** Request đi qua một chuỗi các "trạm gác". Ai xử lý được thì xử lý, không thì đẩy cho người tiếp theo. Ví dụ: Duyệt đơn xin nghỉ phép (Sếp trực tiếp -> Trưởng phòng -> Giám đốc).
 
-### Dùng khi nào?
-Khi bạn code `Filter` chặn request trong Spring Security. 
-Request đi qua Filter 1 (Chống Spam) -> Filter 2 (Kiểm tra Token) -> Filter 3 (Kiểm tra Quyền hạn) -> Controller.
+**Ứng dụng thực tế:** `Filter` trong Spring Security. Request đi qua các filter kiểm tra Token, Spam, Quyền hạn trước khi vào Controller.
 
 ---
 
-## 4. State Pattern (Trạng thái)
+## 4. Mẹo phỏng vấn
 
-### Giải thích siêu dễ hiểu
-Con người khi vui thì hiền lành, khi đói thì cáu gắt. Rõ ràng là cùng một con người, nhưng **hành vi** thay đổi hoàn toàn tùy theo **trạng thái (state)** hiện tại.
-
-### Dùng khi nào?
-Dùng để quản lý vòng đời của Đơn Hàng (Chờ xử lý -> Đang giao -> Hoàn thành). Thay vì viết một cái `if(state == "DANG_GIAO")` khổng lồ, ta tạo ra các class `StateDangGiao`, `StateHoanThanh` riêng biệt.
-
----
-
-## Tóm tắt nhanh đi Phỏng vấn
-
-| Pattern | Tóm tắt 1 câu | Ứng dụng thực tế |
-|---------|---------|----------|
-| **Observer** | 1 người nói, vạn người nghe | Nút Subscribe, Event Listener |
-| **Strategy** | Rút thẻ đổi chiêu linh hoạt | Chọn cổng thanh toán (MoMo/VNPay) |
-| **Chain of Resp.** | Tờ đơn chạy qua nhiều cửa | Spring Security Filter |
-| **State** | Thái độ đổi theo tâm trạng | Vòng đời đơn hàng (Chờ/Giao/Xong) |
+| Pattern | Tóm tắt | Thực tế hay dùng |
+|:---|:---|:---|
+| **Observer** | 1 người nói, vạn người nghe | Event Listeners, Kafka, Pub/Sub |
+| **Strategy** | Rút thẻ đổi chiêu linh hoạt | Chọn cổng thanh toán, Thuật toán sắp xếp |
+| **Chain** | Chuyền bóng qua từng trạm | Spring Filter, Middleware, Xử lý Exception |

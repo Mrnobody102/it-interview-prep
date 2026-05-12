@@ -1,73 +1,64 @@
-# CQRS & Event Sourcing (Kiến trúc Nâng cao)
+# CQRS & Event Sourcing
 
-## 1. Tổng quan
+## 1. CQRS (Separate Read & Write)
 
-**CQRS** (Tách biệt Trách nhiệm Đọc - Ghi) và **Event Sourcing** (Lưu vết sự kiện) là "cặp bài trùng" đắc lực trong các hệ thống phân tán siêu lớn (Microservices, Ngân hàng, Sàn thương mại điện tử). Chúng sinh ra để giải quyết bài toán: **Khi dữ liệu quá khổng lồ, làm sao đọc cho lẹ mà ghi vẫn an toàn?**
+**CQRS** giải quyết một bài toán đau đầu trong các hệ thống lớn: Một Database duy nhất thường không thể vừa phục vụ việc Ghi (Write) cực nhanh, vừa phục vụ việc Đọc (Read) dữ liệu tổng hợp phức tạp mà không bị chậm.
 
----
+### Tại sao phải tách đôi?
+- **Phía Ghi (Command):** Tập trung vào tính chính xác, ràng buộc dữ liệu (Validation) và các giao dịch (Transactions).
+- **Phía Đọc (Query):** Tập trung hoàn toàn vào tốc độ. Dữ liệu thường được dàn phẳng (Denormalized) để chỉ cần 1 câu lệnh SELECT là lấy được đủ thông tin hiển thị lên UI, không cần JOIN nhiều bảng lằng nhằng.
 
-## 2. CQRS (Command Query Responsibility Segregation)
+```mermaid
+graph LR
+    User(User)
+    User -- "Lưu đơn hàng (Write)" --> Command(Command Side - SQL DB)
+    Command -- "Đồng bộ dữ liệu" --> ReadDB(Read Database - NoSQL/Search)
+    User -- "Xem danh sách đơn (Read)" --> Query(Query Side)
+    ReadDB -- "Trả về kết quả nhanh" --> User
+```
 
-### Vấn đề của mô hình truyền thống (CRUD)
-Bình thường, chúng ta hay dùng duy nhất **1 Database** và **1 Model** cho cả việc Đọc (SELECT) và Ghi (INSERT, UPDATE).
-Nhưng thực tế: **Lượng Đọc luôn gấp 100 lần lượng Ghi.**
-- Khách hàng lướt xem hàng chục món đồ (Đọc), nhưng chỉ bấm Mua (Ghi) 1 lần.
-- Nếu bạn lấy cái Database đang bận rộn tính toán tiền nong (Ghi) ra để phục vụ việc search text (Đọc) thì hệ thống sẽ chậm rì!
-
-### Giải pháp của CQRS
-CQRS chia đôi hệ thống thành 2 nửa hoàn toàn biệt lập:
-- **Nửa Ghi (Command):** Chỉ làm nhiệm vụ Insert/Update. Thường dùng SQL Database (MySQL, PostgreSQL) để đảm bảo tính toàn vẹn dữ liệu (ACID).
-- **Nửa Đọc (Query):** Chỉ làm nhiệm vụ Select. Dữ liệu từ nửa Ghi sẽ được đồng bộ (đồng bộ ngầm) sang một Database riêng chuyên để đọc. Thường dùng NoSQL (MongoDB) hoặc Search Engine (Elasticsearch) để tìm kiếm cực nhanh.
-
-**Ví dụ thực tế:** 
-Giống như quy trình làm việc của một Toà soạn báo.
-- **Nửa Ghi:** Các nhà báo viết bài, chỉnh sửa, kiểm duyệt trên một phần mềm quản lý nội bộ rất nghiêm ngặt (Command).
-- **Nửa Đọc:** Khi bài viết được xuất bản, nó được đẩy ra một trang web tĩnh đọc siêu nhanh cho hàng triệu độc giả xem (Query). Độc giả không thọc tay vào hệ thống nội bộ của tòa soạn!
-
-### Câu hỏi phỏng vấn CQRS
-> **Hỏi: Nhược điểm lớn nhất của CQRS là gì?**
-> **Đáp:** Là sự "Chậm tiêu" (Eventual Consistency). Vì Database Ghi và Đọc là 2 cái máy khác nhau, khi bạn vừa đổi Avatar (Ghi xong), hệ thống cần tốn vài giây để đồng bộ sang DB Đọc. Nếu bạn F5 ngay lập tức, bạn có thể vẫn thấy Avatar cũ. Khách hàng phải chấp nhận sự "Chậm tiêu" này.
+**✅ Ví dụ thực tế: Sàn thương mại điện tử.**
+- **Write:** Khi bạn nhấn "Đặt hàng", hệ thống phải check kho, trừ tiền, tạo vận đơn (Cần sự chính xác tuyệt đối của SQL).
+- **Read:** Khi bạn tìm kiếm sản phẩm hoặc xem danh sách đơn hàng đã mua, hệ thống lấy từ một Database chuyên để tìm kiếm (như Elasticsearch) để trả về kết quả trong tích tắc cho hàng triệu người cùng lúc.
 
 ---
 
-## 3. Event Sourcing (Nguồn gốc Sự kiện)
+## 2. Event Sourcing (Lưu vết mọi biến động)
 
-### Vấn đề của cách lưu trữ truyền thống (State-based)
-Bình thường, ta chỉ lưu **Trạng thái hiện tại (Current State)** của dữ liệu.
-Ví dụ: Đơn hàng ORD-123 có `status = "ĐÃ HỦY"`.
-Hỏi: "Thế trước khi bị hủy nó là gì? Ai hủy? Hủy lúc nào?" -> Chịu! Mất dấu lịch sử!
+Thay vì chỉ lưu trạng thái hiện tại (ví dụ: Số dư = 1000), chúng ta lưu **tất cả các sự kiện (Events)** đã dẫn đến trạng thái đó.
 
-### Giải pháp của Event Sourcing
-Thay vì lưu trạng thái cuối cùng, **ta lưu toàn bộ lịch sử các hành động (Sự kiện - Events)**. Từ các sự kiện này, ta có thể "cộng dồn" lại để suy ra trạng thái hiện tại.
+### So sánh State-based vs. Event Sourcing
+- **Cách cũ (State-based):** Lưu `Status = "Đã giao hàng"`. Bạn không hề biết trước đó nó đã qua những trạng thái nào, ai là người cập nhật.
+- **Event Sourcing:** Lưu một chuỗi các sự kiện:
+    1. `Order Created` (10:00 AM)
+    2. `Payment Confirmed` (10:05 AM)
+    3. `Shipped` (11:00 AM)
+    4. `Delivered` (15:00 PM)
 
-**Ví dụ thực tế kinh điển:** 
-**Sổ tiết kiệm Ngân hàng**.
-Ngân hàng KHÔNG BAO GIỜ chỉ lưu con số: "Tài khoản A có 1 tỷ". 
-Ngân hàng lưu sổ cái:
-1. Giao dịch 1: Nạp 500 triệu.
-2. Giao dịch 2: Chuyển khoản cho bạn B đi 100 triệu.
-3. Giao dịch 3: Nhận lương 600 triệu.
--> Nếu muốn biết số dư hiện tại, hệ thống lấy `500 - 100 + 600 = 1000` (1 tỷ).
-
-### Lợi ích to lớn
-- **Không bao giờ mất dữ liệu:** Bạn có 100% bằng chứng lịch sử để kiểm toán (Audit Trail). Rất quan trọng cho ngành tài chính, y tế.
-- **Du hành thời gian (Time Travel):** Sếp hỏi "Báo cáo doanh thu lúc 3 giờ chiều hôm qua", bạn chỉ việc "Tua lại" (Replay) cuốn băng ghi sự kiện đến đúng 3h chiều và xuất báo cáo.
-- **Fix Bug thần thánh:** Lỡ code bị lỗi tính sai tiền cả tháng nay? Không sao! Cập nhật lại công thức tính, rồi bấm Replay lại toàn bộ Sự kiện từ đầu tháng, số tiền sẽ được tính lại chuẩn xác!
+**Giá trị "vàng" cho doanh nghiệp:**
+1.  **Audit Trail tuyệt đối:** Không ai có thể gian lận hay sửa dữ liệu mà không để lại dấu vết. Rất quan trọng trong Tài chính, Ngân hàng.
+2.  **Time Travel:** Bạn muốn biết hệ thống trông như thế nào vào lúc 10:05 sáng nay? Chỉ cần chạy lại (Replay) các event đến đúng thời điểm đó.
+3.  **Khôi phục dữ liệu:** Nếu Database bị sập, bạn chỉ cần nạp lại danh sách Event từ đầu để tái tạo lại toàn bộ dữ liệu hiện tại.
 
 ---
 
-## 4. Khi CQRS kết hợp với Event Sourcing (CQRS + ES)
+## 3. Sự kết hợp CQRS + Event Sourcing
 
-Đây là cặp bài trùng mạnh nhất nhưng cũng phức tạp nhất.
-
-1. **Người dùng bấm Mua Hàng (Command).**
-2. Hệ thống Ghi không lưu trạng thái đơn hàng, mà ném 1 sự kiện `OrderCreated` vào **Event Store (Kho sự kiện)**. (Đây là Event Sourcing).
-3. Kho sự kiện báo tin cho hệ thống Đọc qua Message Queue (Kafka).
-4. Hệ thống Đọc (Query) nhận được tin, lập tức cập nhật bảng "Danh sách đơn hàng" trong MongoDB để chuẩn bị cho người dùng xem. (Đây là CQRS).
+Đây là "cặp bài trùng" mạnh nhất trong kiến trúc Microservices. Event Sourcing đóng vai trò là **Source of Truth** (Nguồn sự thật duy nhất). Mỗi khi có Event mới, hệ thống sẽ đẩy nó sang phía Đọc (Query side) để cập nhật dữ liệu hiển thị.
 
 ---
 
-## 5. Chốt hạ cho Phỏng vấn
+## 4. Câu hỏi phỏng vấn "Sát sườn"
 
-> **Hỏi: Khi nào thì KHÔNG NÊN xài CQRS/Event Sourcing?**
-> **Đáp:** Tránh xa CQRS và Event Sourcing nếu hệ thống chỉ là dạng **CRUD cơ bản** (Thêm, sửa, xóa bài viết/sản phẩm đơn giản) và chưa gặp vấn đề nghẽn cổ chai về hiệu năng. Áp dụng chúng sẽ làm đội chi phí DevOps, làm code phức tạp lên gấp chục lần và gây nhức đầu vì lỗi "Chậm tiêu" (Eventual Consistency) mà không đem lại giá trị thực tế nào.
+> **Q: "Nhược điểm lớn nhất khiến người ta ngại dùng mô hình này là gì?"**
+>
+> **Trả lời:** 
+> 1. **Eventual Consistency (Nhất quán sau cùng):** Vì phía Đọc và Ghi tách biệt, sẽ có một khoảng trễ nhỏ (mili giây). User vừa nhấn "Lưu", load lại trang có khi vẫn thấy dữ liệu cũ. Phải giải quyết bằng cách xử lý UI/UX hoặc dùng cơ chế thông báo.
+> 2. **Độ phức tạp:** Code sẽ không còn là các câu lệnh `save()`, `update()` đơn giản nữa mà phải quản lý Event, Store, Projection... Độ phức tạp có thể tăng gấp nhiều lần so với CRUD thông thường.
+
+---
+
+## Tóm tắt nhanh
+- **CQRS:** Tách riêng đường Đọc và đường Ghi để tối ưu tốc độ.
+- **Event Sourcing:** Không lưu kết quả cuối, hãy lưu lịch sử (như sổ cái kế toán).
+- **Dùng khi:** Hệ thống cực lớn, cần lưu vết dữ liệu nghiêm ngặt hoặc cần Đọc/Ghi cực nhanh độc lập.

@@ -1,28 +1,64 @@
 # Creational Patterns
 
-## 1. Singleton (The One and Only)
-**Analogy:** The President of a country.
-There is only one at a time. Everyone who needs a signature goes to that same person. 
-**Interview Tip:** In Spring Boot, most Beans (`@Service`, `@Component`) are **Singletons** by default.
+## 1. Singleton
+**Explanation:** Ensures a class has only **one instance** throughout the application's lifecycle.
+
+**Code Example (Thread-safe):**
+```java
+public class DatabaseConnection {
+    private static DatabaseConnection instance;
+    private DatabaseConnection() {} // Prevent 'new' from outside
+    
+    public static synchronized DatabaseConnection getInstance() {
+        if (instance == null) instance = new DatabaseConnection();
+        return instance;
+    }
+}
+```
+**Use Case:** Database connections, Configuration managers, Spring Beans (Singleton by default).
 
 ---
 
-## 2. Builder (The Boba Shop)
-**Analogy:** Ordering Bubble Tea.
-You don't just buy "Tea." You build it: Oolong tea + 50% ice + Add Pearls + Add Cheese Foam -> `build()`.
-Great for objects with many optional parameters.
+## 2. Builder
+**Explanation:** Used to construct complex objects with many optional parameters. Like ordering Bubble Tea: Add pearls, less sugar, more ice...
+
+**Code Example (using Lombok):**
+```java
+@Builder
+public class BubbleTea {
+    private String type;
+    private int sugarLevel;
+    private boolean pearl;
+}
+
+// Usage
+BubbleTea myTea = BubbleTea.builder()
+    .type("Oolong")
+    .sugarLevel(50)
+    .pearl(true)
+    .build();
+```
 
 ---
 
-## 3. Factory Method (The Car Factory)
-**Analogy:** A car factory. 
-You tell the factory: "I want an SUV." You don't care how they weld the steel or paint the doors. You just get the SUV back.
+## 3. Factory Method
+**Explanation:** You throw a request at the "factory," and it knows how to build and return the product. You don't care about the internal assembly.
+
+**Code Example:**
+```java
+public class AnimalFactory {
+    public Animal createAnimal(String type) {
+        if (type.equals("DOG")) return new Dog();
+        if (type.equals("CAT")) return new Cat();
+        return null;
+    }
+}
+```
 
 ---
 
-## Summary for Interviews
-| Pattern | Summary | Use Case |
-|---|---|---|
-| **Singleton** | Only one instance ever. | DB Pool, Config. |
-| **Builder** | Step-by-step construction. | Complex Objects (Lombok). |
-| **Factory** | Delegate creation to a "factory." | Hiding complex setup. |
+## 4. Interview Tip
+
+> **Q: "How does Spring Framework use Singleton?"**
+>
+> **A:** "By default, Spring Beans (@Service, @Component) are Singletons. The Spring Container creates them once at startup and stores them in memory to be shared, which significantly saves memory resources."
