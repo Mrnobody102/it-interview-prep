@@ -10,6 +10,8 @@ import remarkGfm from "remark-gfm";
 import rehypeRaw from "rehype-raw";
 import { type Category, type Topic } from "../data/categories/index";
 import { getContentForTopicAsync } from "../lib/content";
+import { Footer } from "./Footer";
+
 
 interface SyntaxModule {
   Highlighter: typeof import("react-syntax-highlighter")["Prism"];
@@ -343,8 +345,10 @@ export function ContentArea({
               </p>
             </div>
           </div>
+          <Footer />
         </div>
       </main>
+
     );
   }
 
@@ -379,8 +383,10 @@ export function ContentArea({
             language={language}
             onTopicSelect={onTopicSelect}
           />
+          <Footer />
         </div>
       </main>
+
     );
   }
 
@@ -413,8 +419,10 @@ export function ContentArea({
             language={language}
             onTopicSelect={onTopicSelect}
           />
+          <Footer />
         </div>
       </main>
+
     );
   }
 
@@ -428,8 +436,10 @@ export function ContentArea({
               ? "Chưa tìm thấy nội dung markdown cho chủ đề này. Cần bổ sung tài liệu hoặc kiểm tra lại mapping topic id -> filename."
               : "No markdown content was found for this topic. Add the document or verify the topic id -> filename mapping."}
           </p>
+          <Footer />
         </div>
       </main>
+
     );
   }
 
@@ -457,7 +467,9 @@ export function ContentArea({
             {content}
           </ReactMarkdown>
         </article>
+        <Footer />
       </div>
     </main>
+
   );
 }
