@@ -4,6 +4,7 @@ import { Header } from "./components/Header";
 import { Sidebar } from "./components/Sidebar";
 import { ContentArea } from "./components/ContentArea";
 import { SearchModal } from "./components/SearchModal";
+import { ChatbotWidget } from "./components/Chatbot/ChatbotWidget";
 import { categories, type Category, type Topic } from "./data/categories/index";
 import { hasContentForTopic } from "./lib/content";
 
@@ -199,6 +200,7 @@ export default function App() {
           setIsSearchOpen(false);
         }}
       />
+      <ChatbotWidget topicContext={selectedTopic?.name?.[language] || selectedCategory?.name?.[language]} />
     </div>
   );
 }
