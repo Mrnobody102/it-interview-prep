@@ -131,9 +131,7 @@ export function Sidebar({
         <button
           onClick={() => {
             if (hasSubtopics) {
-              if (!expandedKeys.has(key)) {
-                toggleTopic(topic.id, parentKey);
-              }
+              toggleTopic(topic.id, parentKey);
             }
             onTopicSelect(topic);
           }}
