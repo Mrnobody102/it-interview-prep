@@ -64,10 +64,11 @@ export function ChatWindow({ onClose, topicContext }: ChatWindowProps) {
 
       setMessages((prev) => [...prev, modelMessage]);
     } catch (error) {
+      console.error("Chat error:", error);
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: "model",
-        text: `**Lỗi:** ${error instanceof Error ? error.message : "Đã xảy ra lỗi khi kết nối tới AI."}`,
+        text: "Xin lỗi bạn, hiện tại hệ thống AI đang gặp chút sự cố kết nối. Bạn vui lòng thử lại sau nhé!",
       };
       setMessages((prev) => [...prev, errorMessage]);
     } finally {
