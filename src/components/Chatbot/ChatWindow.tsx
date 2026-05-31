@@ -13,7 +13,7 @@ export function ChatWindow({ onClose, topicContext }: ChatWindowProps) {
     {
       id: "welcome",
       role: "model",
-      text: "Chào bạn, mình là trợ lý phỏng vấn IT. Bạn muốn ôn luyện chủ đề gì hôm nay? Bạn có thể yêu cầu mình hỏi về kiến thức chuyên môn hoặc chia sẻ về một dự án (portfolio) của bạn để mình phỏng vấn nhé!",
+      text: "Chào bạn, mình là trợ lý phỏng vấn IT. Bạn muốn ôn luyện chủ đề gì hôm nay? Bạn có thể yêu cầu mình hỏi về kiến thức chuyên môn hoặc chia sẻ về một dự án portfolio để mình phỏng vấn nhé!",
     },
   ]);
   const [input, setInput] = useState("");
@@ -42,9 +42,8 @@ export function ChatWindow({ onClose, topicContext }: ChatWindowProps) {
     setIsLoading(true);
 
     try {
-      // Convert messages to history format expected by Gemini
       const history = messages
-        .filter((m) => m.id !== "welcome") // optionally exclude welcome message
+        .filter((m) => m.id !== "welcome")
         .map((m) => ({
           role: m.role,
           parts: [{ text: m.text }],
@@ -85,21 +84,22 @@ export function ChatWindow({ onClose, topicContext }: ChatWindowProps) {
 
   return (
     <div className="fixed bottom-20 right-6 w-96 max-w-[calc(100vw-3rem)] h-[500px] max-h-[calc(100vh-8rem)] bg-background border rounded-2xl shadow-xl flex flex-col z-50 overflow-hidden">
-      {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 border-b bg-muted/30">
         <div>
           <h3 className="font-semibold">IT Interviewer</h3>
-          <p className="text-xs text-muted-foreground">Sẵn sàng phỏng vấn</p>
+          <p className="text-xs text-muted-foreground">
+            Sẵn sàng phỏng vấn
+          </p>
         </div>
         <button
           onClick={onClose}
           className="p-2 hover:bg-muted rounded-full transition-colors"
+          aria-label="Đóng trợ lý phỏng vấn"
         >
           <X size={18} />
         </button>
       </div>
 
-      {/* Messages */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {messages.map((msg) => (
           <ChatMessage key={msg.id} message={msg} />
@@ -114,7 +114,6 @@ export function ChatWindow({ onClose, topicContext }: ChatWindowProps) {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input */}
       <div className="p-3 border-t bg-background">
         <div className="flex items-center gap-2">
           <input
@@ -130,6 +129,7 @@ export function ChatWindow({ onClose, topicContext }: ChatWindowProps) {
             onClick={handleSend}
             disabled={!input.trim() || isLoading}
             className="p-2 bg-primary text-primary-foreground rounded-full disabled:opacity-50 transition-opacity"
+            aria-label="Gửi tin nhắn"
           >
             <Send size={18} />
           </button>

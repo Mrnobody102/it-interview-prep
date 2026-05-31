@@ -17,7 +17,7 @@ export function ChatbotWidget({ topicContext }: ChatbotWidgetProps) {
           topicContext={topicContext}
         />
       )}
-      
+
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
